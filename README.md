@@ -4,14 +4,14 @@
 ```
 npm install
 ```
+可以先下载好 electron 和 chromedriver 的 **zip 文件**（以及 SHASUM）放到 `%USERPROFILE%\AppData\Local\electron\Cache` 中，不然下载会很慢
+
+[下载页面](https://github.com/electron/electron/releases/tag/v5.0.6)
 
 ### 运行
 ```
 npm run electron:serve
 ```
-可以先下载好 electron 和 chromedriver 的 **zip 文件**（以及 SHASUM）放到 `%USERPROFILE%\AppData\Local\electron\Cache` 中，不然下载会很慢
-
-[下载页面](https://github.com/electron/electron/releases/tag/v5.0.6)
 
 ### 构建
 ```
