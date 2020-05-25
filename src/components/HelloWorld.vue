@@ -9,7 +9,9 @@
         <div style="padding: 14px;">
           <span>ElementUI测试</span>
           <div class="bottom clearfix">
-            <el-button type="text" class="button">btn</el-button>
+            <el-button type="text" class="button" @click="goback"
+              >btn</el-button
+            >
           </div>
         </div>
       </el-card>
@@ -19,6 +21,14 @@
 <script>
 export default {
   name: "HelloWorld",
+  data() {
+    return {};
+  },
+  methods: {
+    goBack: function() {
+      this.$router.replace("/signin");
+    },
+  },
 };
 </script>
 <style>

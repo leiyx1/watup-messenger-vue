@@ -5,36 +5,45 @@ Vue.use(VueRouter);
 function loadView(view) {
   return () => import(`@/views/${view}.vue`);
 }
-// function loadComponent(component) {
-//   return () => import(`@/components/${component}.vue`);
-// }
+function loadComponent(component) {
+  return () => import(`@/components/${component}.vue`);
+}
 const routes = [
   {
     path: "/",
-    name: "SignIn",
-    component: () => import("../views/SignIn.vue"),
+    redirect: "/login",
+  },
+  {
+    path: "/login",
+    name: "Login",
+    component: loadView("SignIn"),
   },
   {
     path: "/index",
     name: "Index",
     component: loadView("Index"),
-    // children: [
-    //   {
-    //     path: "/",
-    //     name: "ChatBox",
-    //     component: loadComponent("ChatBox"),
-    //   },
-    //   {
-    //     path: "/correspondence",
-    //     name: "Correspondence",
-    //     component: loadComponent("UserBox"),
-    //   },
-    //   {
-    //     path: "/setting",
-    //     name: "Setting",
-    //     component: loadComponent("Setting"),
-    //   },
-    // ],
+    children: [
+      {
+        path: "/index",
+        name: "Page1",
+        component: loadComponent("Page1"),
+      },
+      {
+        path: "/index/page2",
+        name: "Page2",
+        component: loadComponent("Page2"),
+      },
+      {
+        path: "/index/page3",
+        name: "Page3",
+        component: loadComponent("Page3"),
+      },
+      {
+        path: "/index/setting",
+        name: "Setting",
+        component: loadComponent("Setting"),
+      },
+    ],
   },
 ];
 

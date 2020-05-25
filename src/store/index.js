@@ -6,8 +6,21 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     name: "watup?",
+    user: {
+      id: "",
+      username: "",
+      email: "",
+      friendID: [],
+      avatarUrl: "",
+      profile: "",
+      blacklist: [],
+    },
   },
-  mutations: {},
+  mutations: {
+    setUser(state, val) {
+      state.user = val;
+    },
+  },
   actions: {},
   modules: {},
 });
