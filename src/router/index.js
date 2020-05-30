@@ -8,6 +8,9 @@ function loadView(view) {
 function loadComponent(component) {
   return () => import(`@/components/${component}.vue`);
 }
+function loadLayout(component) {
+  return () => import(`@/components/layout/${component}.vue`);
+}
 const routes = [
   {
     path: "/",
@@ -29,9 +32,9 @@ const routes = [
         component: loadComponent("Page1"),
       },
       {
-        path: "/index/page2",
-        name: "Page2",
-        component: loadComponent("Page2"),
+        path: "/index/chatpanel",
+        name: "ChatPanel",
+        component: loadLayout("ChatPanel"),
       },
       {
         path: "/index/page3",
@@ -41,7 +44,7 @@ const routes = [
       {
         path: "/index/setting",
         name: "Setting",
-        component: loadComponent("Setting"),
+        component: loadLayout("Setting"),
       },
     ],
   },

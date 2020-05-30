@@ -27,7 +27,7 @@
           </el-form-item>
         </el-form>
         <div class="btn">
-          <el-button class="enter" type="primary" @click="submit1('loginInfo')"
+          <el-button class="enter" type="primary" @click="submit('loginInfo')"
             >登录</el-button
           ><el-button @click="index = !index">注册</el-button>
         </div>
@@ -157,16 +157,8 @@ export default {
             .then((successResponse) => {
               // var responseResult = JSON.stringify(successResponse.data);
               if (successResponse.data.code === 200) {
-                this.$axios
-                  .get(`usercenter/getUser`, {
-                    params: {
-                      username: this.loginInfoVo.username,
-                    },
-                  })
-                  .then((response) => {
-                    this.$store.commit("setUser", response.data);
-                    this.$router.push("index");
-                  });
+                this.$store.commit("setToken", successResponse.data.data);
+                this.$router.push("index");
                 this.$notify({
                   title: "成功",
                   message: "登录成功！",
@@ -211,7 +203,12 @@ export default {
       this.index = 2;
     },
     sendPin: function() {
-      alert("发送成功");
+      //
+      this.$notify({
+        title: "Success",
+        message: "登录成功",
+        type: "success",
+      });
     },
   },
   mounted() {},

@@ -17,6 +17,8 @@
     "cnpm": "^6.1.1",
     "core-js": "^3.6.4",
     "element-ui": "^2.13.2",
+    "sass-loader": "^8.0.2",
+    "scss-loader": "^0.0.1",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
     "vuex": "^3.4.0"

@@ -10,9 +10,9 @@
         style="border-right-width: 0;"
       >
         <el-menu-item index="/index">
-          <i class="el-icon-menu"></i>
+          <i class="el-icon-user"></i>
         </el-menu-item>
-        <el-menu-item index="/index/page2">
+        <el-menu-item index="/index/chatpanel">
           <i class="el-icon-menu"></i>
         </el-menu-item>
         <el-menu-item index="/index/page3">
@@ -24,7 +24,9 @@
       </el-menu>
     </div>
     <div class="right-panel">
-      <router-view />
+      <keep-alive>
+        <router-view />
+      </keep-alive>
     </div>
   </div>
 </template>
@@ -32,6 +34,19 @@
 <script>
 export default {
   name: "Index",
+  data() {
+    return {
+      user: {
+        id: "",
+        username: "",
+        email: "",
+        friendID: [],
+        avatarUrl: "",
+        profile: "",
+        blacklist: [],
+      },
+    };
+  },
   components: {},
   methods: {
     handleOpen(key, keyPath) {
@@ -40,6 +55,26 @@ export default {
     handleClose(key, keyPath) {
       console.log(key, keyPath);
     },
+  },
+  mounted() {
+    this.$axios
+      .get("/user", {
+        params: {
+          token: this.$store.state.token,
+        },
+      })
+      .then((successResponse) => {
+        if (successResponse.data.code === 200) {
+          this.$store.commit("setUser", successResponse.data.data);
+        } else {
+          this.$notify({
+            title: "error",
+            type: "error",
+            message: "Invalid Token",
+          });
+        }
+      });
+    this.user = this.$store.state.user;
   },
 };
 </script>
