@@ -36,7 +36,7 @@
       </el-menu>
     </div>
     <div class="chat-box">
-      <userChat :chat="currentChat" />
+      <userChat v-if="show" :chat="currentChat" />
     </div>
   </div>
 </template>
@@ -45,7 +45,9 @@
 import userChat from "../UserChat.vue";
 export default {
   data() {
-    return {};
+    return {
+      show: false,
+    };
   },
   components: {
     userChat,
@@ -70,13 +72,78 @@ export default {
         this.$store.commit("setChatList", chatList);
       },
     },
+    messageList: {
+      get: function() {
+        return this.$store.state.messageList;
+      },
+      set: function(val) {
+        this.$store.commit("setMessageList", val);
+      },
+    },
   },
   methods: {
     showChat(chat, index) {
+      this.show = true;
       this.currentChat = chat;
       this.$store.commit("resetUnread");
       this.chatList[index] = this.$store.state.currentChat;
-      console.log(chat.unReadCount);
+      console.log(this.currentChat);
+      // setMessageListByChatID
+      if (chat.id === 1) {
+        this.messageList = [
+          {
+            mine: true,
+            username: "Myself",
+            content: "CHILEM",
+            avatar:
+              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+            timestamp: "2020/6/3 20:00",
+          },
+          {
+            mine: false,
+            username: "Myself",
+            content: "CHILEM",
+            avatar:
+              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+            timestamp: "2020/6/3 20:00",
+          },
+          {
+            mine: true,
+            username: "Myself",
+            content: "CHILEM",
+            avatar:
+              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+            timestamp: "2020/6/3 20:00",
+          },
+          {
+            mine: true,
+            username: "Myself",
+            content: "CHILEM",
+            avatar:
+              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+            timestamp: "2020/6/3 20:00",
+          },
+          {
+            mine: false,
+            username: "Boss",
+            content: "Yes",
+            avatar:
+              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+            timestamp: "2020/6/3 20:01",
+          },
+        ];
+      } else {
+        this.messageList = [
+          {
+            mine: true,
+            username: "Myself",
+            content: "你吃了吗?",
+            avatar:
+              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+            timestamp: "2020/6/3 20:00",
+          },
+        ];
+      }
     },
   },
 };

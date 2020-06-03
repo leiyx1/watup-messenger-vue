@@ -18,6 +18,7 @@ export default new Vuex.Store({
     },
     chatList: [
       {
+        id: 1,
         avatar:
           "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
         name: "老板",
@@ -25,6 +26,7 @@ export default new Vuex.Store({
         unReadCount: 0,
       },
       {
+        id: 2,
         avatar:
           "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
         name: "钢铁侠",
@@ -33,6 +35,7 @@ export default new Vuex.Store({
       },
     ],
     currentChat: {},
+    messageList: [],
   },
   mutations: {
     setUser(state, val) {
@@ -48,6 +51,9 @@ export default new Vuex.Store({
       state.currentChat = val;
       console.log("in store the currentChat:");
       console.log(state.currentChat);
+    },
+    setMessageList(state, val) {
+      state.messageList = val;
     },
     resetUnread(state) {
       state.currentChat.unReadCount = 0;

@@ -1,6 +1,8 @@
 <template>
   <div>
-    page1
+    <el-card>
+      name
+    </el-card>
   </div>
 </template>
 
