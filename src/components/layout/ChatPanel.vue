@@ -81,7 +81,50 @@ export default {
       },
     },
   },
+  mounted() {
+    // this.loadChatList();
+    this.chatList = [
+      {
+        id: 1,
+        avatar:
+          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+        name: "老板",
+        sign: "你吃了吗?",
+        unReadCount: 0,
+      },
+      {
+        id: 2,
+        avatar:
+          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+        name: "钢铁侠",
+        sign: "好的好的.",
+        unReadCount: 2,
+      },
+    ];
+  },
   methods: {
+    loadChatList() {
+      this.$axios
+        .get("usercenter/chatList", {
+          params: {
+            userID: this.$store.state.user.ID,
+          },
+        })
+        .then((successResponse) => {
+          // var responseResult = JSON.stringify(successResponse.data);
+          if (successResponse.data.code === 200) {
+            this.$store.commit("setChatList", successResponse.data.data);
+          } else {
+            this.$notify.error({
+              title: "错误",
+              message: "拉取最近聊天出错",
+            });
+          }
+        })
+        .catch((failResponse) => {
+          console.log(failResponse);
+        });
+    },
     showChat(chat, index) {
       this.show = true;
       this.currentChat = chat;
@@ -210,6 +253,7 @@ export default {
           span {
             float: left;
             padding-left: 5px;
+            color: #808080;
             // height: 67%;
           }
         }

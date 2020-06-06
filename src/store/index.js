@@ -11,31 +11,15 @@ export default new Vuex.Store({
       id: "",
       username: "",
       email: "",
-      friendID: [],
+      friendsID: [],
       avatarUrl: "",
       profile: "",
       blacklist: [],
     },
-    chatList: [
-      {
-        id: 1,
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        name: "老板",
-        sign: "你吃了吗?",
-        unReadCount: 0,
-      },
-      {
-        id: 2,
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        name: "钢铁侠",
-        sign: "好的好的.",
-        unReadCount: 2,
-      },
-    ],
+    chatList: [],
     currentChat: {},
     messageList: [],
+    friends: [],
   },
   mutations: {
     setUser(state, val) {
@@ -57,6 +41,9 @@ export default new Vuex.Store({
     },
     resetUnread(state) {
       state.currentChat.unReadCount = 0;
+    },
+    setFriends(state, val) {
+      state.friends = val;
     },
   },
   actions: {},

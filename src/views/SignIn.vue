@@ -142,7 +142,7 @@ export default {
   },
   methods: {
     submit() {
-      this.$router.push("/index");
+      this.$router.push("/index/chatpanel");
     },
     submit1(formName) {
       this.$refs[formName].validate((valid) => {

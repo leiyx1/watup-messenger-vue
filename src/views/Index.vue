@@ -3,20 +3,28 @@
     <div class="side-menu">
       <el-menu
         router
-        default-active="page1"
+        default-active="/index/chatpanel"
         background-color="#545c64"
         text-color="#fff"
         active-text-color="#ffd04b"
         style="border-right-width: 0;"
       >
-        <el-menu-item index="/index">
-          <i class="el-icon-user"></i>
+        <el-menu-item>
+          <el-popover
+            placement="right"
+            trigger="click"
+            content="Hi~ o(*￣▽￣*)ブ"
+          >
+            <el-button type="text" slot="reference">
+              <i class="el-icon-s-grid"></i
+            ></el-button>
+          </el-popover>
         </el-menu-item>
         <el-menu-item index="/index/chatpanel">
-          <i class="el-icon-menu"></i>
+          <i class="el-icon-chat-round"></i>
         </el-menu-item>
-        <el-menu-item index="/index/page3">
-          <i class="el-icon-document"></i>
+        <el-menu-item index="/index/friends">
+          <i class="el-icon-user"></i>
         </el-menu-item>
         <el-menu-item index="/index/setting">
           <i class="el-icon-setting"></i>
@@ -36,6 +44,7 @@ export default {
   name: "Index",
   data() {
     return {
+      visible: false,
       user: {
         id: "",
         username: "",
