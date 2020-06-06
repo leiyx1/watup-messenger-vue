@@ -1,18 +1,18 @@
 <template>
   <div id="app">
 <!--    <VideoChat></VideoChat>-->
-    <test></test>
+      <UniChatPage></UniChatPage>
 
   </div>
 </template>
 
 <script>
-import Test from "./components/test";
+import UniChatPage from "./components/UniChatPage";
 
 export default {
   name: 'App',
   components: {
-    Test,
+      UniChatPage,
   }
 }
 </script>

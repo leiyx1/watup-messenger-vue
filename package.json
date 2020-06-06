@@ -14,7 +14,9 @@
   "main": "background.js",
   "dependencies": {
     "core-js": "^3.6.4",
+    "element-ui": "^2.13.2",
     "express": "^4.17.1",
+    "nedb": "^1.8.0",
     "uws": "^100.0.1",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
