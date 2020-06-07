@@ -1,10 +1,20 @@
 import Vue from 'vue'
-import VueRouter from 'vue-router'
 import App from './App.vue'
+import router from "./router";
+import store from "./store";
+import ElementUI from "element-ui";
 
-Vue.config.productionTip = false
-Vue.use(VueRouter)
+import "element-ui/lib/theme-chalk/index.css";
+
+Vue.config.productionTip = false;
+Vue.use(ElementUI);
+var axios = require("axios");
+axios.defaults.baseURL = "http://localhost:8000";
+// axios.defaults.baseURL = "http://106.12.204.55:8000";
+Vue.prototype.$axios = axios;
 
 new Vue({
-  render: h => h(App),
-}).$mount('#app')
+  router,
+  store,
+  render: (h) => h(App),
+}).$mount("#app");
