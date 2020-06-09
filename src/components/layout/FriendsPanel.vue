@@ -45,7 +45,7 @@
           </div>
           <div class="item-body">
             <div class="item-word">
-              <b>{{ item.name }}({{ item.nickname }})</b>
+              <b>{{ item.username }}({{ item.nickname }})</b>
             </div>
           </div>
         </el-menu-item>
@@ -77,21 +77,21 @@ export default {
     this.friends = [
       {
         ID: "1",
-        name: "老板",
+        username: "老板",
         nickname: "",
         avatar:
           "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
       },
       {
         ID: "2",
-        name: "钢铁侠",
+        username: "钢铁侠",
         nickname: "老大",
         avatar:
           "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
       },
       {
         ID: "3",
-        name: "Happy",
+        username: "Happy",
         nickname: "绿巨人",
         avatar:
           "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",

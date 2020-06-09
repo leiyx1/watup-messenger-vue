@@ -8,7 +8,7 @@
         style="margin-top:10%; margin-left:10%; width: 400px"
       >
         <div slot="header" class="clearfix">
-          <span class="text">欢迎前端世界</span>
+          <span class="text">登录 Watup</span>
         </div>
         <el-form
           status-icon
@@ -33,14 +33,14 @@
         </div>
       </el-card>
       <!-- `diff` -->
-      <el-card v-else style="margin-top:10%; margin-left:10%; width: 400px">
+      <el-card v-else style="margin-top:6%; margin-left:10%; width: 400px">
         <div slot="header" class="clearfix">
-          <span class="text">注册前端世界</span>
+          <span class="text">注册 Watup</span>
         </div>
         <el-form
           status-icon
           :hide-required-asterisk="true"
-          label-width="80px"
+          label-width="100px"
           :model="registerInfo"
           ref="registerInfo"
           :rules="rule2"
@@ -60,6 +60,9 @@
               v-model="registerInfo.password2"
               type="password"
             ></el-input>
+          </el-form-item>
+          <el-form-item label="watup号(id)" prop="id">
+            <el-input v-model="registerInfo.id"></el-input>
           </el-form-item>
           <el-form-item label="邮箱" prop="email">
             <el-input v-model="registerInfo.email"></el-input>
@@ -105,11 +108,15 @@ export default {
     return {
       index: true,
       inputed: false,
+      auth_time: "",
+      valid_time: "",
+      code: "",
       loginInfo: {
         username: "",
         password: "",
       },
       registerInfo: {
+        id: "",
         username: "",
         password: "",
         password2: "",
@@ -117,16 +124,20 @@ export default {
         code: "",
       },
       rule1: {
-        username: [{ message: "请输入用户名" }],
+        username: [{ required: true, message: "请输入用户名" }],
         password: [{ required: true, message: "请输入密码" }],
       },
       rule2: {
+        id: [
+          { required: true, message: "请设置你的watup号" },
+          { min: 3, max: 12, message: "长度在3-12之间" },
+        ],
         username: [
-          { required: true, message: "请输入用户名" },
+          { required: true, message: "请设置你的用户名" },
           { min: 3, max: 12, message: "长度在3-12之间" },
         ],
         password: [
-          { required: true, message: "请输入密码" },
+          { required: true, message: "请设置你的密码" },
           { min: 6, max: 18, message: "长度在6-18之间" },
         ],
         password2: [{ validator: validatePass }],
@@ -190,25 +201,111 @@ export default {
         }
       });
     },
-    signin: function() {
-      this.$notify({
-        title: "Success",
-        message: "登录成功",
-        type: "success",
+    submit2(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid && this.code === this.registerInfo.code) {
+          this.$axios
+            .get("usercenter/register", {
+              params: {
+                id: this.registerInfo.id,
+                username: this.registerInfo.username,
+                password: this.registerInfo.password,
+                email: this.registerInfo.email,
+              },
+            })
+            .then((successResponse) => {
+              // var responseResult = JSON.stringify(successResponse.data);
+              if (successResponse.data.code === 200) {
+                this.$store.commit("setToken", successResponse.data.data);
+                this.$router.push("index");
+                this.$notify({
+                  title: "成功",
+                  message: "登录成功！",
+                  type: "success",
+                });
+              } else if (successResponse.data.code === 300) {
+                this.$notify.error({
+                  title: "错误",
+                  message: "该用户不存在",
+                });
+              } else if (successResponse.data.code === 402) {
+                this.$notify.error({
+                  title: "错误",
+                  message: "密码输入错误",
+                });
+              }
+            })
+            .catch((failResponse) => {
+              console.log(failResponse);
+            });
+        } else if (valid && this.code !== this.registerInfo.code) {
+          this.$notify({
+            title: "Error",
+            message: "验证码错误",
+            type: "error",
+          });
+          return false;
+        } else {
+          this.$notify({
+            title: "Error",
+            message: "非法登录",
+            type: "error",
+          });
+          return false;
+        }
       });
-      console.log(document.cookie);
-      this.$router.push("/index");
-    },
-    signup: function() {
-      this.index = 2;
     },
     sendPin: function() {
-      //
-      this.$notify({
-        title: "Success",
-        message: "登录成功",
-        type: "success",
-      });
+      // ctrl c ctrl v
+      this.$axios
+        .get("usercenter/sendPin", {
+          params: {
+            emailAddress: this.registerInfo.email,
+          },
+        })
+        .then((response) => {
+          if (this.registerInfo.email === "") {
+            this.$notify.error({
+              title: "错误",
+              message: "请输入邮箱",
+            });
+          } else if (response.data.code === 305) {
+            this.$notify.error({
+              title: "错误",
+              message: "邮箱不合法",
+            });
+          } else if (response.data.code === 306) {
+            this.$notify.error({
+              title: "错误",
+              message: "邮箱已被注册",
+            });
+          } else if (response.data.code === 200) {
+            this.code = response.data.message;
+            // this.emailAddress = this.registerInfo.email;
+            this.inputed = true;
+            this.$notify({
+              title: "成功",
+              message: "验证码已发送",
+              type: "success",
+            });
+            this.auth_time = 60;
+            this.valid_time = 300;
+            var auth_timetimer = setInterval(() => {
+              this.auth_time--;
+              this.valid_time--;
+              if (this.auth_time <= 0) {
+                this.inputed = false;
+              }
+              if (this.valid_time <= 0) {
+                this.code = "";
+                clearInterval(auth_timetimer);
+              }
+            }, 1000);
+          }
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
     },
   },
   mounted() {},
