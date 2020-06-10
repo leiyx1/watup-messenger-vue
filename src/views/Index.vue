@@ -40,6 +40,7 @@
 </template>
 
 <script>
+// import { desktopNotify } from "@/js/Notification.js";
 export default {
   name: "Index",
   data() {
@@ -84,6 +85,19 @@ export default {
         }
       });
     this.user = this.$store.state.user;
+
+    // 监听是否有消息
+    // desktopNotify();
+    if (window.Notification && Notification.permission !== "denied") {
+      Notification.requestPermission(function() {
+        var notice_ = new Notification("From Watup", { body: "您有新的消息" });
+        notice_.click = function() {
+          // seems like unworking
+          window.show();
+          window.focus();
+        };
+      });
+    }
   },
 };
 </script>

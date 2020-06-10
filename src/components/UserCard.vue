@@ -2,10 +2,10 @@
   <div class="card">
     <div class="level-1">
       <div class="level-1-word">
-        <span>{{ user.id }}</span>
+        <span>{{ user.username }}</span>
         <!-- <el-button class="btn" type="text">修改备注</el-button> -->
       </div>
-      <img :src="user.avatarUrl" />
+      <img :src="user.avatar" />
     </div>
     <el-divider class="divider1" />
     <div class="level-2">
