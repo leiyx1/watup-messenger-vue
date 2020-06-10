@@ -27,7 +27,7 @@
           </el-form-item>
         </el-form>
         <div class="btn">
-          <el-button class="enter" type="primary" @click="submit('loginInfo')"
+          <el-button class="enter" type="primary" @click="submit1('loginInfo')"
             >登录</el-button
           ><el-button @click="index = !index">注册</el-button>
         </div>
@@ -83,7 +83,10 @@
         </el-form>
 
         <div class="btn">
-          <el-button type="primary" class="enter" @click="submit2(registerInfo)"
+          <el-button
+            type="primary"
+            class="enter"
+            @click="submit2('registerInfo')"
             >提交</el-button
           ><el-button @click="index = !index">返回</el-button>
         </div>
@@ -159,16 +162,29 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.$axios
-            .get("usercenter/login", {
-              params: {
-                username: this.loginInfo.username,
-                password: this.loginInfo.password,
-              },
+            .post("/oauth/login", {
+              id: this.loginInfo.username,
+              password: this.loginInfo.password,
             })
             .then((successResponse) => {
-              // var responseResult = JSON.stringify(successResponse.data);
               if (successResponse.data.code === 200) {
-                this.$store.commit("setToken", successResponse.data.data);
+                var data = successResponse.data.data;
+                var userdata = {
+                  id: data.id,
+                  username: data.username,
+                  email: data.email,
+                };
+                this.$store.commit("setUser", userdata);
+                // var tokendata = {
+                //   access_token: data.access_token,
+                //   token_type: data.token_type,
+                //   bearer: data.bearer,
+                //   refresh_token: data.refresh_token,
+                //   expires_in: data.expires_in,
+                //   scope: data.scope,
+                // }
+                // ***
+                // NeDB setToken
                 this.$router.push("index");
                 this.$notify({
                   title: "成功",
@@ -202,15 +218,17 @@ export default {
       });
     },
     submit2(formName) {
+      console.log("submit2");
       this.$refs[formName].validate((valid) => {
-        if (valid && this.code === this.registerInfo.code) {
+        if (valid) {
           this.$axios
-            .get("usercenter/register", {
+            .post("/oauth/register", {
               params: {
                 id: this.registerInfo.id,
                 username: this.registerInfo.username,
                 password: this.registerInfo.password,
                 email: this.registerInfo.email,
+                code: this.registerInfo.code,
               },
             })
             .then((successResponse) => {
@@ -223,28 +241,16 @@ export default {
                   message: "登录成功！",
                   type: "success",
                 });
-              } else if (successResponse.data.code === 300) {
+              } else if (successResponse.data.code === 400) {
                 this.$notify.error({
                   title: "错误",
-                  message: "该用户不存在",
-                });
-              } else if (successResponse.data.code === 402) {
-                this.$notify.error({
-                  title: "错误",
-                  message: "密码输入错误",
+                  message: successResponse.data.message,
                 });
               }
             })
             .catch((failResponse) => {
               console.log(failResponse);
             });
-        } else if (valid && this.code !== this.registerInfo.code) {
-          this.$notify({
-            title: "Error",
-            message: "验证码错误",
-            type: "error",
-          });
-          return false;
         } else {
           this.$notify({
             title: "Error",
@@ -258,29 +264,19 @@ export default {
     sendPin: function() {
       // ctrl c ctrl v
       this.$axios
-        .get("usercenter/sendPin", {
-          params: {
-            emailAddress: this.registerInfo.email,
-          },
-        })
+        .post("oauth/sendCode?email=" + this.registerInfo.email)
         .then((response) => {
           if (this.registerInfo.email === "") {
             this.$notify.error({
               title: "错误",
               message: "请输入邮箱",
             });
-          } else if (response.data.code === 305) {
-            this.$notify.error({
-              title: "错误",
-              message: "邮箱不合法",
-            });
-          } else if (response.data.code === 306) {
+          } else if (response.data.code === 400) {
             this.$notify.error({
               title: "错误",
               message: "邮箱已被注册",
             });
           } else if (response.data.code === 200) {
-            this.code = response.data.message;
             // this.emailAddress = this.registerInfo.email;
             this.inputed = true;
             this.$notify({
@@ -297,7 +293,6 @@ export default {
                 this.inputed = false;
               }
               if (this.valid_time <= 0) {
-                this.code = "";
                 clearInterval(auth_timetimer);
               }
             }, 1000);
