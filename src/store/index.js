@@ -5,21 +5,13 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-<<<<<<< HEAD
-    token: "1",
-  },
-  mutations: {
-    setToken(state, val) {
-      state.token = val;
-    },
-=======
     name: "watup?",
     token: "",
     user: {
       id: "",
-      username: "",
+      nickname: "",
       email: "",
-      friendsID: [],
+      friends: [],
       avatarUrl: "",
       profile: "",
       blacklist: [],
@@ -53,7 +45,6 @@ export default new Vuex.Store({
     setFriends(state, val) {
       state.friends = val;
     },
->>>>>>> Hu
   },
   actions: {},
   modules: {},

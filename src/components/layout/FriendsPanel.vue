@@ -41,11 +41,11 @@
           @click="showCard(item, index)"
         >
           <div class="item-avatar">
-            <img :src="item.avatar" alt="头像" />
+            <img :src="item.avatarUrl" alt="头像" />
           </div>
           <div class="item-body">
             <div class="item-word">
-              <b>{{ item.name }}({{ item.nickname }})</b>
+              <b>{{ item.id }}({{ item.nickname }})</b>
             </div>
           </div>
         </el-menu-item>
@@ -73,30 +73,30 @@ export default {
     };
   },
   mounted() {
-    // this.loadFriends();
-    this.friends = [
-      {
-        ID: "1",
-        name: "老板",
-        nickname: "",
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      },
-      {
-        ID: "2",
-        name: "钢铁侠",
-        nickname: "老大",
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      },
-      {
-        ID: "3",
-        name: "Happy",
-        nickname: "绿巨人",
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      },
-    ];
+    this.loadFriends();
+    // this.friends = [
+    //   {
+    //     ID: "1",
+    //     name: "老板",
+    //     nickname: "",
+    //     avatar:
+    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+    //   },
+    //   {
+    //     ID: "2",
+    //     name: "钢铁侠",
+    //     nickname: "老大",
+    //     avatar:
+    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+    //   },
+    //   {
+    //     ID: "3",
+    //     name: "Happy",
+    //     nickname: "绿巨人",
+    //     avatar:
+    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+    //   },
+    // ];
   },
   computed: {
     friends: {
@@ -133,15 +133,14 @@ export default {
     },
     loadFriends() {
       this.$axios
-        .get("usercenter/friends", {
-          params: {
-            friendsID: this.$store.state.user.friendsID,
-          },
-        })
+        .get("api/friends",{
+        headers:{ Authorization: "token:1" }
+      })
         .then((successResponse) => {
           // var responseResult = JSON.stringify(successResponse.data);
-          if (successResponse.data.code === 200) {
-            this.$store.commit("setFriends", successResponse.data.data);
+          console.log(successResponse.data);
+          if (successResponse.status>=200&&successResponse.status<300) {
+            this.$store.commit("setFriends", successResponse.data);
           } else {
             this.$notify.error({
               title: "错误",
