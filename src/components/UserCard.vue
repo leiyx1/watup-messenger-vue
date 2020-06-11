@@ -3,7 +3,7 @@
     <div class="level-1">
       <div class="level-1-word">
         <div style="height: 60px">
-          <span v-if="!editName"
+          <span v-if="!editName" class="span1"
             >{{ user.nickname }}
             <el-button
               type="text"
@@ -15,7 +15,8 @@
             <el-tooltip content="按回车保存" placement="bottom">
               <el-input
                 id="NickInput"
-                :value="user.username"
+                maxlength="6"
+                show-word-limit
                 v-model="newNick"
                 placeholder="按回车保存"
                 @keyup.enter.native="saveNick"
@@ -140,13 +141,13 @@ export default {
       flex-direction: column;
       padding-left: 20%;
       padding-right: 10%;
-      span {
+      .span1 {
         float: left;
         font-size: 40px;
       }
       p {
         float: left;
-        margin: 2px 0px;
+        margin: 5px 0px;
       }
     }
     img {
