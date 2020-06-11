@@ -17,11 +17,18 @@ export default new Vuex.Store({
       blacklist: [],
     },
     chatList: [],
-    currentChat: {},
-    messageList: [],
+    currentChat: {
+      messageList: [],
+    },
     friends: [],
   },
   mutations: {
+    setUsername(state, val){//todo 理应存userId
+      state.user.username = val;
+    },
+    setId(state, val){
+      state.user.id = val;
+    },
     setUser(state, val) {
       state.user = val;
     },
@@ -37,7 +44,7 @@ export default new Vuex.Store({
       console.log(state.currentChat);
     },
     setMessageList(state, val) {
-      state.messageList = val;
+      state.currentChat.messageList = val;
     },
     resetUnread(state) {
       state.currentChat.unReadCount = 0;
