@@ -9,7 +9,7 @@
       >
         <el-menu-item
           class="item"
-          v-for="(chat, index) in chatList"
+          v-for="(chat, index) in this.chatList"
           :key="index"
           @click="showChat(chat, index)"
         >
@@ -36,13 +36,15 @@
       </el-menu>
     </div>
     <div class="chat-box">
-      <userChat v-if="show" :chat="currentChat" />
+      <userChat v-if="show"/>
     </div>
   </div>
 </template>
 
 <script>
 import userChat from "../UserChat.vue";
+import db from "../../JavaScript/NedbConfig";
+
 export default {
   data() {
     return {
@@ -74,33 +76,21 @@ export default {
     },
     messageList: {
       get: function() {
-        return this.$store.state.messageList;
+
+        return this.$store.state.currentChat.messageList;
       },
-      set: function(val) {
+      set: function (val) {
+        console.log("messageList setter")
         this.$store.commit("setMessageList", val);
-      },
+      }
     },
   },
   mounted() {
     // this.loadChatList();
-    this.chatList = [
-      {
-        id: 1,
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        name: "老板",
-        sign: "你吃了吗?",
-        unReadCount: 0,
-      },
-      {
-        id: 2,
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        name: "钢铁侠",
-        sign: "好的好的.",
-        unReadCount: 2,
-      },
-    ];
+    let self = this;
+    db.localMessage.find({}, function (err, docs) {
+      self.chatList = docs;
+    })
   },
   methods: {
     loadChatList() {
@@ -132,62 +122,13 @@ export default {
       this.chatList[index] = this.$store.state.currentChat;
       console.log(this.currentChat);
       // setMessageListByChatID
-      if (chat.id === 1) {
-        this.messageList = [
-          {
-            mine: true,
-            username: "Myself",
-            content: "CHILEM",
-            avatar:
-              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-            timestamp: "2020/6/3 20:00",
-          },
-          {
-            mine: false,
-            username: "Myself",
-            content: "CHILEM",
-            avatar:
-              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-            timestamp: "2020/6/3 20:00",
-          },
-          {
-            mine: true,
-            username: "Myself",
-            content: "CHILEM",
-            avatar:
-              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-            timestamp: "2020/6/3 20:00",
-          },
-          {
-            mine: true,
-            username: "Myself",
-            content: "CHILEM",
-            avatar:
-              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-            timestamp: "2020/6/3 20:00",
-          },
-          {
-            mine: false,
-            username: "Boss",
-            content: "Yes",
-            avatar:
-              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-            timestamp: "2020/6/3 20:01",
-          },
-        ];
-      } else {
-        this.messageList = [
-          {
-            mine: true,
-            username: "Myself",
-            content: "你吃了吗?",
-            avatar:
-              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-            timestamp: "2020/6/3 20:00",
-          },
-        ];
-      }
+      let self = this;
+      let query = {chatId: this.currentChat.chatId, type: this.currentChat.type}
+      db.find(query).sort({timestamp: 1}).exec(function (err, docs){
+        self.messageList = docs;
+      })
     },
+
   },
 };
 </script>
