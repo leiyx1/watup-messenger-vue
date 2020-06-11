@@ -2,22 +2,27 @@
   <div class="card">
     <div class="level-1">
       <div class="level-1-word">
-        <span v-if="!editName"
-          >{{ user.nickname }}
-          <el-button
-            type="text"
-            icon="el-icon-edit"
-            @click="editName = !editName"
-          ></el-button
-        ></span>
-        <div v-else>
-          <el-tooltip content="按回车保存" placement="bottom">
-            <el-input
-              :value="user.username"
-              v-model="newNick"
-              @keyup.enter.native="saveNick"
-            ></el-input>
-          </el-tooltip>
+        <div style="height: 60px">
+          <span v-if="!editName"
+            >{{ user.nickname }}
+            <el-button
+              type="text"
+              icon="el-icon-edit"
+              @click="editNick"
+            ></el-button
+          ></span>
+          <div v-else>
+            <el-tooltip content="按回车保存" placement="bottom">
+              <el-input
+                id="NickInput"
+                :value="user.username"
+                v-model="newNick"
+                placeholder="按回车保存"
+                @keyup.enter.native="saveNick"
+                @change="saveNick"
+              ></el-input>
+            </el-tooltip>
+          </div>
         </div>
         <div>
           <p>用户名:{{ user.username }}</p>
@@ -67,6 +72,13 @@ export default {
     goChat() {
       this.$router.push("/index/chatpanel");
     },
+    editNick() {
+      this.editName = true;
+      this.newNick = "";
+      this.$nextTick(() => {
+        document.getElementById("NickInput").focus();
+      });
+    },
     handleCommand(command) {
       if (command == "a") {
         this.$confirm("此操作将拉黑该好友, 是否继续?", "提示", {
@@ -99,8 +111,10 @@ export default {
       }
     },
     saveNick() {
+      console.log("1");
       this.editName = !this.editName;
       this.user.nickname = this.newNick;
+
       // 涉及到更新数据库
     },
   },
@@ -127,6 +141,7 @@ export default {
       padding-left: 20%;
       padding-right: 10%;
       span {
+        float: left;
         font-size: 40px;
       }
       p {
