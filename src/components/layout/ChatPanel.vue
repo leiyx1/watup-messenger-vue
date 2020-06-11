@@ -9,7 +9,7 @@
       >
         <el-menu-item
           class="item"
-          v-for="(chat, index) in this.chatList"
+          v-for="(chat, index) in chatList"
           :key="index"
           @click="showChat(chat, index)"
         >
@@ -36,7 +36,7 @@
       </el-menu>
     </div>
     <div class="chat-box">
-      <userChat v-if="show"/>
+      <userChat v-if="show" />
     </div>
   </div>
 </template>
@@ -76,21 +76,20 @@ export default {
     },
     messageList: {
       get: function() {
-
         return this.$store.state.currentChat.messageList;
       },
-      set: function (val) {
-        console.log("messageList setter")
+      set: function(val) {
+        console.log("messageList setter");
         this.$store.commit("setMessageList", val);
-      }
+      },
     },
   },
   mounted() {
     // this.loadChatList();
     let self = this;
-    db.localMessage.find({}, function (err, docs) {
+    db.localMessage.find({}, function(err, docs) {
       self.chatList = docs;
-    })
+    });
   },
   methods: {
     loadChatList() {
@@ -123,12 +122,16 @@ export default {
       console.log(this.currentChat);
       // setMessageListByChatID
       let self = this;
-      let query = {chatId: this.currentChat.chatId, type: this.currentChat.type}
-      db.find(query).sort({timestamp: 1}).exec(function (err, docs){
-        self.messageList = docs;
-      })
+      let query = {
+        chatId: this.currentChat.chatId,
+        type: this.currentChat.type,
+      };
+      db.find(query)
+        .sort({ timestamp: 1 })
+        .exec(function(err, docs) {
+          self.messageList = docs;
+        });
     },
-
   },
 };
 </script>

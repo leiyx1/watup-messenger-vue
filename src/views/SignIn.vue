@@ -23,11 +23,17 @@
             <el-input v-model="loginInfo.username"></el-input>
           </el-form-item>
           <el-form-item label="密码" prop="password">
-            <el-input v-model="loginInfo.password" type="password"></el-input>
+            <el-input
+              v-model="loginInfo.password"
+              @keyup.enter.native="submit1('loginInfo')"
+              type="password"
+            ></el-input>
           </el-form-item>
         </el-form>
         <div class="btn">
-          <el-button class="enter" type="primary" @click="submit1('loginInfo' ) ">登录</el-button>
+          <el-button class="enter" type="primary" @click="submit1('loginInfo')"
+            >登录</el-button
+          >
           <el-button @click="index = !index">注册</el-button>
         </div>
       </el-card>
@@ -95,8 +101,8 @@
 </template>
 
 <script>
-  import db from "../JavaScript/NedbConfig"
-  import getWebsocket from "../JavaScript/Websocket";
+import db from "../JavaScript/NedbConfig";
+import getWebsocket from "../JavaScript/Websocket";
 
 export default {
   name: "Home",
@@ -157,41 +163,42 @@ export default {
     };
   },
   methods: {
-    submit:function() {//登陆时 与客户端建立websocket连接
+    submit: function() {
+      //登陆时 与客户端建立websocket连接
       //todo 理应存userID
       this.initUserInfo();
       this.initLocalMessages();
-      console.log(this)
-      this.$store.commit("setUsername", this.loginInfo.username)
-      getWebsocket();//建立websocket连接
+      console.log(this);
+      this.$store.commit("setUsername", this.loginInfo.username);
+      getWebsocket(); //建立websocket连接
 
       this.$router.push("/index/chatpanel");
     },
-    initLocalMessages(){
+    initLocalMessages() {
       //todo 离线聊天记录
-
     },
-    initUserInfo(){
+    initUserInfo() {
       //todo 使用ajax从后台获取token，friendList，userId,blackList等
       //在Vuex中存入信息
-      this.initUserInfoInVuex()
+      this.initUserInfoInVuex();
       //在Nedb中存入信息
-      this.initUserInfoInNedb()
+      this.initUserInfoInNedb();
     },
-    initUserInfoInVuex(){
-      this.$store.commit("setToken", 123)//todo 保存真正的token
-      this.$store.commit("setUsername", this.loginInfo.username)
-      this.$store.commit("setId", 1)//todo 保存真正的UserId
+    initUserInfoInVuex() {
+      this.$store.commit("setToken", 123); //todo 保存真正的token
+      this.$store.commit("setUsername", this.loginInfo.username);
+      this.$store.commit("setId", 1); //todo 保存真正的UserId
     },
-    initUserInfoInNedb(){
-      let name = this.loginInfo.username
-      db.userInfo.find({username: name},function (err, docs) {
+    initUserInfoInNedb() {
+      let name = this.loginInfo.username;
+      db.userInfo.find({ username: name }, function(err, docs) {
         //todo 这里理应用userId在本地数据库中进行查询
-        if(err !== null) {
-          console.log(`err occurred:`)
-          console.log(err)
-        }else {
-          if(docs.length === 0){//之前从未在本机登陆过
+        if (err !== null) {
+          console.log(`err occurred:`);
+          console.log(err);
+        } else {
+          if (docs.length === 0) {
+            //之前从未在本机登陆过
             let newUserInfo = {
               username: name,
               token: undefined, //todo 需存入token 用于持久免密登录
@@ -202,69 +209,79 @@ export default {
                   name: "老板",
                   nickname: "",
                   avatar:
-                          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+                    "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
                 },
                 {
                   ID: "2",
                   name: "钢铁侠",
                   nickname: "老大",
                   avatar:
-                          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+                    "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
                 },
                 {
                   ID: "3",
                   name: "Happy",
                   nickname: "绿巨人",
                   avatar:
-                          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+                    "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
                 },
               ], //todo 需存入真正的friendList
               //todo 这里可能还要放一些其他的东西
-            }
-            db.userInfo.insert(newUserInfo, function (err, newDocs) {
+            };
+            db.userInfo.insert(newUserInfo, function(err, newDocs) {
               // newDoc is the newly inserted document, including its _id
               //_id是由Nedb定义的一个量
-              if(err !== null){
-                console.log(`err occured:`)
-                console.log(err)
-              }else {
-                console.log("初始化完成")
-                console.log(newDocs)
+              if (err !== null) {
+                console.log(`err occured:`);
+                console.log(err);
+              } else {
+                console.log("初始化完成");
+                console.log(newDocs);
               }
-            })
-          }else {//之前登陆过,则在本地数据库中存有数据，则仅刷新一些变动属性
-            db.userInfo.update({username: name},{
-                      //todo 这里理应使用userId进行查询 同line151
-                      $set:{
-                        username: name, //刷新本地数据库中的username，
-                        // 考虑到用户可能会在其他客户端更改username
-                        token: undefined, //todo 需存入token
-                        //friendList: undefined, //todo 需存入friendList
-                        //todo 这里可能还需要放一些其他的东西
-                      }
-                    }, {}, function(err, numReplaced){
-                      if(err !== null){
-                        console.log(`err occured:`)
-                        console.log(err)
-                      }else if(numReplaced === 1){//仅有一个文档被更改
-                        console.log("初始化完成")
-                      }else console.log('unexpected error')//should not fall in here
-                    },
-            )
+            });
+          } else {
+            //之前登陆过,则在本地数据库中存有数据，则仅刷新一些变动属性
+            db.userInfo.update(
+              { username: name },
+              {
+                //todo 这里理应使用userId进行查询 同line151
+                $set: {
+                  username: name, //刷新本地数据库中的username，
+                  // 考虑到用户可能会在其他客户端更改username
+                  token: undefined, //todo 需存入token
+                  //friendList: undefined, //todo 需存入friendList
+                  //todo 这里可能还需要放一些其他的东西
+                },
+              },
+              {},
+              function(err, numReplaced) {
+                if (err !== null) {
+                  console.log(`err occured:`);
+                  console.log(err);
+                } else if (numReplaced === 1) {
+                  //仅有一个文档被更改
+                  console.log("初始化完成");
+                } else console.log("unexpected error"); //should not fall in here
+              }
+            );
           }
         }
-      })
+      });
     },
     submit1(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
+          console.log("123");
           this.$axios
-            .post("/oauth/login", {
-              id: this.loginInfo.username,
-              password: this.loginInfo.password,
-            })
+            .post(
+              "/oauth/login?id=" +
+                this.loginInfo.username +
+                "&password=" +
+                this.loginInfo.password
+            )
             .then((successResponse) => {
               if (successResponse.data.code === 200) {
+                console.log("1222");
                 var data = successResponse.data.data;
                 var userdata = {
                   id: data.id,
@@ -288,15 +305,15 @@ export default {
                   message: "登录成功！",
                   type: "success",
                 });
-              } else if (successResponse.data.code === 300) {
-                this.$notify.error({
-                  title: "错误",
-                  message: "该用户不存在",
-                });
-              } else if (successResponse.data.code === 402) {
+              } else if (successResponse.data.code === 400) {
                 this.$notify.error({
                   title: "错误",
                   message: "密码输入错误",
+                });
+              } else {
+                this.$notify.error({
+                  title: "Error",
+                  message: "unknown error found in login",
                 });
               }
             })
@@ -304,11 +321,9 @@ export default {
               console.log(failResponse);
             });
         } else {
-          console.log("error submit!!");
-          this.$notify({
+          this.$notify.error({
             title: "Error",
             message: "非法登录",
-            type: "error",
           });
           return false;
         }
@@ -318,24 +333,27 @@ export default {
       console.log("submit2");
       this.$refs[formName].validate((valid) => {
         if (valid) {
+          console.log(this.registerInfo);
           this.$axios
-            .post("/oauth/register", {
-              params: {
-                id: this.registerInfo.id,
-                username: this.registerInfo.username,
-                password: this.registerInfo.password,
-                email: this.registerInfo.email,
-                code: this.registerInfo.code,
-              },
-            })
+            .post(
+              "/oauth/register?id=" +
+                this.registerInfo.id +
+                "&username=" +
+                this.registerInfo.username +
+                "&password=" +
+                this.registerInfo.password +
+                "&email=" +
+                this.registerInfo.email +
+                "&code=" +
+                this.registerInfo.code
+            )
             .then((successResponse) => {
               // var responseResult = JSON.stringify(successResponse.data);
               if (successResponse.data.code === 200) {
-                this.$store.commit("setToken", successResponse.data.data);
-                this.$router.push("index");
+                this.index = true;
                 this.$notify({
                   title: "成功",
-                  message: "登录成功！",
+                  message: "注册成功！",
                   type: "success",
                 });
               } else if (successResponse.data.code === 400) {
@@ -343,16 +361,20 @@ export default {
                   title: "错误",
                   message: successResponse.data.message,
                 });
+              } else {
+                this.$notify.error({
+                  title: "错误",
+                  message: "unknown error found in register.",
+                });
               }
             })
             .catch((failResponse) => {
               console.log(failResponse);
             });
         } else {
-          this.$notify({
+          this.$notify.error({
             title: "Error",
-            message: "非法登录",
-            type: "error",
+            message: "非法注册",
           });
           return false;
         }

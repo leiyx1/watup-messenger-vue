@@ -2,7 +2,29 @@
   <div class="card">
     <div class="level-1">
       <div class="level-1-word">
-        <span>{{ user.username }}</span>
+        <span v-if="!editName"
+          >{{ user.nickname }}
+          <el-button
+            type="text"
+            icon="el-icon-edit"
+            @click="editName = !editName"
+          ></el-button
+        ></span>
+        <div v-else>
+          <el-tooltip content="按回车保存" placement="bottom">
+            <el-input
+              :value="user.username"
+              v-model="newNick"
+              @keyup.enter.native="saveNick"
+            ></el-input>
+          </el-tooltip>
+        </div>
+        <div>
+          <p>用户名:{{ user.username }}</p>
+        </div>
+        <div>
+          <p>watup_ID:{{ user.id }}</p>
+        </div>
         <!-- <el-button class="btn" type="text">修改备注</el-button> -->
       </div>
       <img :src="user.avatar" />
@@ -17,7 +39,16 @@
     </div>
     <el-divider class="divider1" />
     <div class="level-3">
-      <el-button @click="goChat">发起聊天</el-button>
+      <el-button @click="goChat" style="margin-right:5%">发起聊天</el-button>
+      <el-dropdown @command="handleCommand">
+        <el-button>
+          更多操作<i class="el-icon-arrow-down el-icon--right"></i>
+        </el-button>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item command="a">拉黑</el-dropdown-item>
+          <el-dropdown-item command="b">删除</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
     </div>
   </div>
 </template>
@@ -26,9 +57,51 @@
 export default {
   name: "UserCard",
   props: ["user"],
+  data() {
+    return {
+      editName: false,
+      newNick: "",
+    };
+  },
   methods: {
     goChat() {
       this.$router.push("/index/chatpanel");
+    },
+    handleCommand(command) {
+      if (command == "a") {
+        this.$confirm("此操作将拉黑该好友, 是否继续?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        })
+          .then(() => {
+            // 发送拉黑请求并更新
+            this.$message({
+              type: "success",
+              message: "拉黑成功!",
+            });
+          })
+          .catch(() => {});
+      } else {
+        this.$confirm("此操作将删除该好友, 是否继续?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        })
+          .then(() => {
+            // 发送删除请求并更新
+            this.$message({
+              type: "success",
+              message: "删除成功!",
+            });
+          })
+          .catch(() => {});
+      }
+    },
+    saveNick() {
+      this.editName = !this.editName;
+      this.user.nickname = this.newNick;
+      // 涉及到更新数据库
     },
   },
 };
@@ -55,6 +128,10 @@ export default {
       padding-right: 10%;
       span {
         font-size: 40px;
+      }
+      p {
+        float: left;
+        margin: 2px 0px;
       }
     }
     img {

@@ -76,21 +76,21 @@ export default {
     // this.loadFriends();
     this.friends = [
       {
-        ID: "1",
+        id: "1",
         username: "老板",
         nickname: "",
         avatar:
           "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
       },
       {
-        ID: "2",
+        id: "2",
         username: "钢铁侠",
         nickname: "老大",
         avatar:
           "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
       },
       {
-        ID: "3",
+        id: "3",
         username: "Happy",
         nickname: "绿巨人",
         avatar:
@@ -107,6 +107,14 @@ export default {
         this.$store.commit("setFriends", JSON.parse(JSON.stringify(val)));
       },
     },
+    // currentFriend: {
+    //   get: function() {
+    //     return this.$store.state.currentFriend;
+    //   },
+    //   set: function(val) {
+    //     this.$store.commit("setFriends", JSON.parse(JSON.stringify(val)));
+    //   },
+    // },
   },
   methods: {
     showCard(item) {
