@@ -9,25 +9,26 @@ export default function getWebsocket(name){
         return createWebsocket(name)
     }
 }
-let username;  //现在暂时使用username进行websocket连接
-//let token   //后端完成后改为使用token进行websocket连接
+let token   //后端完成后改为使用token进行websocket连接
 
 function createWebsocket() {
-    username = store.state.user.username;
-
-    let WSUrl = `ws://127.0.0.1:8080/websocket/${username}`;
+    //token = store.state.user.token;
+    token = '81ea4a40-57d1-411d-a9f6-da339116b4c8';
+    let WSUrl = `ws://106.13.110.96:8088/ws?token=${token}`;
     websock = new WebSocket(WSUrl);
     websock.onmessage = function (event) {
         let data = JSON.parse(event.data);
         console.log("message received")
         console.log(data)
-        let time = new Date();
-        let newChatList = store.state.chatList;
+
+        let updateChatList = store.state.chatList;
         let mine = false;
         if(store.state.user.userId === data.senderId) mine = true
         //todo 将收到的event进行解析，存入数据库
-        let updateMessgeList = newChatList.messageList
-
+        let updateMessgeList = updateChatList.messageList
+        let NewMessage = {
+          type: data
+        }
 
 
 
