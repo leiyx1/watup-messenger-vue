@@ -34,25 +34,46 @@
         active-text-color="#ffd04b"
         style="border-right-width: 0;"
       >
+        <el-divider content-position="left" class="divider2">群聊</el-divider>
+        <el-menu-item
+          class="item"
+          v-for="(item, index) in groups"
+          :key="index"
+          @click="showGroup(item, index)"
+        >
+          <div class="item-avatar">
+            <img
+              src="https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2121061596,2871071478&fm=26&gp=0.jpg"
+              alt="头像"
+            />
+          </div>
+          <div class="item-body">
+            <div class="item-word">
+              <b>{{ item.name }}</b>
+            </div>
+          </div>
+        </el-menu-item>
+        <el-divider content-position="left" class="divider2">好友</el-divider>
         <el-menu-item
           class="item"
           v-for="(item, index) in friends"
           :key="index"
-          @click="showCard(item, index)"
+          @click="showFriend(item, index)"
         >
           <div class="item-avatar">
-            <img :src="item.avatar" alt="头像" />
+            <img :src="item.avatarUrl" alt="头像" />
           </div>
           <div class="item-body">
             <div class="item-word">
-              <b>{{ item.username }}({{ item.nickname }})</b>
+              <b>{{ item.nickname === "" ? item.username : item.nickname }}</b>
             </div>
           </div>
         </el-menu-item>
       </el-menu>
     </div>
     <div class="right-card">
-      <UserCard v-if="show" :user="currentItem" />
+      <UserCard v-if="hasShowFriend" :user="currentItem" />
+      <!-- GroupCard v-if="hasShowGroup" :group="currentItem" -->
     </div>
   </div>
 </template>
@@ -66,39 +87,50 @@ export default {
   },
   data() {
     return {
-      show: false,
+      hasShowFriend: false,
+      hasShowGroup: false,
       state: "",
       dialogVisible: false,
       currentItem: {},
     };
   },
   mounted() {
-    // this.loadFriends();
-    this.friends = [
-      {
-        ID: "1",
-        username: "老板",
-        nickname: "",
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      },
-      {
-        ID: "2",
-        username: "钢铁侠",
-        nickname: "老大",
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      },
-      {
-        ID: "3",
-        username: "Happy",
-        nickname: "绿巨人",
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      },
-    ];
+    this.loadGroups();
+    this.loadFriends();
+    console.log("hao" + this.$store.state.access_token);
+    // this.friends = [
+    //   {
+    //     id: "1",
+    //     username: "老板",
+    //     nickname: "",
+    //     avatarUrl:
+    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+    //   },
+    //   {
+    //     id: "2",
+    //     username: "钢铁侠",
+    //     nickname: "老大",
+    //     avatarUrl:
+    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+    //   },
+    //   {
+    //     id: "3",
+    //     username: "Happy",
+    //     nickname: "绿巨人",
+    //     avatarUrl:
+    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+    //   },
+    // ];
   },
   computed: {
+    groups: {
+      get: function() {
+        return this.$store.state.groups;
+      },
+      set: function(val) {
+        this.$store.commit("setGroups", JSON.parse(JSON.stringify(val)));
+      },
+    },
     friends: {
       get: function() {
         return this.$store.state.friends;
@@ -107,20 +139,35 @@ export default {
         this.$store.commit("setFriends", JSON.parse(JSON.stringify(val)));
       },
     },
+    // currentFriend: {
+    //   get: function() {
+    //     return this.$store.state.currentFriend;
+    //   },
+    //   set: function(val) {
+    //     this.$store.commit("setFriends", JSON.parse(JSON.stringify(val)));
+    //   },
+    // },
   },
   methods: {
-    showCard(item) {
-      this.show = true;
+    showFriend(item) {
+      this.hasShowFriend = true;
+      this.currentItem = item;
+      // this.chatList[index] = this.$store.state.currentChat;
+      console.log(this.currentItem);
+      // setMessageListByChatID
+    },
+    showGroup(item) {
+      this.hasShowGroup = true;
       this.currentItem = item;
       // this.chatList[index] = this.$store.state.currentChat;
       console.log(this.currentItem);
       // setMessageListByChatID
     },
     querySearch(queryString, cb) {
-      var userList = this.userList;
+      var friends = this.friends;
       var results = queryString
-        ? userList.filter(this.createFilter(queryString))
-        : userList;
+        ? friends.filter(this.createFilter(queryString))
+        : friends;
       cb(results);
     },
     createFilter(queryString) {
@@ -133,19 +180,54 @@ export default {
     },
     loadFriends() {
       this.$axios
-        .get("usercenter/friends", {
+        .get("/api/friends", {
           params: {
-            friendsID: this.$store.state.user.friendsID,
+            access_token: this.$store.state.user.access_token,
           },
         })
         .then((successResponse) => {
-          // var responseResult = JSON.stringify(successResponse.data);
-          if (successResponse.data.code === 200) {
-            this.$store.commit("setFriends", successResponse.data.data);
-          } else {
+          if (successResponse.status === 404) {
             this.$notify.error({
-              title: "错误",
-              message: "拉取好友列表出错",
+              title: "拉取好友失败",
+              message: successResponse.data.message,
+            });
+          } else if (successResponse.status === 200) {
+            this.$store.commit("setFriends", successResponse.data);
+          } else {
+            // this.$store.commit("setFriends", successResponse.data);
+            // console.log(successResponse);
+            this.$notify.error({
+              title: "Error",
+              message: "known error",
+            });
+          }
+        })
+        .catch((failResponse) => {
+          console.log(failResponse);
+        });
+    },
+    loadGroups() {
+      this.$axios
+        .get("/api/group", {
+          params: {
+            access_token: this.$store.state.user.access_token,
+            detailed: true,
+          },
+        })
+        .then((successResponse) => {
+          if (successResponse.status === 404) {
+            this.$notify.error({
+              title: "拉取群组失败",
+              message: successResponse.data.message,
+            });
+          } else if (successResponse.status === 200) {
+            this.$store.commit("setGroups", successResponse.data);
+          } else {
+            // this.$store.commit("setGroups", successResponse.data);
+            // console.log(successResponse);
+            this.$notify.error({
+              title: "Error",
+              message: "known error",
             });
           }
         })
@@ -160,6 +242,13 @@ export default {
 <style lang="scss">
 #divider {
   margin: 0px;
+}
+.divider2 {
+  margin: 10px;
+  .el-divider__text {
+    background-color: #d3d3d3;
+    color: #808080;
+  }
 }
 .user-panel {
   width: 100%;
@@ -215,6 +304,7 @@ export default {
       }
     }
   }
+
   .right-card {
     width: 75%;
   }

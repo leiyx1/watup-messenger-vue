@@ -3,25 +3,18 @@
     <div class="top">
       <span>{{ this.currentChat.name }}</span>
 
-        <el-dropdown trigger="click" class="btn" @command="handleCommand">
-          <el-button
-                plain
-                size="small"
-                icon = "el-icon-more"
-                circle
+      <el-dropdown trigger="click" class="btn" @command="handleCommand">
+        <el-button plain size="small" icon="el-icon-more" circle> </el-button>
 
-        >
-          </el-button>
-
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="delete">
-              删除聊天记录
-            </el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item command="delete">
+            删除聊天记录
+          </el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
     </div>
     <el-divider class="divider" />
-    <div class="message" id="message">
+    <div class="message">
       <!-- <div
         class="others"
         v-for="item in currentChat.messages"
@@ -31,13 +24,13 @@
         <img :src="item.avatar" alt="头像" />
         <el-card shadow="hover"> {{ item.content }}</el-card>
       </div> -->
-      <ul >
+      <ul>
         <li
-          v-for="(item, index) in this.messageList"
+          v-for="(item, index) in messageList"
           :key="index"
           :class="{ 'chat-mine': item.mine }"
         >
-          <img :src="item.avatar" alt="头像" />
+          <img :src="item.avatarUrl" alt="头像" />
 
           <div class="message-body">
             <el-card class="card" shadow="hover">{{ item.content }}</el-card>
@@ -67,22 +60,23 @@
         type="textarea"
         v-model="text"
         :rows="4"
-        @keyup.enter="sendUniMessage"
+        @keyup.enter="send()"
       >
       </el-input>
       <div class="footer">
-        <el-button class="btn" @click="sendUniMessage">发送</el-button>
+        <el-button class="btn" @click="send()">发送</el-button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-//import getWebsocket from "../JavaScript/Websocket";
+import getWebsocket from "../JavaScript/Websocket";
 import db from "../JavaScript/NedbConfig";
 
 export default {
   name: "userChat",
+  props: ["chat"],
   data() {
     return {
       text: "",
@@ -91,71 +85,79 @@ export default {
   computed: {
     messageList: {
       get: function() {
-
         return this.$store.state.currentChat.messageList;
       },
-      set: function (val) {
-        console.log("messageList setter")
+      set: function(val) {
+        console.log("messageList setter");
+        console.log(val);
         this.$store.commit("setMessageList", val);
-      }
+      },
     },
-    currentChat:{
-      get: function () {
+    currentChat: {
+      get: function() {
         return this.$store.state.currentChat;
       },
-      set: function (val) {
+      set: function(val) {
         this.$store.commit("setCurrentChat", val);
-      }
-    }
+      },
+    },
   },
   methods: {
-    handleCommand(command){
-      console.log(command)
-      if(command === 'delete'){//删除聊天记录
-        db.localMessage.remove({type: this.currentChat.type, chatId: this.currentChat.chatId},
-                {multi: true}, function (err, numRemove) {
-                  if(err !== null){
-                    console.log(err)
-                  }else {
-                    console.log(`${numRemove} 条数据被删除`)
-                  }
-                })
+    handleCommand(command) {
+      console.log(command);
+      if (command === "delete") {
+        //删除聊天记录
+        db.localMessage.remove(
+          { type: this.currentChat.type, chatId: this.currentChat.chatId },
+          { multi: true },
+          function(err, numRemove) {
+            if (err !== null) {
+              console.log(err);
+            } else {
+              console.log(`${numRemove} 条数据被删除`);
+            }
+          }
+        );
       }
     },
     sendUniMessage() {
-      //let ws = getWebsocket()
-      console.log(`send uni message:` + this.text)
+      let ws = getWebsocket();
+      console.log(`send uni message:` + this.text);
       // ws.send(JSON.stringify({
       //   type: "UNICAST",
       //   receiverId: "5eccfc418e17974a04b86b19",
       //   content: `${this.text}`,
       // }))
-      //ws.send(this.text)
-      this.refreshMessages()
+      ws.send(this.text);
+      this.refreshMessages();
     },
-    refreshMessages(){
+    refreshMessages() {
       let self = this;
-      let query = {chatId: this.currentChat.chatId, type: this.currentChat.type}
-      db.find(query).sort({timestamp: 1}).exec(function (err, docs){
-        self.messageList = docs;
-      })
+      let query = {
+        chatId: this.currentChat.chatId,
+        type: this.currentChat.type,
+      };
+      db.find(query)
+        .sort({ timestamp: 1 })
+        .exec(function(err, docs) {
+          self.messageList = docs;
+        });
 
       this.$nextTick(() => {
-        let msg = document.getElementById('message') // 获取对象
-        if(msg.scrollHeight !== null && msg.scrollTop !== null)
-        msg.scrollTop = msg.scrollHeight // 滚动高度
-      })
+        let msg = document.getElementById("message"); // 获取对象
+        if (msg.scrollHeight !== null && msg.scrollTop !== null)
+          msg.scrollTop = msg.scrollHeight; // 滚动高度
+      });
     },
   },
-  created() {
-    let msg = document.getElementById('message') // 获取对象
-    msg.scrollTop = msg.scrollHeight // 滚动高度
+  mounted() {
+    let msg = document.getElementById("message"); // 获取对象
+    msg.scrollTop = msg.scrollHeight; // 滚动高度
   },
   beforeMount() {
     // setMessageListByChatID
     console.log("111");
-    this.refreshMessages()
-
+    this.refreshMessages();
   },
 };
 </script>

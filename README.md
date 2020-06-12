@@ -23,3 +23,16 @@ npm run electron:build
 
 [下载页面](https://github.com/electron-userland/electron-builder-binaries/releases)
 
+### 前端数据存储约定
+#### 使用Vuex存储的信息（期望这些数据可以在这次登陆中方便的调用到）
+* username
+* userId
+* token
+
+#### 使用Nedb存储的东西（期望这些数据可以在关闭应用，下次启动之后依旧存在）
+* messages (本地聊天记录)
+* friendList
+* chatList
+* token (用于持久免密登录) 
+* emailAddress
+
