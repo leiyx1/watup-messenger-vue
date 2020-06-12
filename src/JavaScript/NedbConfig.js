@@ -14,8 +14,13 @@ db.userInfo = new Datastore({
   filename: path.join(remote.app.getAppPath(), "db/localMessage.db"),
   autoload: true,
 });
+db.systemInfo = new Datastore({
+  filename: path.join(remote.app.getAppPath(), "db/localMessage.db"),
+  autoload: true,
+});
 
 db.loadDatabase();
+db.systemInfo.loadDatabase();
 db.userInfo.loadDatabase();
 db.localMessage.loadDatabase();
 export default db;

@@ -6,9 +6,9 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     name: "watup?",
-    token: "",
     user: {
       id: "",
+      token: "",
       username: "",
       email: "",
       friendsID: [],

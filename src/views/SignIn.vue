@@ -30,6 +30,9 @@
             ></el-input>
           </el-form-item>
         </el-form>
+        <div>
+          <el-checkbox v-model="autoLogin">30天内自动登录</el-checkbox>
+        </div>
         <div class="btn">
           <el-button class="enter" type="primary" @click="submit1('loginInfo')"
             >登录</el-button
@@ -117,6 +120,7 @@ export default {
       }
     };
     return {
+      autoLogin: false,
       index: true,
       inputed: false,
       auth_time: "",
@@ -282,13 +286,17 @@ export default {
             .then((successResponse) => {
               if (successResponse.data.code === 200) {
                 console.log("1222");
-                var data = successResponse.data.data;
-                var userdata = {
+                let data = successResponse.data.data;
+                console.log(data)
+                let userdata = {
                   id: data.id,
                   username: data.username,
                   email: data.email,
+                  token: data.access_token,
+                  avatarUrl: data.avatarUrl,
+                  //todo 还有一些要存的东西 比如blackList等 @CastJo
                 };
-                this.$store.commit("setUser", userdata);
+
                 // var tokendata = {
                 //   access_token: data.access_token,
                 //   token_type: data.token_type,
@@ -299,6 +307,32 @@ export default {
                 // }
                 // ***
                 // NeDB setToken
+
+                //存入Nedb
+                let query = {id: data.id}
+                db.userInfo.find(query, function (err, docs) {
+                  if(docs.length === 0){//没有登陆过
+                    db.userInfo.insert(userdata)
+                  }else {
+                    db.update(query, {$set:userdata}), {}, function (err, numReplaced) {
+                      console.log(numReplaced)
+                    }
+                  }
+                })
+                //更新系统信息
+                db.systemInfo.remove({}, {multi: true})
+                let updateSystemInfo = {
+                  lastUserId: data.id,
+                  token: data.access_token,
+                  autoLogin: this.autoLogin,
+                }
+                db.systemInfo.insert(updateSystemInfo);
+
+                //存入vuex
+                this.$store.commit("setUser", userdata);
+
+                //建立websocket连接
+                getWebsocket();
                 this.$router.push("index");
                 this.$notify({
                   title: "成功",
@@ -421,8 +455,11 @@ export default {
           console.log(error);
         });
     },
+
   },
-  mounted() {},
+  mounted() {
+    //todo 免密码登录
+  },
 };
 </script>
 
