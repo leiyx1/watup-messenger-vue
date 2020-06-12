@@ -47,7 +47,7 @@ const routes = [
         component: loadLayout("Setting"),
       },
     ],
-  },
+  }
 ];
 
 const router = new VueRouter({

@@ -27,9 +27,8 @@
           </el-form-item>
         </el-form>
         <div class="btn">
-          <el-button class="enter" type="primary" @click="submit1('loginInfo')"
-            >登录</el-button
-          ><el-button @click="index = !index">注册</el-button>
+          <el-button class="enter" type="primary" @click="submit1('loginInfo' ) ">登录</el-button>
+          <el-button @click="index = !index">注册</el-button>
         </div>
       </el-card>
       <!-- `diff` -->
@@ -96,6 +95,9 @@
 </template>
 
 <script>
+  import db from "../JavaScript/NedbConfig"
+  //import getWebsocket from "../JavaScript/Websocket";
+
 export default {
   name: "Home",
   data() {
@@ -155,8 +157,103 @@ export default {
     };
   },
   methods: {
-    submit() {
+    submit:function() {//登陆时 与客户端建立websocket连接
+      //todo 理应存userID
+      this.initUserInfo();
+      this.initLocalMessages();
+      console.log(this)
+      this.$store.commit("setUsername", this.loginInfo.username)
+      //getWebsocket();//建立websocket连接
+
       this.$router.push("/index/chatpanel");
+    },
+    initLocalMessages(){
+      //todo 离线聊天记录
+
+    },
+    initUserInfo(){
+      //todo 使用ajax从后台获取token，friendList，userId,blackList等
+      //在Vuex中存入信息
+      this.initUserInfoInVuex()
+      //在Nedb中存入信息
+      this.initUserInfoInNedb()
+    },
+    initUserInfoInVuex(){
+      this.$store.commit("setToken", 123)//todo 保存真正的token
+      this.$store.commit("setUsername", this.loginInfo.username)
+      this.$store.commit("setId", 1)//todo 保存真正的UserId
+    },
+    initUserInfoInNedb(){
+      let name = this.loginInfo.username
+      db.userInfo.find({username: name},function (err, docs) {
+        //todo 这里理应用userId在本地数据库中进行查询
+        if(err !== null) {
+          console.log(`err occurred:`)
+          console.log(err)
+        }else {
+          if(docs.length === 0){//之前从未在本机登陆过
+            let newUserInfo = {
+              username: name,
+              token: undefined, //todo 需存入token 用于持久免密登录
+              userId: undefined, //todo 需存入userId
+              friendList: [
+                {
+                  ID: "1",
+                  name: "老板",
+                  nickname: "",
+                  avatar:
+                          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+                },
+                {
+                  ID: "2",
+                  name: "钢铁侠",
+                  nickname: "老大",
+                  avatar:
+                          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+                },
+                {
+                  ID: "3",
+                  name: "Happy",
+                  nickname: "绿巨人",
+                  avatar:
+                          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+                },
+              ], //todo 需存入真正的friendList
+              //todo 这里可能还要放一些其他的东西
+            }
+            db.userInfo.insert(newUserInfo, function (err, newDocs) {
+              // newDoc is the newly inserted document, including its _id
+              //_id是由Nedb定义的一个量
+              if(err !== null){
+                console.log(`err occured:`)
+                console.log(err)
+              }else {
+                console.log("初始化完成")
+                console.log(newDocs)
+              }
+            })
+          }else {//之前登陆过,则在本地数据库中存有数据，则仅刷新一些变动属性
+            db.userInfo.update({username: name},{
+                      //todo 这里理应使用userId进行查询 同line151
+                      $set:{
+                        username: name, //刷新本地数据库中的username，
+                        // 考虑到用户可能会在其他客户端更改username
+                        token: undefined, //todo 需存入token
+                        //friendList: undefined, //todo 需存入friendList
+                        //todo 这里可能还需要放一些其他的东西
+                      }
+                    }, {}, function(err, numReplaced){
+                      if(err !== null){
+                        console.log(`err occured:`)
+                        console.log(err)
+                      }else if(numReplaced === 1){//仅有一个文档被更改
+                        console.log("初始化完成")
+                      }else console.log('unexpected error')//should not fall in here
+                    },
+            )
+          }
+        }
+      })
     },
     submit1(formName) {
       this.$refs[formName].validate((valid) => {
