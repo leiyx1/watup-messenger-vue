@@ -275,7 +275,6 @@ export default {
     submit1(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          console.log("123");
           this.$axios
             .post(
               "/oauth/login?id=" +
@@ -285,18 +284,18 @@ export default {
             )
             .then((successResponse) => {
               if (successResponse.data.code === 200) {
-                console.log("1222");
-                let data = successResponse.data.data;
-                console.log(data)
-                let userdata = {
+                var data = successResponse.data.data;
+                var userdata = {
                   id: data.id,
                   username: data.username,
                   email: data.email,
-                  token: data.access_token,
+                  area: data.area,
+                  sign: data.sign,
                   avatarUrl: data.avatarUrl,
-                  //todo 还有一些要存的东西 比如blackList等 @CastJo
+                  access_token: data.access_token,
                 };
-
+                this.$store.commit("setUser", userdata);
+                console.log(this.$store.state.user);
                 // var tokendata = {
                 //   access_token: data.access_token,
                 //   token_type: data.token_type,
@@ -307,7 +306,6 @@ export default {
                 // }
                 // ***
                 // NeDB setToken
-
                 //存入Nedb
                 let query = {id: data.id}
                 db.userInfo.find(query, function (err, docs) {
@@ -333,7 +331,7 @@ export default {
 
                 //建立websocket连接
                 getWebsocket();
-                this.$router.push("index");
+                this.$router.push("/index/chatpanel");
                 this.$notify({
                   title: "成功",
                   message: "登录成功！",

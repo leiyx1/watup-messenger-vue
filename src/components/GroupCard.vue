@@ -38,8 +38,8 @@
     <el-divider class="divider1" />
     <div class="level-2">
       <ul>
-        <li>地 &nbsp;区: {{ user.area }}</li>
-        <li>签 &nbsp;名: {{ user.sign }}Coolo(*￣▽￣*)ブ</li>
+        <li>地 &nbsp;区: China</li>
+        <li>签 &nbsp;名: Coolo(*￣▽￣*)ブ</li>
         <li>来 &nbsp;源: 通过搜索ID添加</li>
       </ul>
     </div>
@@ -68,9 +68,6 @@ export default {
       editName: false,
       newNick: "",
     };
-  },
-  mounted() {
-    console.log(this.user);
   },
   methods: {
     goChat() {
