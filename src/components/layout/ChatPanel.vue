@@ -7,6 +7,15 @@
         active-text-color="#ffd04b"
         style="border-right-width: 0;"
       >
+        <div v-if="chatList.length == 0">
+          <div style="padding-top: 5%">
+            <i class="el-icon-warning" />
+            <span style="padding-left: 2%">没有最近联系人哦😔</span>
+          </div>
+          <el-button plain type="text" @click="goFriendPanel"
+            >前往查看好友</el-button
+          >
+        </div>
         <el-menu-item
           class="item"
           v-for="(chat, index) in chatList"
@@ -20,16 +29,16 @@
               class="item"
               id="badge"
             >
-              <img :src="chat.avatar" alt="头像" />
+              <img :src="chat.avatarUrl" alt="头像" />
             </el-badge>
           </div>
           <div class="item-body">
             <div class="item-title">
               <b>{{ chat.name }}</b>
-              <span>10:10</span>
             </div>
             <div class="item-word">
-              <span>{{ chat.sign }}</span>
+              <span>{{ chat.sign }}</span
+              ><span>10:10</span>
             </div>
           </div>
         </el-menu-item>
@@ -90,6 +99,7 @@ export default {
     db.localMessage.find({}, function(err, docs) {
       self.chatList = docs;
     });
+    console.log(self.chatList);
   },
   methods: {
     loadChatList() {
@@ -132,6 +142,9 @@ export default {
           self.messageList = docs;
         });
     },
+    goFriendPanel() {
+      this.$router.push("/index/friends");
+    },
   },
 };
 </script>
@@ -162,6 +175,7 @@ export default {
         #badge {
           height: 50px;
         }
+
         img {
           width: 50px;
         }

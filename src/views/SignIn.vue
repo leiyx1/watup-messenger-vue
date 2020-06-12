@@ -271,7 +271,6 @@ export default {
     submit1(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          console.log("123");
           this.$axios
             .post(
               "/oauth/login?id=" +
@@ -281,14 +280,18 @@ export default {
             )
             .then((successResponse) => {
               if (successResponse.data.code === 200) {
-                console.log("1222");
                 var data = successResponse.data.data;
                 var userdata = {
                   id: data.id,
                   username: data.username,
                   email: data.email,
+                  area: data.area,
+                  sign: data.sign,
+                  avatarUrl: data.avatarUrl,
+                  access_token: data.access_token,
                 };
                 this.$store.commit("setUser", userdata);
+                console.log(this.$store.state.user);
                 // var tokendata = {
                 //   access_token: data.access_token,
                 //   token_type: data.token_type,
@@ -299,7 +302,7 @@ export default {
                 // }
                 // ***
                 // NeDB setToken
-                this.$router.push("index");
+                this.$router.push("/index/chatpanel");
                 this.$notify({
                   title: "成功",
                   message: "登录成功！",

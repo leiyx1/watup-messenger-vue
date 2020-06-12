@@ -30,7 +30,7 @@
           :key="index"
           :class="{ 'chat-mine': item.mine }"
         >
-          <img :src="item.avatar" alt="头像" />
+          <img :src="item.avatarUrl" alt="头像" />
 
           <div class="message-body">
             <el-card class="card" shadow="hover">{{ item.content }}</el-card>
@@ -88,6 +88,7 @@ export default {
       },
       set: function(val) {
         console.log("messageList setter");
+        console.log(val);
         this.$store.commit("setMessageList", val);
       },
     },
@@ -148,7 +149,7 @@ export default {
       });
     },
   },
-  created() {
+  mounted() {
     let msg = document.getElementById("message"); // 获取对象
     msg.scrollTop = msg.scrollHeight; // 滚动高度
   },

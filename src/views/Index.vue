@@ -3,7 +3,7 @@
     <div class="side-menu">
       <el-menu
         router
-        default-active="/index/chatpanel"
+        :default-active="$route.path"
         background-color="#545c64"
         text-color="#fff"
         active-text-color="#ffd04b"
@@ -67,25 +67,6 @@ export default {
     },
   },
   mounted() {
-    this.$axios
-      .get("/user", {
-        params: {
-          token: this.$store.state.token,
-        },
-      })
-      .then((successResponse) => {
-        if (successResponse.data.code === 200) {
-          this.$store.commit("setUser", successResponse.data.data);
-        } else {
-          this.$notify({
-            title: "error",
-            type: "error",
-            message: "Invalid Token",
-          });
-        }
-      });
-    this.user = this.$store.state.user;
-
     // 监听是否有消息
     // desktopNotify();
     if (window.Notification && Notification.permission !== "denied") {
