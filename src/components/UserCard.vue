@@ -60,6 +60,8 @@
 </template>
 
 <script>
+  //import db from "../JavaScript/NedbConfig"
+
 export default {
   name: "UserCard",
   props: ["user"],
@@ -75,6 +77,7 @@ export default {
   methods: {
     goChat() {
       this.$router.push("/index/chatpanel");
+
       // findChatByUserID
       var foundChat = {
         id: "1",

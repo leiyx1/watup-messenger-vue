@@ -72,7 +72,7 @@
 
 <script>
 import getWebsocket from "../JavaScript/Websocket";
-import db from "../JavaScript/NedbConfig";
+import getNedb from "../JavaScript/NedbConfig";
 
 export default {
   name: "userChat",
@@ -106,7 +106,7 @@ export default {
       console.log(command);
       if (command === "delete") {
         //删除聊天记录
-        db.localMessage.remove(
+        getNedb().localMessage.remove(
           { type: this.currentChat.type, chatId: this.currentChat.chatId },
           { multi: true },
           function(err, numRemove) {
@@ -136,7 +136,7 @@ export default {
         chatId: this.currentChat.chatId,
         type: this.currentChat.type,
       };
-      db.find(query)
+      getNedb().find(query)
         .sort({ timestamp: 1 })
         .exec(function(err, docs) {
           self.messageList = docs;

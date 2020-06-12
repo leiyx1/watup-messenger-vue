@@ -52,7 +52,7 @@
 
 <script>
 import userChat from "../UserChat.vue";
-import db from "../../JavaScript/NedbConfig";
+import getNedb from "../../JavaScript/NedbConfig";
 
 export default {
   data() {
@@ -96,7 +96,7 @@ export default {
   mounted() {
     // this.loadChatList();
     let self = this;
-    db.localMessage.find({}, function(err, docs) {
+    getNedb().localMessage.find({}, function(err, docs) {
       self.chatList = docs;
     });
     console.log(self.chatList);
@@ -136,7 +136,7 @@ export default {
         chatId: this.currentChat.chatId,
         type: this.currentChat.type,
       };
-      db.find(query)
+      getNedb().find(query)
         .sort({ timestamp: 1 })
         .exec(function(err, docs) {
           self.messageList = docs;

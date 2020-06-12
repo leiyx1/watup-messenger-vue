@@ -1,4 +1,4 @@
-import db from "./NedbConfig";
+import getNedb from "./NedbConfig";
 import store from "../store/index";
 
 let websock;
@@ -12,7 +12,7 @@ export default function getWebsocket(name) {
 
 function createWebsocket() {
   let token, userId
-  token = store.state.user.token;
+  token = store.state.user.access_token;
   userId = store.state.user.id;
 
   let WSUrl = `ws://106.13.110.96:8088/ws?access_token=${token}`;
@@ -77,13 +77,14 @@ function createWebsocket() {
 
       // let newChat = {
       //   chatId: chatId,
-      //   name: "wwwwwwwwww", //todo 使用friendId在Nedb中获取
+      //   nickname: "wwwwwwwwww", //todo 使用真实姓名
       //   type: "UNICAST",
       //   //todo 理应实时获取
       //   avatar:
       //     "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
       //   sign: data.content,
       //   unReadCount: 1,
+      //   messageList: []
       // }
     }
 
@@ -155,7 +156,7 @@ function createWebsocket() {
 
     let currentChat = store.state.currentChat;
     let query = { chatId: currentChat.chatId, type: currentChat.type };
-    db.localMessage
+    getNedb().localMessage
       .find(query)
       .sort({ timestamp: 1 })
       .exec(function(err, docs) {

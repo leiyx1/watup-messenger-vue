@@ -104,7 +104,7 @@
 </template>
 
 <script>
-import db from "../JavaScript/NedbConfig";
+import getNedb from "../JavaScript/NedbConfig";
 import getWebsocket from "../JavaScript/Websocket";
 
 export default {
@@ -179,99 +179,29 @@ export default {
       this.$router.push("/index/chatpanel");
     },
     initLocalMessages() {
-      //todo 离线聊天记录
-    },
-    initUserInfo() {
-      //todo 使用ajax从后台获取token，friendList，userId,blackList等
-      //在Vuex中存入信息
-      this.initUserInfoInVuex();
-      //在Nedb中存入信息
-      this.initUserInfoInNedb();
-    },
-    initUserInfoInVuex() {
-      this.$store.commit("setToken", 123); //todo 保存真正的token
-      this.$store.commit("setUsername", this.loginInfo.username);
-      this.$store.commit("setId", 1); //todo 保存真正的UserId
-    },
-    initUserInfoInNedb() {
-      let name = this.loginInfo.username;
-      db.userInfo.find({ username: name }, function(err, docs) {
-        //todo 这里理应用userId在本地数据库中进行查询
-        if (err !== null) {
-          console.log(`err occurred:`);
-          console.log(err);
-        } else {
-          if (docs.length === 0) {
-            //之前从未在本机登陆过
-            let newUserInfo = {
-              username: name,
-              token: undefined, //todo 需存入token 用于持久免密登录
-              userId: undefined, //todo 需存入userId
-              friendList: [
-                {
-                  ID: "1",
-                  name: "老板",
-                  nickname: "",
-                  avatar:
-                    "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-                },
-                {
-                  ID: "2",
-                  name: "钢铁侠",
-                  nickname: "老大",
-                  avatar:
-                    "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-                },
-                {
-                  ID: "3",
-                  name: "Happy",
-                  nickname: "绿巨人",
-                  avatar:
-                    "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-                },
-              ], //todo 需存入真正的friendList
-              //todo 这里可能还要放一些其他的东西
-            };
-            db.userInfo.insert(newUserInfo, function(err, newDocs) {
-              // newDoc is the newly inserted document, including its _id
-              //_id是由Nedb定义的一个量
-              if (err !== null) {
-                console.log(`err occured:`);
-                console.log(err);
-              } else {
-                console.log("初始化完成");
-                console.log(newDocs);
-              }
-            });
-          } else {
-            //之前登陆过,则在本地数据库中存有数据，则仅刷新一些变动属性
-            db.userInfo.update(
-              { username: name },
-              {
-                //todo 这里理应使用userId进行查询 同line151
-                $set: {
-                  username: name, //刷新本地数据库中的username，
-                  // 考虑到用户可能会在其他客户端更改username
-                  token: undefined, //todo 需存入token
-                  //friendList: undefined, //todo 需存入friendList
-                  //todo 这里可能还需要放一些其他的东西
-                },
-              },
-              {},
-              function(err, numReplaced) {
-                if (err !== null) {
-                  console.log(`err occured:`);
-                  console.log(err);
-                } else if (numReplaced === 1) {
-                  //仅有一个文档被更改
-                  console.log("初始化完成");
-                } else console.log("unexpected error"); //should not fall in here
-              }
-            );
-          }
+      //获取离线聊天记录
+      //获取离线私聊记录
+      this.$axios.get('/api/message?access_token=' +
+         this.$store.state.user.access_token +
+        '&sort=asc&drop=false'
+      ).then(res =>{
+        if(res.status === 200){
+          // let data = res.data;
+          // for(let i = 0; i < data.length; ++i){//每条插入 没有就不插
+          //   let chat = data[i];
+          //   let id = chat.id, type = "UNICAST", messages = data.messages;
+          //   let chatList = this.$store.state.chatList;
+          //
+          //   for(let k = 0; k < messages.length; ++k){
+          //
+          //   }
+          // }
         }
-      });
+        else console.log("errpr occurred")
+      })
     },
+
+
     submit1(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
@@ -294,6 +224,8 @@ export default {
                   avatarUrl: data.avatarUrl,
                   access_token: data.access_token,
                 };
+
+                //存入Vuex
                 this.$store.commit("setUser", userdata);
                 console.log(this.$store.state.user);
                 // var tokendata = {
@@ -308,26 +240,26 @@ export default {
                 // NeDB setToken
                 //存入Nedb
                 let query = {id: data.id}
-                db.userInfo.find(query, function (err, docs) {
+                getNedb().userInfo.find(query, function (err, docs) {
                   if(docs.length === 0){//没有登陆过
-                    db.userInfo.insert(userdata)
+                    getNedb().userInfo.insert(userdata)
                   }else {
-                    db.update(query, {$set:userdata}), {}, function (err, numReplaced) {
+                    getNedb().update(query, {$set:userdata}), {}, function (err, numReplaced) {
                       console.log(numReplaced)
                     }
                   }
                 })
                 //更新系统信息
-                db.systemInfo.remove({}, {multi: true})
+                getNedb().systemInfo.remove({}, {multi: true})
                 let updateSystemInfo = {
                   lastUserId: data.id,
                   token: data.access_token,
                   autoLogin: this.autoLogin,
                 }
-                db.systemInfo.insert(updateSystemInfo);
+                getNedb().systemInfo.insert(updateSystemInfo);
 
-                //存入vuex
-                this.$store.commit("setUser", userdata);
+                //初始化本地聊天记录
+                this.initLocalMessages()
 
                 //建立websocket连接
                 getWebsocket();

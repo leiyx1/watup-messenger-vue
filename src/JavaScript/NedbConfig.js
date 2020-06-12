@@ -1,26 +1,37 @@
 import path from "path";
 import { remote } from "electron";
+import store from "../store/index"
 
-var Datastore = require("nedb"),
-  db = new Datastore({
-    filename: path.join(remote.app.getAppPath(), "db/device.db"),
-    autoload: true,
-  });
-db.localMessage = new Datastore({
-  filename: path.join(remote.app.getAppPath(), "db/localMessage.db"),
-  autoload: true,
-});
-db.userInfo = new Datastore({
-  filename: path.join(remote.app.getAppPath(), "db/localMessage.db"),
-  autoload: true,
-});
-db.systemInfo = new Datastore({
-  filename: path.join(remote.app.getAppPath(), "db/localMessage.db"),
-  autoload: true,
-});
+let db;
+let Datastore = require("nedb");
 
-db.loadDatabase();
-db.systemInfo.loadDatabase();
-db.userInfo.loadDatabase();
-db.localMessage.loadDatabase();
-export default db;
+export default function getNedb() {
+  if(db){
+    return db;
+  }else {
+    let id = store.state.user.id
+    db = new Datastore({
+      filename: path.join(remote.app.getAppPath(), id, "db/device.db"),
+      autoload: true,
+    });
+    db.localMessage = new Datastore({
+      filename: path.join(remote.app.getAppPath(), id, "db/localMessage.db"),
+      autoload: true,
+    });
+    db.userInfo = new Datastore({
+      filename: path.join(remote.app.getAppPath(), id, "db/localMessage.db"),
+      autoload: true,
+    });
+    db.systemInfo = new Datastore({
+      filename: path.join(remote.app.getAppPath(), id, "db/localMessage.db"),
+      autoload: true,
+    });
+
+    db.loadDatabase();
+    db.systemInfo.loadDatabase();
+    db.userInfo.loadDatabase();
+    db.localMessage.loadDatabase();
+    return db
+  }
+}
+
