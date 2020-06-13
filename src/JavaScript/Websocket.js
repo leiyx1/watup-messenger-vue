@@ -42,9 +42,6 @@ function createWebsocket() {
       timestamp: data.timestamp,
       content: data.content,
       chatId: chatId,
-      //todo avatat理应是实时刷新
-      avatar:
-        "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
     };
 
 
@@ -74,90 +71,44 @@ function createWebsocket() {
     //则插入一个新的chat到chatList中
     if(!modified){
       let friendList = self.$store.state.friends;
+      let gourpList = self.$store.state.groups;
       console.log("friendList:")
       console.log(friendList);
-      // let obj = friendList.find(
-      //   obj => obj.id === id
-      // )
-      //
-      // let newChat = {
-      //   chatId: chatId,
-      //   nickname: "wwwwwwwwww", //todo 使用真实姓名
-      //   type: "UNICAST",
-      //   //todo 理应实时获取
-      //   avatar:
-      //     "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      //   sign: data.content,
-      //   unReadCount: 1,
-      //   messageList: []
-      // }
+      console.log("groupList:")
+      console.log(gourpList)
+
+      let obj, name, avatarUrl
+      if(data.type === "UNICAST"){
+        obj = friendList.find(
+          (obj) => obj.id === chatId,
+        )
+        name = obj.nickname.length === 0?obj.username:obj.nickname;
+        avatarUrl = obj.avatarUrl
+      }else {
+        obj = gourpList.find(
+          (obj) => obj.id === chatId,
+        )
+        name = obj.name;
+        avatarUrl = "https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2121061596,2871071478&fm=26&gp=0.jpg";
+        //todo 放入真正的群头像
+      }
+
+
+      let newChat = {
+        chatId: chatId,
+        name: name,
+        type: data.type,
+        avatar: avatarUrl,
+        sign: data.content,
+        unReadCount: 1,
+        messageList: [newMessage]
+      }
+
+      //插入updateChatList
+      updateChatList.unshift(newChat);
+
     }
-
-
-
-    // if (data.type === "UNICAST") {
-    //   let curChat;
-    //   let modified = false;
-    //   for (let i = 0; i < newChatList.length; i++) {
-    //     //先遍历 找找有没有在chatList里面
-    //     curChat = newChatList[i]; //遍历到的chat
-    //     if (curChat.type === "UNICAST") {
-    //       if (curChat.chatId === data.senderId) {
-    //         //找到了
-    //         let unread;
-    //         if (store.state.currentChat.chatId === curChat.chatId) unread = 0;
-    //         else unread = curChat.unReadCount + 1;
-    //         let updateChat = {
-    //           //后期使用ChatId和type找到对应的messages in Nedb
-    //           chatId: curChat.chatId,
-    //           name: curChat.name,
-    //           type: "UNICAST",
-    //           //todo 理应实时获取
-    //           avatar:
-    //             "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-    //           sign: data.content,
-    //           unReadCount: unread,
-    //         };
-    //         newChatList.splice(i, 1); //将此条删除
-    //         newChatList.unshift(updateChat); //再将其添加到第一位
-    //         store.commit("setChatList", newChatList); //更新表格
-    //
-    //         modified = true;
-    //         break;
-    //       }
-    //     }
-    //   }
-    //   if (!modified) {
-    //     //没有原有聊天
-    //     let newChat = {
-    //       chatId: data.senderId,
-    //       name: "wwwwwwwwww", //todo 使用friendId在Nedb中获取
-    //       type: "UNICAST",
-    //       //todo 理应实时获取
-    //       avatar:
-    //         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-    //       sign: data.content,
-    //       unReadCount: 1,
-    //     };
-    //     newChatList.unshift(newChat); //将新的聊天添加到chatList第一位
-    //     store.commit("setChatList", newChatList); //更新表格
-    //   }
-    // } else if (data.type === "MULTICAST") {
-    //   newMessageSaveToNedb.groupId = data.groupId; //todo 存入groupId
-    //   //todo
-    // } else {
-    //   //todo type = notification
-    // }
-    // db.localMessage.insert(newMessageSaveToNedb, function(err, newDoc) {
-    //   if (err !== null) {
-    //     console.log("error occured: ");
-    //     console.log(err);
-    //   } else {
-    //     console.log(
-    //       "new " + newDoc.type + " insert successfully: " + newDoc.content
-    //     );
-    //   }
-    // });
+    this.$store.commit("setChatList", updateChatList)
 
     let currentChat = store.state.currentChat;
     let query = { chatId: currentChat.chatId, type: currentChat.type };

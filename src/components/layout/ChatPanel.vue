@@ -94,40 +94,14 @@ export default {
     },
   },
   mounted() {
-    // this.loadChatList();
-    let self = this;
-    getNedb().localMessage.find({}, function(err, docs) {
-      self.chatList = docs;
-      console.log("in docs:" + docs);
-    });
-    console.log(self.chatList);
+
   },
   methods: {
-    loadChatList() {
-      this.$axios
-        .get("usercenter/chatList", {
-          params: {
-            userID: this.$store.state.user.ID,
-          },
-        })
-        .then((successResponse) => {
-          // var responseResult = JSON.stringify(successResponse.data);
-          if (successResponse.data.code === 200) {
-            this.$store.commit("setChatList", successResponse.data.data);
-          } else {
-            this.$notify.error({
-              title: "错误",
-              message: "拉取最近聊天出错",
-            });
-          }
-        })
-        .catch((failResponse) => {
-          console.log(failResponse);
-        });
-    },
     showChat(chat, index) {
       this.show = true;
       this.currentChat = chat;
+      console.log("currentChat:")
+      console.log(chat)
       this.$store.commit("resetUnread");
       this.chatList[index] = this.$store.state.currentChat;
       console.log(this.currentChat);
@@ -137,7 +111,7 @@ export default {
         chatId: this.currentChat.chatId,
         type: this.currentChat.type,
       };
-      getNedb()
+      getNedb().localMessage
         .find(query)
         .sort({ timestamp: 1 })
         .exec(function(err, docs) {

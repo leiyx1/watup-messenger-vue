@@ -91,7 +91,7 @@ export default {
         this.$store.commit("unshiftChatList", foundChat);
       } else {
         var newChat = {
-          chatID: this.user.id,
+          chatId: this.user.id,
           name: this.user.username,
           sign: "",
           avatarUrl: this.user.avatarUrl,

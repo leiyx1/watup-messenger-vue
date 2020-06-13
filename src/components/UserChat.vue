@@ -14,7 +14,7 @@
       </el-dropdown>
     </div>
     <el-divider class="divider" />
-    <div class="message">
+    <div class="message" id="message">
       <!-- <div
         class="others"
         v-for="item in currentChat.messages"
@@ -63,11 +63,11 @@
         type="textarea"
         v-model="text"
         :rows="4"
-        @keyup.enter="send()"
+        @keyup.enter="sendUniMessage()"
       >
       </el-input>
       <div class="footer">
-        <el-button class="btn" @click="send()">发送</el-button>
+        <el-button class="btn" @click="sendUniMessage()">发送</el-button>
       </div>
     </div>
   </div>
@@ -129,14 +129,23 @@ export default {
       }
     },
     sendUniMessage() {
-      let ws = getWebsocket();
-      console.log(`send uni message:` + this.text);
-      // ws.send(JSON.stringify({
-      //   type: "UNICAST",
-      //   receiverId: "5eccfc418e17974a04b86b19",
-      //   content: `${this.text}`,
-      // }))
-      ws.send(this.text);
+      console.log(this.currentChat)
+      console.log(`send uni message:` + this.text + " to " + this.currentChat.chatId);
+      let message
+      if(this.currentChat.type === "UNICAST")
+        message = {
+          type: "UNICAST",
+          receiverId: this.currentChat.chatId,
+          content: `${this.text}`,
+        }
+      else if(this.currentChat.type === "MULTICAST")
+        message = {
+          type: "MULTICAST",
+          groupId: this.currentChat.chatId,
+          content: `${this.text}`,
+        }
+
+      getWebsocket().send(JSON.stringify(message));
       this.refreshMessages();
     },
     refreshMessages() {
@@ -145,10 +154,7 @@ export default {
         chatId: this.currentChat.chatId,
         type: this.currentChat.type,
       };
-      getNedb()
-        .find(query)
-        .sort({ timestamp: 1 })
-        .exec(function(err, docs) {
+      getNedb().localMessage.find(query,function(err, docs) {
           self.messageList = docs;
         });
 
