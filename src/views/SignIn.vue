@@ -175,32 +175,66 @@ export default {
       console.log(this);
       this.$store.commit("setUsername", this.loginInfo.username);
       getWebsocket(); //建立websocket连接
-
       this.$router.push("/index/chatpanel");
     },
     initLocalMessages() {
       //获取离线聊天记录
       //获取离线私聊记录
-      this.$axios.get('/api/message?access_token=' +
-         this.$store.state.user.access_token +
-        '&sort=asc&drop=false'
-      ).then(res =>{
-        if(res.status === 200){
-          // let data = res.data;
-          // for(let i = 0; i < data.length; ++i){//每条插入 没有就不插
-          //   let chat = data[i];
-          //   let id = chat.id, type = "UNICAST", messages = data.messages;
-          //   let chatList = this.$store.state.chatList;
-          //
-          //   for(let k = 0; k < messages.length; ++k){
-          //
-          //   }
-          // }
-        }
-        else console.log("errpr occurred")
-      })
-    },
+      var chatList;
+      this.$axios
+        .get(
+          "/api/message?access_token=" +
+            this.$store.state.user.access_token +
+            "&sort=asc&drop=false"
+        )
+        .then((res) => {
+          if (res.status === 200) {
+            getNedb().localMessage.find({}, function(err, docs) {
+              chatList = docs;
+              var data = res.data;
+              for (var i = 0; i < data.length; i++) {
+                var obj = chatList.find(
+                  (obj) => obj.chatID === data[i].id && obj.type === "UNICAST"
+                );
+                if (obj) {
+                  var index = chatList.indexOf(obj);
+                  chatList[index].unreadCount += data[i].messages.length;
+                  chatList[index].messageList.push(data[i].messages);
+                }
+              }
+            });
+          } else console.log("errpr occurred");
+        });
 
+      this.$axios
+        .get(
+          "/api/groupmessage?access_token=" +
+            this.$store.state.user.access_token +
+            "&sort=asc&drop=false"
+        )
+        .then((res) => {
+          if (res.status === 200) {
+            var data = res.data;
+            for (var i = 0; i < data.length; i++) {
+              var obj = chatList.find(
+                (obj) => obj.chatID === data[i].id && obj.type === "MULTICAST"
+              );
+              if (obj) {
+                var index = chatList.indexOf(obj);
+                chatList[index].unreadCount += data[i].messages.length;
+                chatList[index].messageList.push(data[i].messages);
+              }
+            }
+          } else console.log("errpr occurred");
+        });
+      getNedb().localMessage.remove({}, { multi: true }, function() {});
+      getNedb().localMessage.insert(chatList, function(err, newDocs) {
+        console.log("chatList:" + chatList);
+        console.log(newDocs);
+      });
+      // getNedb().updata()
+      // this.$store.commit("setChatList", chatList)
+    },
 
     submit1(formName) {
       this.$refs[formName].validate((valid) => {
@@ -224,42 +258,33 @@ export default {
                   avatarUrl: data.avatarUrl,
                   access_token: data.access_token,
                 };
-
-                //存入Vuex
+                //用户信息存入Vuex
                 this.$store.commit("setUser", userdata);
-                console.log(this.$store.state.user);
-                // var tokendata = {
-                //   access_token: data.access_token,
-                //   token_type: data.token_type,
-                //   bearer: data.bearer,
-                //   refresh_token: data.refresh_token,
-                //   expires_in: data.expires_in,
-                //   scope: data.scope,
-                // }
-                // ***
-                // NeDB setToken
-                //存入Nedb
-                let query = {id: data.id}
-                getNedb().userInfo.find(query, function (err, docs) {
-                  if(docs.length === 0){//没有登陆过
-                    getNedb().userInfo.insert(userdata)
-                  }else {
-                    getNedb().update(query, {$set:userdata}), {}, function (err, numReplaced) {
-                      console.log(numReplaced)
-                    }
+                //用户信息存入NeDB
+                let query = { id: data.id };
+                getNedb().userInfo.find(query, function(err, docs) {
+                  if (docs.length === 0) {
+                    //没有登陆过
+                    getNedb().userInfo.insert(userdata);
+                  } else {
+                    getNedb().update(query, { $set: userdata }),
+                      {},
+                      function(err, numReplaced) {
+                        console.log(numReplaced);
+                      };
                   }
-                })
+                });
                 //更新系统信息
-                getNedb().systemInfo.remove({}, {multi: true})
+                getNedb().systemInfo.remove({}, { multi: true });
                 let updateSystemInfo = {
                   lastUserId: data.id,
                   token: data.access_token,
                   autoLogin: this.autoLogin,
-                }
+                };
                 getNedb().systemInfo.insert(updateSystemInfo);
 
                 //初始化本地聊天记录
-                this.initLocalMessages()
+                this.initLocalMessages();
 
                 //建立websocket连接
                 getWebsocket();
@@ -385,7 +410,6 @@ export default {
           console.log(error);
         });
     },
-
   },
   mounted() {
     //todo 免密码登录
