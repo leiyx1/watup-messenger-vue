@@ -14,7 +14,7 @@
       </el-dropdown>
     </div>
     <el-divider class="divider" />
-    <div class="message" id="message">
+    <div class="message">
       <!-- <div
         class="others"
         v-for="item in currentChat.messages"
@@ -26,11 +26,14 @@
       </div> -->
       <ul>
         <li
-          v-for="(item, index) in this.messageList"
+          v-for="(item, index) in messageList"
           :key="index"
           :class="{ 'chat-mine': item.mine }"
         >
-          <img :src="item.avatarUrl" alt="头像" />
+          <img
+            :src="item.mine == true ? mineUrl : currentChat.avatarUrl"
+            alt="头像"
+          />
 
           <div class="message-body">
             <el-card class="card" shadow="hover">{{ item.content }}</el-card>
@@ -60,11 +63,11 @@
         type="textarea"
         v-model="text"
         :rows="4"
-        @keyup.enter="sendUniMessage"
+        @keyup.enter="send()"
       >
       </el-input>
       <div class="footer">
-        <el-button class="btn" @click="sendUniMessage">发送</el-button>
+        <el-button class="btn" @click="send()">发送</el-button>
       </div>
     </div>
   </div>
@@ -76,12 +79,18 @@ import getNedb from "../JavaScript/NedbConfig";
 
 export default {
   name: "userChat",
+  props: ["chat"],
   data() {
     return {
       text: "",
     };
   },
   computed: {
+    mineUrl: {
+      get: function() {
+        return this.$store.state.user.avatarUrl;
+      },
+    },
     messageList: {
       get: function() {
         return this.$store.state.currentChat.messageList;
@@ -136,7 +145,8 @@ export default {
         chatId: this.currentChat.chatId,
         type: this.currentChat.type,
       };
-      getNedb().find(query)
+      getNedb()
+        .find(query)
         .sort({ timestamp: 1 })
         .exec(function(err, docs) {
           self.messageList = docs;
