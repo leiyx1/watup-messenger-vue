@@ -19,11 +19,11 @@ export default function getNedb() {
       autoload: true,
     });
     db.userInfo = new Datastore({
-      filename: path.join(remote.app.getAppPath(), id, "db/localMessage.db"),
+      filename: path.join(remote.app.getAppPath(), id, "db/userInfo.db"),
       autoload: true,
     });
     db.systemInfo = new Datastore({
-      filename: path.join(remote.app.getAppPath(), id, "db/localMessage.db"),
+      filename: path.join(remote.app.getAppPath(), id, "db/systemInfo.db"),
       autoload: true,
     });
 
