@@ -18,8 +18,8 @@
             <el-dropdown-item command="newGroupDialogVisible">新建群组</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
-        <new-friend-dialog :visible.sync="newFriendDialogVisible"></new-friend-dialog>
-        <new-group-dialog :visible.sync="newGroupDialogVisible" friend-list="friends" @new-group="loadGroups"></new-group-dialog>
+        <new-friend-dialog :visible.sync="newFriendDialogVisible" :default-id="newFriendId"></new-friend-dialog>
+        <new-group-dialog :visible.sync="newGroupDialogVisible" @new-group="loadGroups"></new-group-dialog>
       </div>
       <el-divider id="divider" />
       <el-menu
@@ -97,6 +97,7 @@ export default {
       newFriendDialogVisible: false,
       newGroupDialogVisible: false,
       currentItem: {},
+      newFriendId: "",
     };
   },
   mounted() {
