@@ -26,11 +26,14 @@
       </div> -->
       <ul>
         <li
-          v-for="(item, index) in this.messageList"
+          v-for="(item, index) in messageList"
           :key="index"
           :class="{ 'chat-mine': item.mine }"
         >
-          <img :src="item.avatarUrl" alt="头像" />
+          <img
+            :src="item.mine == true ? mineUrl : currentChat.avatarUrl"
+            alt="头像"
+          />
 
           <div class="message-body">
             <el-card class="card" shadow="hover">{{ item.content }}</el-card>
@@ -82,6 +85,11 @@ export default {
     };
   },
   computed: {
+    mineUrl: {
+      get: function() {
+        return this.$store.state.user.avatarUrl;
+      },
+    },
     messageList: {
       get: function() {
         return this.$store.state.currentChat.messageList;
@@ -136,7 +144,8 @@ export default {
         chatId: this.currentChat.chatId,
         type: this.currentChat.type,
       };
-      getNedb().find(query)
+      getNedb()
+        .find(query)
         .sort({ timestamp: 1 })
         .exec(function(err, docs) {
           self.messageList = docs;
