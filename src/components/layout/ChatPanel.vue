@@ -38,7 +38,7 @@
             </div>
             <div class="item-word">
               <span>{{ chat.sign }}</span
-              ><span>10:10</span>
+              ><span>{{chat.timestamp}}</span>
             </div>
           </div>
         </el-menu-item>

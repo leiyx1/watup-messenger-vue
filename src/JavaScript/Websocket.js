@@ -2,11 +2,11 @@ import getNedb from "./NedbConfig";
 import store from "../store/index";
 
 let websock;
-export default function getWebsocket(name) {
+export default function getWebsocket() {
   if (websock) {
     return websock;
   } else {
-    return createWebsocket(name);
+    return createWebsocket();
   }
 }
 
@@ -175,4 +175,5 @@ function createWebsocket() {
   websock.onclose = function() {
     console.log("WebSocket is close now");
   };
+  return websock;
 }
