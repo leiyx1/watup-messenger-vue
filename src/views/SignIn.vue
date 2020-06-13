@@ -169,15 +169,21 @@ export default {
   },
   methods: {
     clearNedb(){
-      let db = getNedb()
-      console.log(db.localMessage)
-      db.remove({},{multi: true},function (err, numRemoved) {
+      getNedb().userInfo.remove({},{},function (err, numRemoved) {
         console.log(err)
-        console.log(numRemoved + "条数据被删除")
+        console.log(numRemoved + "条userInfo数据被删除")
+      });
+      getNedb().systemInfo.remove({},{},function (err, numRemoved){
+        console.log(err)
+        console.log(numRemoved + "条systemInfo数据被删除")
+      });
+      getNedb().localMessage.remove({},{},function (err, numRemoved) {
+        console.log(err)
+        console.log(numRemoved + "条localMessage数据被删除")
       });
     },
     initLocalMessages() {
-      this.clearNedb()
+      //this.clearNedb()
       //获取离线聊天 记录
       //获取离线私聊记录
       let chatList;
@@ -192,7 +198,7 @@ export default {
           if (res.status === 200) {
             getNedb().userInfo.find({}, function(err, docs) {
               chatList = docs;
-
+              console.log("start init local messages")
               console.log("chatList before modify:")
               console.log(chatList)
               let data = res.data;
@@ -201,6 +207,7 @@ export default {
                 let obj = chatList.find(
                   (obj) => obj.chatId === data[i].id && obj.type === "UNICAST"
                 );
+                console.log(obj)
                 if (obj) {//若找到
                   let index = chatList.indexOf(obj);
                   let chat = chatList[index];
@@ -309,7 +316,7 @@ export default {
                       console.log(newDocs)
                     })
                   }else {
-                    getNedb().update(query, {$set:userdata}), {}, function (err, numReplaced) {
+                    getNedb().userInfo.update(query, {$set:userdata}), {}, function (err, numReplaced) {
                       console.log(numReplaced)
                     }
                   }
