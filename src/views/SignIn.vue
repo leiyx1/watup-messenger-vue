@@ -168,20 +168,19 @@ export default {
     };
   },
   methods: {
-    submit: function() {
-      //登陆时 与客户端建立websocket连接
-      //todo 理应存userID
-      this.initUserInfo();
-      this.initLocalMessages();
-      console.log(this);
-      this.$store.commit("setUsername", this.loginInfo.username);
-      getWebsocket(); //建立websocket连接
-      this.$router.push("/index/chatpanel");
+    clearNedb(){
+      let db = getNedb()
+      console.log(db.localMessage)
+      db.remove({},{multi: true},function (err, numRemoved) {
+        console.log(err)
+        console.log(numRemoved + "条数据被删除")
+      });
     },
     initLocalMessages() {
-      //获取离线聊天记录
+      this.clearNedb()
+      //获取离线聊天 记录
       //获取离线私聊记录
-      var chatList;
+      let chatList;
       let self = this
       this.$axios
         .get(
@@ -191,10 +190,13 @@ export default {
         )
         .then((res) => {
           if (res.status === 200) {
-            console.log(res.data)
             getNedb().userInfo.find({}, function(err, docs) {
               chatList = docs;
+
+              console.log("chatList before modify:")
+              console.log(chatList)
               let data = res.data;
+              console.log(data)
               for (let i = 0; i < data.length; i++) {
                 let obj = chatList.find(
                   (obj) => obj.chatId === data[i].id && obj.type === "UNICAST"
@@ -207,47 +209,55 @@ export default {
                   chatList[0].unreadCount += data[i].messages.length;
                   chatList[0].messageList.push(data[i].messages);
                 }else {//若无
+                  let friendList = self.$store.state.friends;
+                  console.log("friendList:")
+                  console.log(friendList);
+                  let length = data[i].messages.length;
+                  let obj = friendList.find(
+                    obj => obj.id === data[i].id
+                  )
                   let newChat = {
                     chatId: data[i].id,
                     type: "UNICAST",
-                    name: name,
-                    avatarUrl: data.avatarUrl,
-                    sign: data.sign,
-                    unReadCount: data[i].messages.length,
+                    name: obj.nickname.length === 0?obj.username:obj.nickname,
+                    avatarUrl: obj.avatarUrl,
+                    sign: data[i].messages[length-1].content,
+                    timestamp: data[i].messages[length-1].timestamp,
+                    unReadCount: length,
                     messageList: data[i].messages,
                   }
                   chatList.unshift(newChat);
+                  console.log("chatList:")
                   console.log(chatList)
-                  console.log(111111111111111111111)
-                  self.$store.commit("setChatList", chatList)
                 }
+                self.$store.commit("setChatList", chatList)
               }
             });
 
           } else console.log("error occurred");
 
         });
-      this.$axios
-        .get(
-          "/api/groupmessage?access_token=" +
-          this.$store.state.user.access_token +
-          "&sort=asc&drop=false"
-        )
-        .then((res) => {
-          if (res.status === 200) {
-            var data = res.data;
-            for (var i = 0; i < data.length; i++) {
-              var obj = chatList.find(
-                (obj) => obj.chatID === data[i].id && obj.type === "MULTICAST"
-              );
-              if (obj) {
-                var index = chatList.indexOf(obj);
-                chatList[index].unreadCount += data[i].messages.length;
-                chatList[index].messageList.push(data[i].messages);
-              }
-            }
-          } else console.log("errpr occurred");
-        });
+      // this.$axios
+      //   .get(
+      //     "/api/groupmessage?access_token=" +
+      //     this.$store.state.user.access_token +
+      //     "&sort=asc&drop=false"
+      //   )
+      //   .then((res) => {
+      //     if (res.status === 200) {
+      //       var data = res.data;
+      //       for (var i = 0; i < data.length; i++) {
+      //         var obj = chatList.find(
+      //           (obj) => obj.chatID === data[i].id && obj.type === "MULTICAST"
+      //         );
+      //         if (obj) {
+      //           var index = chatList.indexOf(obj);
+      //           chatList[index].unreadCount += data[i].messages.length;
+      //           chatList[index].messageList.push(data[i].messages);
+      //         }
+      //       }
+      //     } else console.log("errpr occurred");
+      //   });
       // getNedb().updata()
     },
 
@@ -264,6 +274,7 @@ export default {
             )
             .then((successResponse) => {
               if (successResponse.data.code === 200) {
+
                 var data = successResponse.data.data;
                 var userdata = {
                   id: data.id,
@@ -303,6 +314,9 @@ export default {
                     }
                   }
                 });
+                //加载好友和群聊
+                this.loadGroups();
+                this.loadFriends();
                 //更新系统信息
                 getNedb().systemInfo.remove({}, { multi: true });
                 let updateSystemInfo = {
@@ -311,11 +325,11 @@ export default {
                   autoLogin: this.autoLogin,
                 };
                 getNedb().systemInfo.insert(updateSystemInfo);
-                //加载好友和群聊
-                this.loadGroups();
-                this.loadFriends();
                 //初始化本地聊天记录
-                this.initLocalMessages();
+                let self = this
+                setTimeout(function () {
+                  self.initLocalMessages()
+                }, 1000);
 
                 //建立websocket连接
                 getWebsocket();
