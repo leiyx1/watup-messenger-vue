@@ -9,23 +9,17 @@
           placeholder="搜索"
           @select="handleSelect"
         ></el-autocomplete>
-        <el-button @click="dialogVisible = true" size="small"
-          ><i class="el-icon-plus"> </i
-        ></el-button>
-        <el-dialog
-          title="提示"
-          :visible.sync="dialogVisible"
-          :modal="false"
-          width="30%"
-        >
-          <span>这是一段信息</span>
-          <span slot="footer" class="dialog-footer">
-            <el-button @click="dialogVisible = false">取 消</el-button>
-            <el-button type="primary" @click="dialogVisible = false"
-              >确 定</el-button
-            >
-          </span>
-        </el-dialog>
+        <el-dropdown @command="handleCommand" trigger="click">
+          <el-button size="large">
+            <i class="el-icon-plus"> </i>
+          </el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="newFriendDialogVisible">添加好友</el-dropdown-item>
+            <el-dropdown-item command="newGroupDialogVisible">新建群组</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+        <new-friend-dialog :visible.sync="newFriendDialogVisible"></new-friend-dialog>
+        <new-group-dialog :visible.sync="newGroupDialogVisible" friend-list="friends" @new-group="loadGroups"></new-group-dialog>
       </div>
       <el-divider id="divider" />
       <el-menu
@@ -84,10 +78,14 @@
 
 <script>
 import UserCard from "../UserCard.vue";
+import NewFriendDialog from "@/components/NewFriendDialog";
+import NewGroupDialog from "@/components/NewGroupDialog";
 import GroupCard from "../GroupCard.vue";
 export default {
   name: "FriendsPanel",
   components: {
+    NewGroupDialog,
+    NewFriendDialog,
     UserCard,
     GroupCard,
   },
@@ -96,7 +94,8 @@ export default {
       hasShowFriend: false,
       hasShowGroup: false,
       state: "",
-      dialogVisible: false,
+      newFriendDialogVisible: false,
+      newGroupDialogVisible: false,
       currentItem: {},
     };
   },
@@ -177,6 +176,9 @@ export default {
         ? friends.filter(this.createFilter(queryString))
         : friends;
       cb(results);
+    },
+    handleCommand(command) {
+      this[command] = true;
     },
     createFilter(queryString) {
       return (val) => {

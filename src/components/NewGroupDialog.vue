@@ -1,46 +1,49 @@
 <template>
   <div>
-    <el-dialog :visible.sync="dialogVisible" title="新建群聊" width="500px">
-      <el-container>
-        <el-container>
-          <el-aside width="200px">
-            <el-table
-                    :data="filteredFriends"
+    <el-dialog :visible.sync="dialogVisible" title="新建群聊" width="600px" center="true" :modal-append-to-body="false">
+      <div id="dialog">
+        <div id="search-input">
+            <el-input v-model="search" placeholder="搜索好友" size="mini" prefix-icon="el-icon-search"></el-input>
+        </div>
+        <div id="friend-list">
+          <el-table
+                    :data="friends.filter(data => data.username.toLowerCase().includes(search.toLowerCase()))"
                     style="width: 100%"
+                    height="300px"
+                    :row-style="{height:'60px'}"
+                    :cell-style="{padding:'0 0'}"
+                    :show-header="false"
                     @row-click="handleRowClick">
-              <el-table-column>
-                <template slot="header">
-                  <el-input v-model="search" size="mini" prefix-icon="el-icon-search"></el-input>
-                </template>
-                <template slot-scope="scope">
-                  <div id="user-button">
-                    <div id="user-info">
-                      <el-avatar shape="square" size="medium" :src="scope.row.avatarUrl"></el-avatar>
-                      <span style="margin-left: 10px"> {{scope.row.username}} </span>
-                    </div>
-                    <div id="check-icon">
-                      <i class="el-icon-circle-check" v-if="selectedFriends.some(e => e.id === scope.row.id)"></i>
-                    </div>
+            <el-table-column>
+              <template slot-scope="scope">
+                <div id="user-button">
+                  <div id="user-info">
+                    <el-avatar style="margin-right: 10px" shape="square" size="medium" :src="scope.row.avatarUrl"></el-avatar>
+                    <span class="name1"> {{scope.row.username}} </span>
                   </div>
-                </template>
-              </el-table-column>
-            </el-table>
-          </el-aside>
-          <el-main>
-            <div id="selected-icons">
-            <div v-for="selectedFriend in selectedFriends" :key="selectedFriend.id">
-              <div id="selected-icon">
-                <el-avatar  shape="square" size="medium" :src="selectedFriend.avatarUrl"></el-avatar>
-                <span class="title">{{selectedFriend.username}}</span>
-              </div>
+                  <div id="check-icon">
+                    <i class="el-icon-circle-check" v-if="selectedFriends.some(e => e.id === scope.row.id)"></i>
+                  </div>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+        <div id="name-input">
+            <el-input v-model="groupName" placeholder="请输入群聊名称" size="mini"></el-input>
+        </div>
+        <div id="selected-icons">
+          <div v-for="selectedFriend in selectedFriends" :key="selectedFriend.id">
+            <div id="selected-icon">
+              <el-avatar  shape="square" size="medium" :src="selectedFriend.avatarUrl"></el-avatar>
+              <span class="name2">{{selectedFriend.username}}</span>
             </div>
-            </div>
-          </el-main>
-        </el-container>
-        <el-footer>
-          <el-button style="margin-top: 20px" @click="handleAddGroup"> 确认 </el-button>
-        </el-footer>
-      </el-container>
+          </div>
+        </div>
+      </div>
+      <span slot="footer">
+        <el-button @click="handleAddGroup"> 确认 </el-button>
+      </span>
     </el-dialog>
   </div>
 </template>
@@ -53,8 +56,8 @@
             return {
                 dialogVisible: this.visible,
                 search: "",
-                friends: this.$store.state.friends,
-                selectedFriends: []
+                groupName: "",
+                selectedFriends: [],
             }
         },
         watch: {
@@ -66,8 +69,13 @@
             }
         },
         computed: {
-            filteredFriends() {
-                return this.friends.filter(data => data.username.toLowerCase().includes(this.search.toLowerCase()))
+            friends: {
+                get: function () {
+                    return this.$store.state.friends;
+                },
+                set: function (val) {
+                    this.$store.commit("setFriends", JSON.parse(JSON.stringify(val)));
+                },
             }
         },
         methods: {
@@ -75,57 +83,74 @@
                 if (this.selectedFriends.some(e => e.id === row.id)) {
                     this.selectedFriends = this.selectedFriends.filter(function(el) { return el.id !== row.id; });
                 } else {
-                    this.selectedFriends.push(row)
+                    this.selectedFriends.push(row);
                 }
             },
             handleAddGroup() {
-                this.$prompt('请输入群聊名称', '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                }).then(({groupName}) => {
-                    this.$axios
-                        .post('/api/group}', null, {
-                            params: {
-                                access_token: this.$store.state.token,
-                                name: groupName
-                            }
-                        }).then(res => {
-                            let groupId = res.data;
-                            let failedFriends = [];
-                            for (let selectedFriend in this.selectedFriends) {
-                                this.$axios
-                                    .post('/api/request', {
-                                        groupId: groupId,
-                                        userId: selectedFriend.id
-                                    }, {
-                                        params: {
-                                            access_token: this.$store.state.token
-                                        }
-                                    })
-                                    .then(() => {})
-                                    .catch(function (error) {
-                                        console.log(error);
-                                        failedFriends.push(selectedFriend.username)
-                                    })
-                            }
-                            this.$message.success("添加成功");
+                  this.$axios
+                      .post('/api/group', null, {
+                          params: {
+                              access_token: this.$store.state.user.access_token,
+                              name: this.groupName.length === 0 ? "群聊" : this.groupName
+                          }
+                      }).then(res => {
+                          let groupId = res.data;
+                          let failedFriends = [];
+                          Array.prototype.forEach.call(this.selectedFriends, selectedFriend => {
+                              console.log(selectedFriend);
+                              this.$axios
+                                  .post('/api/request', {
+                                      groupId: groupId,
+                                      userId: selectedFriend.id
+                                  }, {
+                                      params: {
+                                          access_token: this.$store.state.user.access_token
+                                      }
+                                  })
+                                  .then(() => {})
+                                  .catch(function (error) {
+                                      console.log(error);
+                                      failedFriends.push(selectedFriend.username)
+                                  })
+                          });
+                          this.$message.success("添加成功");
+                          if (failedFriends.length > 0)
                             this.$message.info(failedFriends.join(", ") + " 未成功邀请");
-                            this.selectedFriends = [];
-                            this.dialogVisible = false
-                        }).catch(function(error) {
-                            console.log(error);
-                            this.$message.error("添加失败")
-                        })
-                }).catch(() => {});
+                          this.selectedFriends = [];
+                          this.$emit("new-group");
+                          this.dialogVisible = false
+                      }).catch(function(error) {
+                          console.log(error);
+                          this.$message.error("添加失败")
+                      }.bind(this))
             }
         }
     }
 </script>
 
 <style scoped>
+  #dialog {
+    display: grid;
+    width: 500px;
+    height: 360px;
+    grid-template-columns: 4fr 1fr 5fr;
+    grid-template-rows: 1fr 1fr 10fr;
+    grid-auto-flow: column;
+    align-items: center;
+    justify-content: space-between;
+  }
   #user-button {
     display: flex;
     align-items: center
+  }
+  #search-input {
+    grid-column: 1;
+    grid-row: 1
+  }
+  #friend-list {
+    grid-column: 1;
+    grid-row: 3;
+    align-self: start;
   }
   #user-info {
     display: flex;
@@ -134,16 +159,38 @@
   #check-icon {
     margin-left:auto
   }
+  #name-input {
+    grid-column: 3;
+    grid-row: 1
+  }
   #selected-icons {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
+    align-self: start;
+    grid-column: 3;
+    grid-row: 3;
+    overflow: auto;
+    display: grid;
+    height: 300px;
+    grid-template-columns: 60px 60px 60px 60px;
+    grid-template-rows: 60px 60px;
+    grid-auto-rows: 60px;
+    align-items: center;
   }
   #selected-icon {
     display: flex;
-    width: 30.333333%;
-    margin: 1.5%;
     flex-direction: column;
     align-items: center;
+  }
+  .name1 {
+    width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .name2 {
+    text-align: center;
+    width: 50px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 </style>
