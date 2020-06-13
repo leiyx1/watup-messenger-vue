@@ -28,6 +28,13 @@
           active-text-color="#ffd04b"
           style="border-right-width: 0;"
       >
+        <el-menu-item
+            @click="showRequest"
+        >
+          <div class="item-body">
+            <b>申请与邀请</b>
+          </div>
+        </el-menu-item>
         <el-divider content-position="left" class="divider2">群聊</el-divider>
         <el-menu-item
           class="item"
@@ -48,14 +55,7 @@
           </div>
         </el-menu-item>
         <el-divider content-position="left" class="divider2">好友</el-divider>
-        <el-menu-item
-            class="item"
-            @click="showRequest"
-        >
-          <div class="item-body">
-            <b>申请与邀请</b>
-          </div>
-        </el-menu-item>
+
         <el-menu-item
             class="item"
             v-for="(item, index) in friends"
@@ -75,11 +75,11 @@
     </div>
     <div class="right-card">
       <div v-if="!hasShowFriend && !hasShowGroup&&!hasShowRequest"></div>
-      <RequestCard v-else-if="hasShowRequest&& !hasShowGroup&&!!hasShowFriend"/>
       <UserCard
         :user="currentItem"
-        v-else-if="hasShowFriend && !hasShowGroup"
+        v-else-if="hasShowFriend && !hasShowGroup&&!hasShowRequest"
       />
+      <RequestCard v-else-if="hasShowRequest"/>
       <GroupCard :group="currentItem" v-else />
     </div>
   </div>
@@ -183,7 +183,7 @@ export default {
     },
     showGroup(item) {
       console.log("222");
-      this.hadShowFriend = false;
+      this.hasShowFriend = false;
         this.hasShowRequest = false;
       this.hasShowGroup = true;
       this.currentItem = item;
@@ -214,48 +214,35 @@ export default {
 </script>
 
 <style lang="scss">
-.unseen {
-  display: none;
-}
-#divider {
-  margin: 0px;
-}
-.divider2 {
-  margin-bottom: 20px;
-  .el-divider__text {
-    background-color: #d3d3d3;
-    color: #808080;
+  #divider {
+    margin: 0px;
   }
-}
-.user-panel {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: row;
 
-  .side-list {
-    width: 25%;
+  .user-panel {
+    width: 100%;
     height: 100%;
     display: flex;
-    flex-direction: column;
-    overflow-y: scroll;
+    flex-direction: row;
 
-    .side-top {
-      top: 0px;
-      z-index: 2;
+    .side-list {
+      width: 25%;
+      height: 100%;
+      margin: 0;
       background-color: #d3d3d3;
-      position: sticky;
       display: flex;
-      flex-direction: row;
-      width: 95%;
-      padding-top: 2%;
-      padding-left: 5%;
+      flex-direction: column;
+      overflow-y: scroll;
 
-      .el-autocomplete {
-        // position: fixed;
-        // top: 0;
-        width: 70%;
+      .side-top {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        padding-top: 2%;
+        padding-left: 3%;
 
+        .el-autocomplete {
+          width: 70%;
+        }
       }
 
       .item {
@@ -281,7 +268,6 @@ export default {
           height: 100%;
           padding-left: 3%;
           color: #808080;
-
           .item-word {
             b {
               float: left;
@@ -299,5 +285,4 @@ export default {
       width: 75%;
     }
   }
-}
 </style>

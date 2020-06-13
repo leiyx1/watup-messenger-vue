@@ -96,10 +96,8 @@
         },
         methods: {
             handleGroupRequest(index, row) {
-                console.log("token:"+this.$store.state.access_token)
-                console.log("requestId:"+row.id)
                 this.$axios
-                    .put("api/request/"+row.id+"?access_token="+this.$store.state.access_token)
+                    .put("api/request/"+row.id+"?access_token="+this.$store.state.user.access_token)
                     .then(res => {
                         console.log(res)
                         if (res.status === 200) {
@@ -126,7 +124,7 @@
             },
             rejectFriendRequest(index, row) {
                 this.$axios
-                    .delete("api/friend/request?access_token="+this.$store.state.access_token+"&requestId="+row.id)
+                    .delete("api/friend/request?access_token="+this.$store.state.user.access_token+"&requestId="+row.id)
                     .then(res => {
                         if (res.status === 200) {
                             this.$notify({
@@ -152,7 +150,7 @@
             },
             handleFriendRequest(index, row) {
                 this.$axios
-                    .put("api/friend/request?access_token="+this.$store.state.access_token+"&requestId="+row.id)
+                    .put("api/friend/request?access_token="+this.$store.state.user.access_token+"&requestId="+row.id)
                     .then(res => {
                         if (res.status === 200) {
                             this.$notify({
@@ -180,7 +178,7 @@
                 this.$axios
                     .get("api/request", {
                         params: {
-                            access_token:this.$store.state.access_token,
+                            access_token:this.$store.state.user.access_token,
                         },
                     })
                     .then((successResponse) => {
@@ -201,7 +199,7 @@
                 this.$axios
                     .get("api/friend/request", {
                         params: {
-                            access_token:this.$store.state.access_token,
+                            access_token:this.$store.state.user.access_token,
                         },
                     })
                     .then((successResponse) => {
