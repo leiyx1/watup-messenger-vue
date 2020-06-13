@@ -3,11 +3,11 @@
     <div class="side-list">
       <div class="side-top">
         <el-autocomplete
-          class="inline-input"
-          v-model="state"
-          :fetch-suggestions="querySearch"
-          placeholder="搜索"
-          @select="handleSelect"
+            class="inline-input"
+            v-model="state"
+            :fetch-suggestions="querySearch"
+            placeholder="搜索"
+            @select="handleSelect"
         ></el-autocomplete>
         <el-dropdown @command="handleCommand" trigger="click">
           <el-button size="large">
@@ -21,12 +21,12 @@
         <new-friend-dialog :visible.sync="newFriendDialogVisible"></new-friend-dialog>
         <new-group-dialog :visible.sync="newGroupDialogVisible" friend-list="friends" @new-group="loadGroups"></new-group-dialog>
       </div>
-      <el-divider id="divider" />
+      <el-divider id="divider"/>
       <el-menu
-        router
-        background-color="#d3d3d3"
-        active-text-color="#ffd04b"
-        style="border-right-width: 0;"
+          router
+          background-color="#d3d3d3"
+          active-text-color="#ffd04b"
+          style="border-right-width: 0;"
       >
         <el-divider content-position="left" class="divider2">群聊</el-divider>
         <el-menu-item
@@ -49,13 +49,21 @@
         </el-menu-item>
         <el-divider content-position="left" class="divider2">好友</el-divider>
         <el-menu-item
-          class="item"
-          v-for="(item, index) in friends"
-          :key="item.id"
-          @click="showFriend(item, index)"
+            class="item"
+            @click="showRequest"
+        >
+          <div class="item-body">
+            <b>申请与邀请</b>
+          </div>
+        </el-menu-item>
+        <el-menu-item
+            class="item"
+            v-for="(item, index) in friends"
+            :key="index"
+            @click="showFriend(item, index)"
         >
           <div class="item-avatar">
-            <img :src="item.avatarUrl" alt="头像" />
+            <img :src="item.avatarUrl" alt="头像"/>
           </div>
           <div class="item-body">
             <div class="item-word">
@@ -66,7 +74,8 @@
       </el-menu>
     </div>
     <div class="right-card">
-      <div v-if="!hasShowFriend && !hasShowGroup"></div>
+      <div v-if="!hasShowFriend && !hasShowGroup&&!hasShowRequest"></div>
+      <RequestCard v-else-if="hasShowRequest&& !hasShowGroup&&!!hasShowFriend"/>
       <UserCard
         :user="currentItem"
         v-else-if="hasShowFriend && !hasShowGroup"
@@ -77,10 +86,12 @@
 </template>
 
 <script>
+
 import UserCard from "../UserCard.vue";
 import NewFriendDialog from "@/components/NewFriendDialog";
 import NewGroupDialog from "@/components/NewGroupDialog";
 import GroupCard from "../GroupCard.vue";
+import RequestCard from "../RequestCard";
 export default {
   name: "FriendsPanel",
   components: {
@@ -88,11 +99,13 @@ export default {
     NewFriendDialog,
     UserCard,
     GroupCard,
+      RequestCard,
   },
   data() {
     return {
       hasShowFriend: false,
       hasShowGroup: false,
+        hasShowRequest:false,
       state: "",
       newFriendDialogVisible: false,
       newGroupDialogVisible: false,
@@ -152,9 +165,16 @@ export default {
     // },
   },
   methods: {
+      showRequest(){
+          console.log("333");
+          this.hasShowGroup = false;
+          this.hasShowFriend = false;
+          this.hasShowRequest = true;
+      },
     showFriend(item) {
       console.log("111");
       this.hasShowGroup = false;
+        this.hasShowRequest = false;
       this.hasShowFriend = true;
       this.currentItem = item;
       // this.chatList[index] = this.$store.state.currentChat;
@@ -164,6 +184,7 @@ export default {
     showGroup(item) {
       console.log("222");
       this.hadShowFriend = false;
+        this.hasShowRequest = false;
       this.hasShowGroup = true;
       this.currentItem = item;
       // this.chatList[index] = this.$store.state.currentChat;
@@ -211,14 +232,14 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: row;
+
   .side-list {
     width: 25%;
     height: 100%;
-    margin: 0;
-    background-color: #d3d3d3;
     display: flex;
     flex-direction: column;
     overflow-y: scroll;
+
     .side-top {
       top: 0px;
       z-index: 2;
@@ -229,46 +250,54 @@ export default {
       width: 95%;
       padding-top: 2%;
       padding-left: 5%;
+
       .el-autocomplete {
         // position: fixed;
         // top: 0;
         width: 70%;
+
       }
-    }
-    .item {
-      display: flex;
-      align-items: center;
-      flex-direction: row;
-      height: 70px;
-      padding-left: 0px;
-      padding-right: 0px;
-      .item-avatar {
+
+      .item {
+        display: flex;
         align-items: center;
-        float: left;
-        width: 45px;
-        img {
+        flex-direction: row;
+        height: 70px;
+        padding-left: 0px;
+        padding-right: 0px;
+
+        .item-avatar {
+          align-items: center;
+          float: left;
           width: 45px;
+
+          img {
+            width: 45px;
+          }
         }
-      }
-      .item-body {
-        width: 100%;
-        height: 100%;
-        padding-left: 3%;
-        .item-word {
-          b {
-            float: left;
-            padding-left: 5px;
-            padding-top: 8%;
-            color: #808080;
-            // height: 67%;
+
+        .item-body {
+          width: 100%;
+          height: 100%;
+          padding-left: 3%;
+          color: #808080;
+
+          .item-word {
+            b {
+              float: left;
+              padding-left: 5px;
+              padding-top: 8%;
+              color: #808080;
+              // height: 67%;
+            }
           }
         }
       }
     }
-  }
 
-  .right-card {
-    width: 75%;
+    .right-card {
+      width: 75%;
+    }
   }
 }
 </style>
