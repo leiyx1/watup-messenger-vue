@@ -6,9 +6,9 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     name: "watup?",
-    token: "",
     user: {
       id: "",
+      token: "",
       username: "",
       email: "",
       area: "",
@@ -42,16 +42,17 @@ export default new Vuex.Store({
       state.chatList = val;
     },
     unshiftChatList(state, val) {
-      var obj = state.chatList.find((obj) => obj.id == val.id);
+      var obj = state.chatList.find((obj) => obj.chatID == val.chatID);
       if (obj == null) {
         state.chatList.unshift(val);
         state.currentChat = val;
-        return;
+        return false;
       }
       var index = state.chatList.indexOf(obj);
       state.chatList.splice(index, 1);
       state.chatList.unshift(val);
       state.currentChat = val;
+      return true;
     },
     setCurrentChat(state, val) {
       state.currentChat = val;

@@ -60,6 +60,8 @@
 </template>
 
 <script>
+import getNeDB from "../JavaScript/NedbConfig";
+
 export default {
   name: "UserCard",
   props: ["user"],
@@ -72,50 +74,77 @@ export default {
   mounted() {
     console.log(this.user);
   },
+  computed: {
+    chatList: {
+      get: function() {
+        return this.$store.state.chatList;
+      },
+      set: function(val) {
+        this.$store.commit("setChatList", JSON.parse(JSON.stringify(val)));
+      },
+    },
+  },
   methods: {
     goChat() {
+      var foundChat = this.chatList.find((obj) => obj.chatID === this.user.id);
+      if (foundChat) {
+        this.$store.commit("unshiftChatList", foundChat);
+      } else {
+        var newChat = {
+          chatID: this.user.id,
+          name: this.user.username,
+          sign: "",
+          avatarUrl: this.user.avatarUrl,
+          messageList: [],
+        };
+        this.$store.commit("unshiftChatList", newChat);
+        getNeDB().localMessage.insert(newChat, function(err, docs) {
+          console.log("add new item:" + docs);
+        });
+      }
       this.$router.push("/index/chatpanel");
-      // findChatByUserID
-      var foundChat = {
-        id: "1",
-        name: "找到的聊天",
-        sign: "最后一条..",
-        avatarUrl:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        messageList: [
-          {
-            mine: true,
-            avatarUrl:
-              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-            content: "第一条消息",
-          },
-          {
-            mine: true,
-            avatarUrl:
-              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-            content: "第2条消息",
-          },
-          {
-            mine: false,
-            avatarUrl:
-              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-            content: "第3条消息",
-          },
-          {
-            mine: true,
-            avatarUrl:
-              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-            content: "hahha",
-          },
-          {
-            mine: true,
-            avatarUrl:
-              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-            content: "我是达斯吐尔😄",
-          },
-        ],
-      };
-      this.$store.commit("unshiftChatList", foundChat);
+
+      // // findChatByUserID
+      // var foundChat = {
+      //   id: "1",
+      //   name: "找到的聊天",
+      //   sign: "最后一条..",
+      //   avatarUrl:
+      //     "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+      //   messageList: [
+      //     {
+      //       mine: true,
+      //       avatarUrl:
+      //         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+      //       content: "第一条消息",
+      //     },
+      //     {
+      //       mine: true,
+      //       avatarUrl:
+      //         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+      //       content: "第2条消息",
+      //     },
+      //     {
+      //       mine: false,
+      //       avatarUrl:
+      //         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+      //       content: "第3条消息",
+      //     },
+      //     {
+      //       mine: true,
+      //       avatarUrl:
+      //         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+      //       content: "hahha",
+      //     },
+      //     {
+      //       mine: true,
+      //       avatarUrl:
+      //         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+      //       content: "我是达斯吐尔😄",
+      //     },
+      //   ],
+      // };
+      // this.$store.commit("unshiftChatList", foundChat);
       // this.$store.commit("setCurrentChat", this.user);
     },
     editNick() {

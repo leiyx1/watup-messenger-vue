@@ -30,7 +30,11 @@
             ></el-input>
           </el-form-item>
         </el-form>
+        <div></div>
         <div class="btn">
+          <el-checkbox v-model="autoLogin" style="padding-right: 10px"
+            >30天内自动登录</el-checkbox
+          >
           <el-button class="enter" type="primary" @click="submit1('loginInfo')"
             >登录</el-button
           >
@@ -101,7 +105,7 @@
 </template>
 
 <script>
-import db from "../JavaScript/NedbConfig";
+import getNedb from "../JavaScript/NedbConfig";
 import getWebsocket from "../JavaScript/Websocket";
 
 export default {
@@ -117,6 +121,7 @@ export default {
       }
     };
     return {
+      autoLogin: false,
       index: true,
       inputed: false,
       auth_time: "",
@@ -163,111 +168,100 @@ export default {
     };
   },
   methods: {
-    submit: function() {
-      //登陆时 与客户端建立websocket连接
-      //todo 理应存userID
-      this.initUserInfo();
-      this.initLocalMessages();
-      console.log(this);
-      this.$store.commit("setUsername", this.loginInfo.username);
-      getWebsocket(); //建立websocket连接
-
-      this.$router.push("/index/chatpanel");
-    },
-    initLocalMessages() {
-      //todo 离线聊天记录
-    },
-    initUserInfo() {
-      //todo 使用ajax从后台获取token，friendList，userId,blackList等
-      //在Vuex中存入信息
-      this.initUserInfoInVuex();
-      //在Nedb中存入信息
-      this.initUserInfoInNedb();
-    },
-    initUserInfoInVuex() {
-      this.$store.commit("setToken", 123); //todo 保存真正的token
-      this.$store.commit("setUsername", this.loginInfo.username);
-      this.$store.commit("setId", 1); //todo 保存真正的UserId
-    },
-    initUserInfoInNedb() {
-      let name = this.loginInfo.username;
-      db.userInfo.find({ username: name }, function(err, docs) {
-        //todo 这里理应用userId在本地数据库中进行查询
-        if (err !== null) {
-          console.log(`err occurred:`);
-          console.log(err);
-        } else {
-          if (docs.length === 0) {
-            //之前从未在本机登陆过
-            let newUserInfo = {
-              username: name,
-              token: undefined, //todo 需存入token 用于持久免密登录
-              userId: undefined, //todo 需存入userId
-              friendList: [
-                {
-                  ID: "1",
-                  name: "老板",
-                  nickname: "",
-                  avatar:
-                    "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-                },
-                {
-                  ID: "2",
-                  name: "钢铁侠",
-                  nickname: "老大",
-                  avatar:
-                    "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-                },
-                {
-                  ID: "3",
-                  name: "Happy",
-                  nickname: "绿巨人",
-                  avatar:
-                    "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-                },
-              ], //todo 需存入真正的friendList
-              //todo 这里可能还要放一些其他的东西
-            };
-            db.userInfo.insert(newUserInfo, function(err, newDocs) {
-              // newDoc is the newly inserted document, including its _id
-              //_id是由Nedb定义的一个量
-              if (err !== null) {
-                console.log(`err occured:`);
-                console.log(err);
-              } else {
-                console.log("初始化完成");
-                console.log(newDocs);
-              }
-            });
-          } else {
-            //之前登陆过,则在本地数据库中存有数据，则仅刷新一些变动属性
-            db.userInfo.update(
-              { username: name },
-              {
-                //todo 这里理应使用userId进行查询 同line151
-                $set: {
-                  username: name, //刷新本地数据库中的username，
-                  // 考虑到用户可能会在其他客户端更改username
-                  token: undefined, //todo 需存入token
-                  //friendList: undefined, //todo 需存入friendList
-                  //todo 这里可能还需要放一些其他的东西
-                },
-              },
-              {},
-              function(err, numReplaced) {
-                if (err !== null) {
-                  console.log(`err occured:`);
-                  console.log(err);
-                } else if (numReplaced === 1) {
-                  //仅有一个文档被更改
-                  console.log("初始化完成");
-                } else console.log("unexpected error"); //should not fall in here
-              }
-            );
-          }
-        }
+    clearNedb(){
+      let db = getNedb()
+      console.log(db.localMessage)
+      db.remove({},{multi: true},function (err, numRemoved) {
+        console.log(err)
+        console.log(numRemoved + "条数据被删除")
       });
     },
+    initLocalMessages() {
+      this.clearNedb()
+      //获取离线聊天 记录
+      //获取离线私聊记录
+      let chatList;
+      let self = this
+      this.$axios
+        .get(
+          "/api/message?access_token=" +
+          self.$store.state.user.access_token +
+          "&sort=asc&drop=false"
+        )
+        .then((res) => {
+          if (res.status === 200) {
+            getNedb().userInfo.find({}, function(err, docs) {
+              chatList = docs;
+
+              console.log("chatList before modify:")
+              console.log(chatList)
+              let data = res.data;
+              console.log(data)
+              for (let i = 0; i < data.length; i++) {
+                let obj = chatList.find(
+                  (obj) => obj.chatId === data[i].id && obj.type === "UNICAST"
+                );
+                if (obj) {//若找到
+                  let index = chatList.indexOf(obj);
+                  let chat = chatList[index];
+                  chatList.splice(index, 1);
+                  chatList.unshift(chat)
+                  chatList[0].unreadCount += data[i].messages.length;
+                  chatList[0].messageList.push(data[i].messages);
+                }else {//若无
+                  let friendList = self.$store.state.friends;
+                  console.log("friendList:")
+                  console.log(friendList);
+                  let length = data[i].messages.length;
+                  let obj = friendList.find(
+                    obj => obj.id === data[i].id
+                  )
+                  let newChat = {
+                    chatId: data[i].id,
+                    type: "UNICAST",
+                    name: obj.nickname.length === 0?obj.username:obj.nickname,
+                    avatarUrl: obj.avatarUrl,
+                    sign: data[i].messages[length-1].content,
+                    timestamp: data[i].messages[length-1].timestamp,
+                    unReadCount: length,
+                    messageList: data[i].messages,
+                  }
+                  chatList.unshift(newChat);
+                  console.log("chatList:")
+                  console.log(chatList)
+                }
+                self.$store.commit("setChatList", chatList)
+              }
+            });
+
+          } else console.log("error occurred");
+
+        });
+      // this.$axios
+      //   .get(
+      //     "/api/groupmessage?access_token=" +
+      //     this.$store.state.user.access_token +
+      //     "&sort=asc&drop=false"
+      //   )
+      //   .then((res) => {
+      //     if (res.status === 200) {
+      //       var data = res.data;
+      //       for (var i = 0; i < data.length; i++) {
+      //         var obj = chatList.find(
+      //           (obj) => obj.chatID === data[i].id && obj.type === "MULTICAST"
+      //         );
+      //         if (obj) {
+      //           var index = chatList.indexOf(obj);
+      //           chatList[index].unreadCount += data[i].messages.length;
+      //           chatList[index].messageList.push(data[i].messages);
+      //         }
+      //       }
+      //     } else console.log("errpr occurred");
+      //   });
+      // getNedb().updata()
+    },
+
+
     submit1(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
@@ -280,6 +274,7 @@ export default {
             )
             .then((successResponse) => {
               if (successResponse.data.code === 200) {
+
                 var data = successResponse.data.data;
                 var userdata = {
                   id: data.id,
@@ -290,6 +285,7 @@ export default {
                   avatarUrl: data.avatarUrl,
                   access_token: data.access_token,
                 };
+                //用户信息存入Vuex
                 this.$store.commit("setUser", userdata);
                 console.log(this.$store.state.user);
                 // var tokendata = {
@@ -302,6 +298,41 @@ export default {
                 // }
                 // ***
                 // NeDB setToken
+                //存入Nedb
+                let query = {id: data.id}
+                getNedb().userInfo.find(query, function (err, docs) {
+                  console.log(1111111111111111)
+                  console.log(docs)
+                  if(docs.length === 0){//没有登陆过
+                    getNedb().userInfo.insert(userdata, function (err, newDocs) {
+                      console.log("new user info inserted")
+                      console.log(newDocs)
+                    })
+                  }else {
+                    getNedb().update(query, {$set:userdata}), {}, function (err, numReplaced) {
+                      console.log(numReplaced)
+                    }
+                  }
+                });
+                //加载好友和群聊
+                this.loadGroups();
+                this.loadFriends();
+                //更新系统信息
+                getNedb().systemInfo.remove({}, { multi: true });
+                let updateSystemInfo = {
+                  lastUserId: data.id,
+                  token: data.access_token,
+                  autoLogin: this.autoLogin,
+                };
+                getNedb().systemInfo.insert(updateSystemInfo);
+                //初始化本地聊天记录
+                let self = this
+                setTimeout(function () {
+                  self.initLocalMessages()
+                }, 1000);
+
+                //建立websocket连接
+                getWebsocket();
                 this.$router.push("/index/chatpanel");
                 this.$notify({
                   title: "成功",
@@ -424,8 +455,67 @@ export default {
           console.log(error);
         });
     },
+    loadFriends() {
+      this.$axios
+        .get("/api/friends", {
+          params: {
+            access_token: this.$store.state.user.access_token,
+          },
+        })
+        .then((successResponse) => {
+          if (successResponse.status === 404) {
+            this.$notify.error({
+              title: "拉取好友失败",
+              message: successResponse.data.message,
+            });
+          } else if (successResponse.status === 200) {
+            this.$store.commit("setFriends", successResponse.data);
+          } else {
+            // this.$store.commit("setFriends", successResponse.data);
+            // console.log(successResponse);
+            this.$notify.error({
+              title: "Error",
+              message: "known error",
+            });
+          }
+        })
+        .catch((failResponse) => {
+          console.log(failResponse);
+        });
+    },
+    loadGroups() {
+      this.$axios
+        .get("/api/group", {
+          params: {
+            access_token: this.$store.state.user.access_token,
+            detailed: true,
+          },
+        })
+        .then((successResponse) => {
+          if (successResponse.status === 404) {
+            this.$notify.error({
+              title: "拉取群组失败",
+              message: successResponse.data.message,
+            });
+          } else if (successResponse.status === 200) {
+            this.$store.commit("setGroups", successResponse.data);
+          } else {
+            // this.$store.commit("setGroups", successResponse.data);
+            // console.log(successResponse);
+            this.$notify.error({
+              title: "Error",
+              message: "known error",
+            });
+          }
+        })
+        .catch((failResponse) => {
+          console.log(failResponse);
+        });
+    },
   },
-  mounted() {},
+  mounted() {
+    //todo 免密码登录
+  },
 };
 </script>
 

@@ -38,7 +38,7 @@
         <el-menu-item
           class="item"
           v-for="(item, index) in groups"
-          :key="index"
+          :key="item.id"
           @click="showGroup(item, index)"
         >
           <div class="item-avatar">
@@ -57,7 +57,7 @@
         <el-menu-item
           class="item"
           v-for="(item, index) in friends"
-          :key="index"
+          :key="item.id"
           @click="showFriend(item, index)"
         >
           <div class="item-avatar">
@@ -72,18 +72,24 @@
       </el-menu>
     </div>
     <div class="right-card">
-      <UserCard v-if="hasShowFriend" :user="currentItem" />
-      <!-- GroupCard v-if="hasShowGroup" :group="currentItem" -->
+      <div v-if="!hasShowFriend && !hasShowGroup"></div>
+      <UserCard
+        :user="currentItem"
+        v-else-if="hasShowFriend && !hasShowGroup"
+      />
+      <GroupCard :group="currentItem" v-else />
     </div>
   </div>
 </template>
 
 <script>
 import UserCard from "../UserCard.vue";
+import GroupCard from "../GroupCard.vue";
 export default {
   name: "FriendsPanel",
   components: {
     UserCard,
+    GroupCard,
   },
   data() {
     return {
@@ -95,9 +101,7 @@ export default {
     };
   },
   mounted() {
-    this.loadGroups();
-    this.loadFriends();
-    console.log("hao" + this.$store.state.access_token);
+    console.log("hao" + this.$store.state.user.access_token);
     // this.friends = [
     //   {
     //     id: "1",
@@ -150,17 +154,21 @@ export default {
   },
   methods: {
     showFriend(item) {
+      console.log("111");
+      this.hasShowGroup = false;
       this.hasShowFriend = true;
       this.currentItem = item;
       // this.chatList[index] = this.$store.state.currentChat;
-      console.log(this.currentItem);
+      // console.log(this.currentItem);
       // setMessageListByChatID
     },
     showGroup(item) {
+      console.log("222");
+      this.hadShowFriend = false;
       this.hasShowGroup = true;
       this.currentItem = item;
       // this.chatList[index] = this.$store.state.currentChat;
-      console.log(this.currentItem);
+      // console.log(this.currentItem);
       // setMessageListByChatID
     },
     querySearch(queryString, cb) {
@@ -178,73 +186,19 @@ export default {
     handleSelect(item) {
       console.log(item);
     },
-    loadFriends() {
-      this.$axios
-        .get("/api/friends", {
-          params: {
-            access_token: this.$store.state.user.access_token,
-          },
-        })
-        .then((successResponse) => {
-          if (successResponse.status === 404) {
-            this.$notify.error({
-              title: "拉取好友失败",
-              message: successResponse.data.message,
-            });
-          } else if (successResponse.status === 200) {
-            this.$store.commit("setFriends", successResponse.data);
-          } else {
-            // this.$store.commit("setFriends", successResponse.data);
-            // console.log(successResponse);
-            this.$notify.error({
-              title: "Error",
-              message: "known error",
-            });
-          }
-        })
-        .catch((failResponse) => {
-          console.log(failResponse);
-        });
-    },
-    loadGroups() {
-      this.$axios
-        .get("/api/group", {
-          params: {
-            access_token: this.$store.state.user.access_token,
-            detailed: true,
-          },
-        })
-        .then((successResponse) => {
-          if (successResponse.status === 404) {
-            this.$notify.error({
-              title: "拉取群组失败",
-              message: successResponse.data.message,
-            });
-          } else if (successResponse.status === 200) {
-            this.$store.commit("setGroups", successResponse.data);
-          } else {
-            // this.$store.commit("setGroups", successResponse.data);
-            // console.log(successResponse);
-            this.$notify.error({
-              title: "Error",
-              message: "known error",
-            });
-          }
-        })
-        .catch((failResponse) => {
-          console.log(failResponse);
-        });
-    },
   },
 };
 </script>
 
 <style lang="scss">
+.unseen {
+  display: none;
+}
 #divider {
   margin: 0px;
 }
 .divider2 {
-  margin: 10px;
+  margin-bottom: 20px;
   .el-divider__text {
     background-color: #d3d3d3;
     color: #808080;
@@ -264,12 +218,18 @@ export default {
     flex-direction: column;
     overflow-y: scroll;
     .side-top {
+      top: 0px;
+      z-index: 2;
+      background-color: #d3d3d3;
+      position: sticky;
       display: flex;
       flex-direction: row;
-      width: 100%;
+      width: 95%;
       padding-top: 2%;
-      padding-left: 3%;
+      padding-left: 5%;
       .el-autocomplete {
+        // position: fixed;
+        // top: 0;
         width: 70%;
       }
     }

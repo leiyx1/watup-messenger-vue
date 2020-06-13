@@ -30,7 +30,10 @@
           :key="index"
           :class="{ 'chat-mine': item.mine }"
         >
-          <img :src="item.avatarUrl" alt="头像" />
+          <img
+            :src="item.mine == true ? mineUrl : currentChat.avatarUrl"
+            alt="头像"
+          />
 
           <div class="message-body">
             <el-card class="card" shadow="hover">{{ item.content }}</el-card>
@@ -72,7 +75,7 @@
 
 <script>
 import getWebsocket from "../JavaScript/Websocket";
-import db from "../JavaScript/NedbConfig";
+import getNedb from "../JavaScript/NedbConfig";
 
 export default {
   name: "userChat",
@@ -83,6 +86,11 @@ export default {
     };
   },
   computed: {
+    mineUrl: {
+      get: function() {
+        return this.$store.state.user.avatarUrl;
+      },
+    },
     messageList: {
       get: function() {
         return this.$store.state.currentChat.messageList;
@@ -107,7 +115,7 @@ export default {
       console.log(command);
       if (command === "delete") {
         //删除聊天记录
-        db.localMessage.remove(
+        getNedb().localMessage.remove(
           { type: this.currentChat.type, chatId: this.currentChat.chatId },
           { multi: true },
           function(err, numRemove) {
@@ -137,7 +145,8 @@ export default {
         chatId: this.currentChat.chatId,
         type: this.currentChat.type,
       };
-      db.find(query)
+      getNedb()
+        .find(query)
         .sort({ timestamp: 1 })
         .exec(function(err, docs) {
           self.messageList = docs;
