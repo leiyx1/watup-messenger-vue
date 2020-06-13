@@ -108,6 +108,7 @@ export default {
       newFriendDialogVisible: false,
       newGroupDialogVisible: false,
       currentItem: {},
+      newFriendId: "",
     };
   },
   mounted() {
