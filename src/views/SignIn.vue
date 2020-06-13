@@ -175,7 +175,6 @@ export default {
       console.log(this);
       this.$store.commit("setUsername", this.loginInfo.username);
       getWebsocket(); //建立websocket连接
-
       this.$router.push("/index/chatpanel");
     },
     initLocalMessages() {
@@ -349,8 +348,7 @@ export default {
                   avatarUrl: data.avatarUrl,
                   access_token: data.access_token,
                 };
-
-                //存入Vuex
+                //用户信息存入Vuex
                 this.$store.commit("setUser", userdata);
                 console.log(this.$store.state.user);
                 // var tokendata = {
@@ -378,18 +376,18 @@ export default {
                       console.log(numReplaced)
                     }
                   }
-                })
+                });
                 //更新系统信息
-                getNedb().systemInfo.remove({}, {multi: true})
+                getNedb().systemInfo.remove({}, { multi: true });
                 let updateSystemInfo = {
                   lastUserId: data.id,
                   token: data.access_token,
                   autoLogin: this.autoLogin,
-                }
+                };
                 getNedb().systemInfo.insert(updateSystemInfo);
 
                 //初始化本地聊天记录
-                this.initLocalMessages()
+                this.initLocalMessages();
 
                 //建立websocket连接
                 getWebsocket();
@@ -515,7 +513,6 @@ export default {
           console.log(error);
         });
     },
-
   },
   mounted() {
     //todo 免密码登录

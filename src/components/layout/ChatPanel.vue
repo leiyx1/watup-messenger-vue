@@ -98,6 +98,7 @@ export default {
     let self = this;
     getNedb().localMessage.find({}, function(err, docs) {
       self.chatList = docs;
+      console.log("in docs:" + docs);
     });
     console.log(self.chatList);
   },
@@ -136,7 +137,8 @@ export default {
         chatId: this.currentChat.chatId,
         type: this.currentChat.type,
       };
-      getNedb().find(query)
+      getNedb()
+        .find(query)
         .sort({ timestamp: 1 })
         .exec(function(err, docs) {
           self.messageList = docs;

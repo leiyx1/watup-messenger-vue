@@ -38,7 +38,7 @@
         <el-menu-item
           class="item"
           v-for="(item, index) in groups"
-          :key="index"
+          :key="item.id"
           @click="showGroup(item, index)"
         >
           <div class="item-avatar">
@@ -57,7 +57,7 @@
         <el-menu-item
           class="item"
           v-for="(item, index) in friends"
-          :key="index"
+          :key="item.id"
           @click="showFriend(item, index)"
         >
           <div class="item-avatar">
@@ -97,7 +97,7 @@ export default {
   mounted() {
     this.loadGroups();
     this.loadFriends();
-    console.log("hao" + this.$store.state.access_token);
+    console.log("hao" + this.$store.state.user.access_token);
     // this.friends = [
     //   {
     //     id: "1",
@@ -153,7 +153,7 @@ export default {
       this.hasShowFriend = true;
       this.currentItem = item;
       // this.chatList[index] = this.$store.state.currentChat;
-      console.log(this.currentItem);
+      // console.log(this.currentItem);
       // setMessageListByChatID
     },
     showGroup(item) {
@@ -244,7 +244,7 @@ export default {
   margin: 0px;
 }
 .divider2 {
-  margin: 10px;
+  margin-bottom: 20px;
   .el-divider__text {
     background-color: #d3d3d3;
     color: #808080;
