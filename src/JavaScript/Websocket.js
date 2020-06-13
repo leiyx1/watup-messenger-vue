@@ -73,8 +73,13 @@ function createWebsocket() {
     //若新收到的消息不属于chatList中任何chat, 即chatList没有在上一步中被修改
     //则插入一个新的chat到chatList中
     if(!modified){
-
-
+      let friendList = self.$store.state.friends;
+      console.log("friendList:")
+      console.log(friendList);
+      // let obj = friendList.find(
+      //   obj => obj.id === id
+      // )
+      //
       // let newChat = {
       //   chatId: chatId,
       //   nickname: "wwwwwwwwww", //todo 使用真实姓名

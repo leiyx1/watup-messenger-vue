@@ -177,7 +177,7 @@ export default {
         console.log(err)
         console.log(numRemoved + "条systemInfo数据被删除")
       });
-      getNedb().localMessage.remove({},{},function (err, numRemoved) {
+      getNedb().localMessage.remove({name: "cast"},{},function (err, numRemoved) {
         console.log(err)
         console.log(numRemoved + "条localMessage数据被删除")
       });
@@ -196,18 +196,16 @@ export default {
         )
         .then((res) => {
           if (res.status === 200) {
-            getNedb().userInfo.find({}, function(err, docs) {
+            getNedb().localMessage.find({}, function(err, docs) {
               chatList = docs;
-              console.log("start init local messages")
+              console.log("start init local messages: uniChat")
               console.log("chatList before modify:")
               console.log(chatList)
               let data = res.data;
-              console.log(data)
               for (let i = 0; i < data.length; i++) {
                 let obj = chatList.find(
                   (obj) => obj.chatId === data[i].id && obj.type === "UNICAST"
                 );
-                console.log(obj)
                 if (obj) {//若找到
                   let index = chatList.indexOf(obj);
                   let chat = chatList[index];
@@ -237,8 +235,62 @@ export default {
                   console.log("chatList:")
                   console.log(chatList)
                 }
-                self.$store.commit("setChatList", chatList)
               }
+              self.$store.commit("setChatList", chatList)
+            });
+
+          } else console.log("error occurred");
+
+        });
+      this.$axios
+        .get(
+          "/api/groupmessage?access_token=" +
+          this.$store.state.user.access_token +
+          "&sort=asc&drop=false"
+        )
+        .then((res) => {
+          if (res.status === 200) {
+            getNedb().localMessage.find({}, function(err, docs) {
+              chatList = docs;
+              console.log("start init local messages: groupChat")
+              console.log("chatList before modify:")
+              console.log(chatList)
+              let data = res.data;
+              for (let i = 0; i < data.length; i++) {
+                let obj = chatList.find(
+                  (obj) => obj.chatId === data[i].id && obj.type === "MULTICAST"
+                );
+                if (obj) {//若找到
+                  let index = chatList.indexOf(obj);
+                  let chat = chatList[index];
+                  chatList.splice(index, 1);
+                  chatList.unshift(chat)
+                  chatList[0].unreadCount += data[i].messages.length;
+                  chatList[0].messageList.push(data[i].messages);
+                }else {//若无
+                  let friendList = self.$store.state.friends;
+                  console.log("friendList:")
+                  console.log(friendList);
+                  let length = data[i].messages.length;
+                  let obj = friendList.find(
+                    obj => obj.id === data[i].id
+                  )
+                  let newChat = {
+                    chatId: data[i].id,
+                    type: "UNICAST",
+                    name: obj.nickname.length === 0?obj.username:obj.nickname,
+                    avatarUrl: obj.avatarUrl,
+                    sign: data[i].messages[length-1].content,
+                    timestamp: data[i].messages[length-1].timestamp,
+                    unReadCount: length,
+                    messageList: data[i].messages,
+                  }
+                  chatList.unshift(newChat);
+                  console.log("chatList:")
+                  console.log(chatList)
+                }
+              }
+              self.$store.commit("setChatList", chatList)
             });
 
           } else console.log("error occurred");
