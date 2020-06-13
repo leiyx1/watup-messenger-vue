@@ -6,7 +6,7 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     name: "watup?",
-    token: "",
+    access_token: "43297eb2-1134-4a51-9ee2-184ae4f71aa3",
     user: {
       id: "",
       nickname: "",
