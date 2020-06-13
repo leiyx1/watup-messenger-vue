@@ -26,19 +26,15 @@ function createWebsocket() {
     let chatId;
     if(data.type === "MULTICAST") chatId = data.groupId;
     else if(data.type === "UNICAST")
-      chatId = userId === data.senderId ? data.senderId : data.receiverId;
+      chatId = userId === data.senderId ? data.receiverId : data.senderId;
     else{//todo data.type === NOTIFICATION
 
     }
 
-    //设置mine属性
-    let mine = false;
-    if (store.state.user.userId === data.senderId) mine = true;
-
     //设置新的message
     let newMessage = {
       type: data.type,
-      mine: mine,
+      mine: store.state.user.id === data.senderId,
       timestamp: data.timestamp,
       content: data.content,
       chatId: chatId,
@@ -48,11 +44,11 @@ function createWebsocket() {
     //更新现有chatList
     let updateChatList = store.state.chatList;
     let modified = false;
-    for(let i = 0; i < updateChatList.lengeh; ++i){
+    for(let i = 0; i < updateChatList.length; ++i){
       let currentChat = updateChatList[i];
       if(data.type === currentChat.type && currentChat.chatId === chatId){
         //将newMessage放入chat的messageList中
-        currentChat.messageList.unshift(newMessage)
+        currentChat.messageList.push(newMessage)
 
         //更新unreadCount
         if(currentChat.type === store.state.currentChat.type
@@ -70,18 +66,21 @@ function createWebsocket() {
     //若新收到的消息不属于chatList中任何chat, 即chatList没有在上一步中被修改
     //则插入一个新的chat到chatList中
     if(!modified){
-      let friendList = self.$store.state.friends;
-      let gourpList = self.$store.state.groups;
+      let friendList = store.state.friends;
+      let gourpList = store.state.groups;
       console.log("friendList:")
       console.log(friendList);
       console.log("groupList:")
       console.log(gourpList)
 
       let obj, name, avatarUrl
+      console.log("chatId:")
+      console.log(chatId)
       if(data.type === "UNICAST"){
         obj = friendList.find(
           (obj) => obj.id === chatId,
         )
+        console.log(obj)
         name = obj.nickname.length === 0?obj.username:obj.nickname;
         avatarUrl = obj.avatarUrl
       }else {

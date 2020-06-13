@@ -63,7 +63,7 @@
         type="textarea"
         v-model="text"
         :rows="4"
-        @keyup.enter="sendUniMessage()"
+        @keyup.enter.native="sendUniMessage()"
       >
       </el-input>
       <div class="footer">
@@ -131,20 +131,15 @@ export default {
     sendUniMessage() {
       console.log(this.currentChat)
       console.log(`send uni message:` + this.text + " to " + this.currentChat.chatId);
-      let message
+      let message = {
+        type: this.currentChat.type,
+        receiverId: this.currentChat.chatId,
+        content: `${this.text}`,
+      }
       if(this.currentChat.type === "UNICAST")
-        message = {
-          type: "UNICAST",
-          receiverId: this.currentChat.chatId,
-          content: `${this.text}`,
-        }
+        message.receiverId = this.currentChat.chatId;
       else if(this.currentChat.type === "MULTICAST")
-        message = {
-          type: "MULTICAST",
-          groupId: this.currentChat.chatId,
-          content: `${this.text}`,
-        }
-
+        message.groupId = this.currentChat.chatId;
       getWebsocket().send(JSON.stringify(message));
       this.refreshMessages();
     },
