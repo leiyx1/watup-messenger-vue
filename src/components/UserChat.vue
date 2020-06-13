@@ -172,7 +172,7 @@ export default {
   beforeMount() {
     // setMessageListByChatID
     console.log("111");
-    this.refreshMessages();
+    // this.refreshMessages();
   },
 };
 </script>
