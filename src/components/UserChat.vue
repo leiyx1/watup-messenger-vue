@@ -141,6 +141,7 @@ export default {
       else if(this.currentChat.type === "MULTICAST")
         message.groupId = this.currentChat.chatId;
       getWebsocket().send(JSON.stringify(message));
+      this.text = "";
       this.refreshMessages();
     },
     refreshMessages() {
