@@ -14,7 +14,7 @@
       </el-dropdown>
     </div>
     <el-divider class="divider" />
-    <div class="message">
+    <div class="message" id="message">
       <!-- <div
         class="others"
         v-for="item in currentChat.messages"
@@ -166,7 +166,7 @@ export default {
   beforeMount() {
     // setMessageListByChatID
     console.log("111");
-    this.refreshMessages();
+    // this.refreshMessages();
   },
 };
 </script>

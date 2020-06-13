@@ -110,6 +110,7 @@
       </div>
       <el-divider class="divider1" />
       <div class="level-3">
+        <el-button @click="clearNeDB">清空本地数据</el-button>
         <el-button @click="save">黑名单</el-button>
         <el-button @click="logout" type="danger">注销</el-button>
       </div>
@@ -119,6 +120,7 @@
 
 <script>
 import getWebsocket from "../../JavaScript/Websocket";
+import getNeDB from "../../JavaScript/NedbConfig";
 export default {
   data() {
     return {
@@ -219,6 +221,33 @@ export default {
     logout() {
       this.$router.push("/login");
       getWebsocket().close();
+    },
+    clearNeDB() {
+      this.$confirm("此操作将永久删除用户本地数据, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }).then(() => {
+        console.log(getNeDB());
+        getNeDB().userInfo.remove({}, { multi: true }, function(
+          err,
+          numRemoved
+        ) {
+          console.log(numRemoved + "条userInfo数据被删除");
+        });
+        getNeDB().localMessage.remove({}, { multi: true }, function(
+          err,
+          numRemoved
+        ) {
+          console.log(numRemoved + "条localMessage数据被删除");
+        });
+        getNeDB().systemInfo.remove({}, { multi: true }, function(
+          err,
+          numRemoved
+        ) {
+          console.log(numRemoved + "条systemInfo数据被删除");
+        });
+      });
     },
     submit() {
       // 修改个人资料

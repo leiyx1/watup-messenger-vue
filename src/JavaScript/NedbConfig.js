@@ -3,13 +3,15 @@ import { remote } from "electron";
 import store from "../store/index";
 
 let db;
+let lastid;
 let Datastore = require("nedb");
 
 export default function getNedb() {
-  if (db) {
+  if (db && store.state.id === lastid) {
     return db;
   } else {
     let id = store.state.user.id;
+    lastid = id;
     db = new Datastore({
       filename: path.join(remote.app.getAppPath(), id, "db/device.db"),
       autoload: true,
