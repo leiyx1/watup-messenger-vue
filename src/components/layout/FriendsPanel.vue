@@ -95,8 +95,6 @@ export default {
     };
   },
   mounted() {
-    this.loadGroups();
-    this.loadFriends();
     console.log("hao" + this.$store.state.user.access_token);
     // this.friends = [
     //   {
@@ -177,63 +175,6 @@ export default {
     },
     handleSelect(item) {
       console.log(item);
-    },
-    loadFriends() {
-      this.$axios
-        .get("/api/friends", {
-          params: {
-            access_token: this.$store.state.user.access_token,
-          },
-        })
-        .then((successResponse) => {
-          if (successResponse.status === 404) {
-            this.$notify.error({
-              title: "拉取好友失败",
-              message: successResponse.data.message,
-            });
-          } else if (successResponse.status === 200) {
-            this.$store.commit("setFriends", successResponse.data);
-          } else {
-            // this.$store.commit("setFriends", successResponse.data);
-            // console.log(successResponse);
-            this.$notify.error({
-              title: "Error",
-              message: "known error",
-            });
-          }
-        })
-        .catch((failResponse) => {
-          console.log(failResponse);
-        });
-    },
-    loadGroups() {
-      this.$axios
-        .get("/api/group", {
-          params: {
-            access_token: this.$store.state.user.access_token,
-            detailed: true,
-          },
-        })
-        .then((successResponse) => {
-          if (successResponse.status === 404) {
-            this.$notify.error({
-              title: "拉取群组失败",
-              message: successResponse.data.message,
-            });
-          } else if (successResponse.status === 200) {
-            this.$store.commit("setGroups", successResponse.data);
-          } else {
-            // this.$store.commit("setGroups", successResponse.data);
-            // console.log(successResponse);
-            this.$notify.error({
-              title: "Error",
-              message: "known error",
-            });
-          }
-        })
-        .catch((failResponse) => {
-          console.log(failResponse);
-        });
     },
   },
 };

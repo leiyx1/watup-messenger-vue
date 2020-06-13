@@ -30,10 +30,11 @@
             ></el-input>
           </el-form-item>
         </el-form>
-        <div>
-          <el-checkbox v-model="autoLogin">30天内自动登录</el-checkbox>
-        </div>
+        <div></div>
         <div class="btn">
+          <el-checkbox v-model="autoLogin" style="padding-right: 10px"
+            >30天内自动登录</el-checkbox
+          >
           <el-button class="enter" type="primary" @click="submit1('loginInfo')"
             >登录</el-button
           >
@@ -282,7 +283,9 @@ export default {
                   autoLogin: this.autoLogin,
                 };
                 getNedb().systemInfo.insert(updateSystemInfo);
-
+                //加载好友和群聊
+                this.loadGroups();
+                this.loadFriends();
                 //初始化本地聊天记录
                 this.initLocalMessages();
 
@@ -408,6 +411,63 @@ export default {
         })
         .catch(function(error) {
           console.log(error);
+        });
+    },
+    loadFriends() {
+      this.$axios
+        .get("/api/friends", {
+          params: {
+            access_token: this.$store.state.user.access_token,
+          },
+        })
+        .then((successResponse) => {
+          if (successResponse.status === 404) {
+            this.$notify.error({
+              title: "拉取好友失败",
+              message: successResponse.data.message,
+            });
+          } else if (successResponse.status === 200) {
+            this.$store.commit("setFriends", successResponse.data);
+          } else {
+            // this.$store.commit("setFriends", successResponse.data);
+            // console.log(successResponse);
+            this.$notify.error({
+              title: "Error",
+              message: "known error",
+            });
+          }
+        })
+        .catch((failResponse) => {
+          console.log(failResponse);
+        });
+    },
+    loadGroups() {
+      this.$axios
+        .get("/api/group", {
+          params: {
+            access_token: this.$store.state.user.access_token,
+            detailed: true,
+          },
+        })
+        .then((successResponse) => {
+          if (successResponse.status === 404) {
+            this.$notify.error({
+              title: "拉取群组失败",
+              message: successResponse.data.message,
+            });
+          } else if (successResponse.status === 200) {
+            this.$store.commit("setGroups", successResponse.data);
+          } else {
+            // this.$store.commit("setGroups", successResponse.data);
+            // console.log(successResponse);
+            this.$notify.error({
+              title: "Error",
+              message: "known error",
+            });
+          }
+        })
+        .catch((failResponse) => {
+          console.log(failResponse);
         });
     },
   },
