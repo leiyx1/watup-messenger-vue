@@ -118,6 +118,7 @@
 </template>
 
 <script>
+import getWebsocket from "../../JavaScript/Websocket";
 export default {
   data() {
     return {
@@ -217,6 +218,7 @@ export default {
     },
     logout() {
       this.$router.push("/login");
+      getWebsocket().close();
     },
     submit() {
       // 修改个人资料

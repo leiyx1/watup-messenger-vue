@@ -1,11 +1,12 @@
 <template>
-  <div class="card">
+  <div class="group-card">
     <div class="level-1">
       <div class="level-1-word">
         <div style="height: 60px">
           <span v-if="!editName" class="span1"
-            >{{ user.nickname === "" ? user.username : user.nickname }}
+            >{{ group.name }}
             <el-button
+              v-if="isManager"
               type="text"
               icon="el-icon-edit"
               @click="editNick"
@@ -25,49 +26,46 @@
             </el-tooltip>
           </div>
         </div>
-        <div :class="{ unseen: user.nickname == '' }">
-          <p>用户名:{{ user.username }}</p>
-        </div>
-        <div>
-          <p>watup_ID:{{ user.id }}</p>
-        </div>
         <!-- <el-button class="btn" type="text">修改备注</el-button> -->
       </div>
-      <img :src="user.avatarUrl" />
+      <img :src="group.avatarUrl" />
     </div>
     <el-divider class="divider1" />
     <div class="level-2">
-      <ul>
-        <li>地 &nbsp;区: China</li>
-        <li>签 &nbsp;名: Coolo(*￣▽￣*)ブ</li>
-        <li>来 &nbsp;源: 通过搜索ID添加</li>
-      </ul>
+      <div>
+        <el-card> </el-card>
+      </div>
     </div>
     <el-divider class="divider1" />
     <div class="level-3">
       <el-button @click="goChat" style="margin-right:5%">发起聊天</el-button>
-      <el-dropdown @command="handleCommand">
-        <el-button>
-          更多操作<i class="el-icon-arrow-down el-icon--right"></i>
-        </el-button>
-        <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item command="a">拉黑</el-dropdown-item>
-          <el-dropdown-item command="b">删除</el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
+      <el-button @click="exitGroup" style="margin-right:5%">{{
+        isManager ? "解散群聊" : "退出群聊"
+      }}</el-button>
     </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: "UserCard",
-  props: ["user"],
+  name: "GroupCard",
+  props: ["group"],
   data() {
     return {
       editName: false,
       newNick: "",
     };
+  },
+  mounted() {
+    console.log("");
+    console.log();
+  },
+  computed: {
+    isManager: {
+      get() {
+        return this.$store.state.user.id === this.group.managerId;
+      },
+    },
   },
   methods: {
     goChat() {
@@ -160,6 +158,7 @@ export default {
 
       // 涉及到更新数据库
     },
+    exitGroup() {},
   },
 };
 </script>
@@ -173,7 +172,7 @@ export default {
   width: 77%;
   margin: auto;
 }
-.card {
+.group-card {
   height: 100%;
   .level-1 {
     display: flex;
@@ -206,13 +205,11 @@ export default {
   }
   .level-2 {
     height: 23%;
-    ul {
-      padding-left: 0;
-      list-style: none;
-      li {
-        padding-left: 20%;
-        padding-top: 2%;
-        text-align: left;
+    div {
+      height: 100%;
+      .el-card {
+        height: 100%;
+        margin: 5px 10%;
       }
     }
   }

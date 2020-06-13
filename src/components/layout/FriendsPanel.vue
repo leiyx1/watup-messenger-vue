@@ -72,18 +72,24 @@
       </el-menu>
     </div>
     <div class="right-card">
-      <UserCard v-if="hasShowFriend" :user="currentItem" />
-      <!-- GroupCard v-if="hasShowGroup" :group="currentItem" -->
+      <div v-if="!hasShowFriend && !hasShowGroup"></div>
+      <UserCard
+        :user="currentItem"
+        v-else-if="hasShowFriend && !hasShowGroup"
+      />
+      <GroupCard :group="currentItem" v-else />
     </div>
   </div>
 </template>
 
 <script>
 import UserCard from "../UserCard.vue";
+import GroupCard from "../GroupCard.vue";
 export default {
   name: "FriendsPanel",
   components: {
     UserCard,
+    GroupCard,
   },
   data() {
     return {
@@ -148,6 +154,8 @@ export default {
   },
   methods: {
     showFriend(item) {
+      console.log("111");
+      this.hasShowGroup = false;
       this.hasShowFriend = true;
       this.currentItem = item;
       // this.chatList[index] = this.$store.state.currentChat;
@@ -155,10 +163,12 @@ export default {
       // setMessageListByChatID
     },
     showGroup(item) {
+      console.log("222");
+      this.hadShowFriend = false;
       this.hasShowGroup = true;
       this.currentItem = item;
       // this.chatList[index] = this.$store.state.currentChat;
-      console.log(this.currentItem);
+      // console.log(this.currentItem);
       // setMessageListByChatID
     },
     querySearch(queryString, cb) {
@@ -181,6 +191,9 @@ export default {
 </script>
 
 <style lang="scss">
+.unseen {
+  display: none;
+}
 #divider {
   margin: 0px;
 }
@@ -205,12 +218,18 @@ export default {
     flex-direction: column;
     overflow-y: scroll;
     .side-top {
+      top: 0px;
+      z-index: 2;
+      background-color: #d3d3d3;
+      position: sticky;
       display: flex;
       flex-direction: row;
-      width: 100%;
+      width: 95%;
       padding-top: 2%;
-      padding-left: 3%;
+      padding-left: 5%;
       .el-autocomplete {
+        // position: fixed;
+        // top: 0;
         width: 70%;
       }
     }
