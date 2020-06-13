@@ -206,32 +206,19 @@ export default {
                   chatList[0].unreadCount += data[i].messages.length;
                   chatList[0].messageList.push(data[i].messages);
                 }else {//若无
-                  self.$axios.get(
-                      '/api/friend/search/id' +
-                      '?access_token=' +
-                      self.$store.state.user.access_token +
-                      '&friendId=' +
-                      data[i].id
-                    ).then(res=>{
-                      if(res.status === 200){
-                        let data = res.data;
-                        console.log(data)
-                        let name = data.nickname.length === 0?data.username:data.nickname;
-                        let newChat = {
-                          chatId: data[i].id,
-                          type: "UNICAST",
-                          name: name,
-                          avatarUrl: data.avatarUrl,
-                          sign: data.sign,
-                          unReadCount: data[i].messages.length,
-                          messageList: data[i].messages,
-                        }
-                        chatList.unshift(newChat);
-                        console.log(chatList)
-                        console.log(111111111111111111111)
-                        self.$store.commit("setChatList", chatList)
-                      }
-                    })
+                  let newChat = {
+                    chatId: data[i].id,
+                    type: "UNICAST",
+                    name: name,
+                    avatarUrl: data.avatarUrl,
+                    sign: data.sign,
+                    unReadCount: data[i].messages.length,
+                    messageList: data[i].messages,
+                  }
+                  chatList.unshift(newChat);
+                  console.log(chatList)
+                  console.log(111111111111111111111)
+                  self.$store.commit("setChatList", chatList)
                 }
               }
             });
@@ -262,68 +249,6 @@ export default {
         });
       // getNedb().updata()
     },
-
-      // this.$axios.get('/api/message?access_token=' +
-      //    this.$store.state.user.access_token +
-      //   '&sort=asc&drop=false'
-      // ).then(res =>{
-      //   if(res.status === 200){
-      //     let data = res.data;
-      //     let chatList = this.$store.state.chatList;
-      //     for(let i = 0; i < data.length; ++i){//每条插入 没有就不插
-      //       let chat = data[i];
-      //       let id = chat.id, type = "UNICAST", messages = chat.messages;
-      //       let modified = false;
-      //       if(chatList !== null)
-      //         for(let k = 0; k < chatList.length; ++k){
-      //           let chat = chatList[k];
-      //           if(chat.chatId === id && chat.type === type){
-      //             //找到就挪到第一个
-      //             chatList.splice(i, 1);
-      //             chatList.unshift(chat);
-      //             modified = true;
-      //             break;
-      //           }
-      //         }
-      //       if(!modified){//若没有 则新插一个进去
-      //         let name;
-      //         this.$axios.get(
-      //           '/api/friend/search/id' +
-      //           '?access_token=' +
-      //           this.$store.state.user.access_token +
-      //           '&friendId=' +
-      //           id
-      //         ).then(res=>{
-      //           if(res.status === 200){
-      //             let data = res.data;
-      //             console.log(data)
-      //             name = data.nickname.length === 0?data.username:data.nickname;
-      //             let newChat = {
-      //               chatId: id,
-      //               type: type,
-      //               name: name,
-      //               avatarUrl: data.avatarUrl,
-      //               sign: data.sign,
-      //               unReadCount: messages.length,
-      //               messageList: []
-      //             }
-      //             chatList.unshift(newChat);
-      //           }
-      //         })
-      //       }
-      //       let updateChat = chatList[0];
-      //       chatList[0] = updateChat;
-      //       console.log(messages)
-      //       for(let k = 0; k < messages.length; ++k){
-      //         updateChat.messageList.unshift(messages[k])
-      //       }
-      //       this.$store.commit("setChatList", chatList)
-      //       console.log(1111111111111111)
-      //       console.log(chatList)
-      //     }
-      //   }
-      //   else console.log("errpr occurred")
-      // })
 
 
     submit1(formName) {
