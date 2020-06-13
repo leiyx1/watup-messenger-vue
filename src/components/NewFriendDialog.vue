@@ -4,7 +4,7 @@
       <el-input placeholder="watup code" prefix-icon="el-icon-search" v-model="userId" @change="searchUser"></el-input>
       <el-card v-for="user in users" :key="user.id" shadow="hover">
         <div id="info">
-          <div><img :src="user.avatarUrl" alt="头像"></div>
+          <div><img id='avatar' :src="user.avatarUrl" alt="头像"></div>
           <div>{{user.username}}</div>
         </div>
       </el-card>
@@ -80,19 +80,24 @@
                 }
             },
             close() {
+                this.dialogVisible = false;
                 this.userId =  "";
                 this.users =  [];
                 this.remark = "";
-                this.dialogVisible = false;
             }
         }
     }
 </script>
 
 <style scoped>
-#info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+  #info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  #avatar {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+  }
 </style>
