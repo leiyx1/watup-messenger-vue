@@ -18,20 +18,28 @@
           <el-table-column
               prop="senderId"
               label="watup-id"
-              width="180">
+              width="100">
           </el-table-column>
           <el-table-column
               prop="remark"
               label="备注"
-              width="300"
               style="float: right;">
           </el-table-column>
-          <el-table-column>
+          <el-table-column width="70">
             <template slot-scope="scope">
               <el-button
                   size="mini"
                   @click="handleFriendRequest(scope.$index, scope.row)" type="success">
                 同意
+              </el-button>
+            </template>
+          </el-table-column>
+          <el-table-column width="70">
+            <template slot-scope="scope">
+              <el-button
+                  size="mini"
+                  @click="rejectFriendRequest(scope.$index, scope.row)">
+                拒绝
               </el-button>
             </template>
           </el-table-column>
@@ -112,6 +120,32 @@
                         this.$notify.error({
                             title: "错误",
                             message: "失效的邀请"
+                        })
+                    })
+
+            },
+            rejectFriendRequest(index, row) {
+                this.$axios
+                    .delete("api/friend/request?access_token="+this.$store.state.access_token+"&requestId="+row.id)
+                    .then(res => {
+                        if (res.status === 200) {
+                            this.$notify({
+                                title: "成功",
+                                message: "已拒绝"+row.id ,
+                                type: "success"
+                            })
+                        } else {
+                            this.$notify.error({
+                                title: "错误",
+                                message: "请求已被处理"
+                            })
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        this.$notify.error({
+                            title: "错误",
+                            message: "请求已被处理"
                         })
                     })
 
