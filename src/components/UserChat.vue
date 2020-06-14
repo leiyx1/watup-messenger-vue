@@ -14,7 +14,7 @@
       </el-dropdown>
     </div>
     <el-divider class="divider" />
-    <div class="message">
+    <div class="message" id="message">
       <!-- <div
         class="others"
         v-for="item in currentChat.messages"
@@ -63,11 +63,11 @@
         type="textarea"
         v-model="text"
         :rows="4"
-        @keyup.enter="send()"
+        @keyup.enter.native="sendUniMessage()"
       >
       </el-input>
       <div class="footer">
-        <el-button class="btn" @click="send()">发送</el-button>
+        <el-button class="btn" @click="sendUniMessage()">发送</el-button>
       </div>
     </div>
   </div>
@@ -129,29 +129,24 @@ export default {
       }
     },
     sendUniMessage() {
-      let ws = getWebsocket();
-      console.log(`send uni message:` + this.text);
-      // ws.send(JSON.stringify({
-      //   type: "UNICAST",
-      //   receiverId: "5eccfc418e17974a04b86b19",
-      //   content: `${this.text}`,
-      // }))
-      ws.send(this.text);
-      this.refreshMessages();
-    },
-    refreshMessages() {
-      let self = this;
-      let query = {
-        chatId: this.currentChat.chatId,
+      console.log(this.currentChat);
+      console.log(
+        `send uni message:` + this.text + " to " + this.currentChat.chatId
+      );
+      let message = {
         type: this.currentChat.type,
+        receiverId: this.currentChat.chatId,
+        content: `${this.text}`,
       };
-      getNedb()
-        .find(query)
-        .sort({ timestamp: 1 })
-        .exec(function(err, docs) {
-          self.messageList = docs;
-        });
-
+      if (this.currentChat.type === "UNICAST")
+        message.receiverId = this.currentChat.chatId;
+      else if (this.currentChat.type === "MULTICAST")
+        message.groupId = this.currentChat.chatId;
+      getWebsocket().send(JSON.stringify(message));
+      this.text = "";
+      this.scrollToBottom();
+    },
+    scrollToBottom() {
       this.$nextTick(() => {
         let msg = document.getElementById("message"); // 获取对象
         if (msg.scrollHeight !== null && msg.scrollTop !== null)
@@ -166,7 +161,7 @@ export default {
   beforeMount() {
     // setMessageListByChatID
     console.log("111");
-    this.refreshMessages();
+    // this.refreshMessages();
   },
 };
 </script>
@@ -222,6 +217,10 @@ export default {
       }
       li.chat-mine {
         flex-direction: row-reverse;
+
+      }
+      li.chat-mine.el-card{
+        color: #409EFF;
       }
     }
   }

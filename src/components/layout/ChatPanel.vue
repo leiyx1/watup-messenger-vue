@@ -38,7 +38,7 @@
             </div>
             <div class="item-word">
               <span>{{ chat.sign }}</span
-              ><span>{{chat.timestamp}}</span>
+              ><span class="right">{{ time(chat.timestamp) }}</span>
             </div>
           </div>
         </el-menu-item>
@@ -93,44 +93,30 @@ export default {
       },
     },
   },
-  mounted() {
-    // this.loadChatList();
-    let self = this;
-    getNedb().localMessage.find({}, function(err, docs) {
-      self.chatList = docs;
-      console.log("in docs:" + docs);
-    });
-    console.log(self.chatList);
-  },
+  mounted() {},
   methods: {
-    loadChatList() {
-      this.$axios
-        .get("usercenter/chatList", {
-          params: {
-            userID: this.$store.state.user.ID,
-          },
-        })
-        .then((successResponse) => {
-          // var responseResult = JSON.stringify(successResponse.data);
-          if (successResponse.data.code === 200) {
-            this.$store.commit("setChatList", successResponse.data.data);
-          } else {
-            this.$notify.error({
-              title: "错误",
-              message: "拉取最近聊天出错",
-            });
-          }
-        })
-        .catch((failResponse) => {
-          console.log(failResponse);
-        });
+    time: function(val) {
+      var x = new Date();
+      var c = val.split("T");
+      var cm = parseInt(c[0].split("-")[1]),
+        cd = parseInt(c[0].split("-")[2]);
+      var xm = x.getMonth() + 1,
+        xd = x.getDate();
+      console.log(xm, cm, xd, cd);
+      if (xm == cm && xd == cd) {
+        // today's message
+        var res = c[1].split(":");
+        return res[0] + ":" + res[1];
+      } else {
+        res = c[0].split("-");
+        return res[1] + "-" + res[2];
+      }
     },
+
     showChat(chat, index) {
       this.show = true;
       this.currentChat = chat;
-      this.$store.commit("resetUnread");
-      this.chatList[index] = this.$store.state.currentChat;
-      console.log(this.currentChat);
+      this.$store.commit("resetUnread", index);
       // setMessageListByChatID
       let self = this;
       let query = {
@@ -138,10 +124,10 @@ export default {
         type: this.currentChat.type,
       };
       getNedb()
-        .find(query)
+        .localMessage.find(query)
         .sort({ timestamp: 1 })
         .exec(function(err, docs) {
-          self.messageList = docs;
+          self.messageList = docs[0].messageList;
         });
     },
     goFriendPanel() {
@@ -215,6 +201,10 @@ export default {
             padding-left: 5px;
             color: #808080;
             // height: 67%;
+          }
+          .right {
+            float: right;
+            padding-right: 15px;
           }
         }
       }

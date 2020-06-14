@@ -14,12 +14,22 @@
             <i class="el-icon-plus"> </i>
           </el-button>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="newFriendDialogVisible">添加好友</el-dropdown-item>
-            <el-dropdown-item command="newGroupDialogVisible">新建群组</el-dropdown-item>
+            <el-dropdown-item command="newFriendDialogVisible"
+              >添加好友</el-dropdown-item
+            >
+            <el-dropdown-item command="newGroupDialogVisible"
+              >新建群组</el-dropdown-item
+            >
           </el-dropdown-menu>
         </el-dropdown>
-        <new-friend-dialog :visible.sync="newFriendDialogVisible"></new-friend-dialog>
-        <new-group-dialog :visible.sync="newGroupDialogVisible" friend-list="friends" @new-group="loadGroups"></new-group-dialog>
+        <new-friend-dialog
+          :visible.sync="newFriendDialogVisible"
+        ></new-friend-dialog>
+        <new-group-dialog
+          :visible.sync="newGroupDialogVisible"
+          friend-list="friends"
+          @new-group="loadG"
+        ></new-group-dialog>
       </div>
       <el-divider id="divider"/>
       <el-menu
@@ -86,7 +96,7 @@
 </template>
 
 <script>
-
+import { loadGroups } from "@/JavaScript/load.js";
 import UserCard from "../UserCard.vue";
 import NewFriendDialog from "@/components/NewFriendDialog";
 import NewGroupDialog from "@/components/NewGroupDialog";
@@ -110,6 +120,7 @@ export default {
       newFriendDialogVisible: false,
       newGroupDialogVisible: false,
       currentItem: {},
+      newFriendId: "",
     };
   },
   mounted() {
@@ -178,6 +189,9 @@ export default {
           this.hasShowFriend = false;
           this.hasShowRequest = true;
       },
+    loadG() {
+      loadGroups();
+    },
     showFriend(item) {
       console.log("111");
       this.hasShowGroup = false;

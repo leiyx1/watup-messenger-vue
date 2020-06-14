@@ -107,7 +107,7 @@
 <script>
 import getNedb from "../JavaScript/NedbConfig";
 import getWebsocket from "../JavaScript/Websocket";
-
+import { loadGroups, loadFriends } from "../JavaScript/load";
 export default {
   name: "Home",
   data() {
@@ -147,6 +147,7 @@ export default {
         id: [
           { required: true, message: "请设置你的watup号" },
           { min: 3, max: 12, message: "长度在3-12之间" },
+          { pattern: /^[A-Za-z0-9]+$/, message: "由字母和数字组成" },
         ],
         username: [
           { required: true, message: "请设置你的用户名" },
@@ -168,100 +169,113 @@ export default {
     };
   },
   methods: {
-    clearNedb(){
-      let db = getNedb()
-      console.log(db.localMessage)
-      db.remove({},{multi: true},function (err, numRemoved) {
-        console.log(err)
-        console.log(numRemoved + "条数据被删除")
-      });
-    },
     initLocalMessages() {
-      this.clearNedb()
       //获取离线聊天 记录
       //获取离线私聊记录
-      let chatList;
-      let self = this
       this.$axios
         .get(
           "/api/message?access_token=" +
-          self.$store.state.user.access_token +
-          "&sort=asc&drop=false"
+            this.$store.state.user.access_token +
+            "&sort=asc&drop=false"
         )
         .then((res) => {
           if (res.status === 200) {
-            getNedb().userInfo.find({}, function(err, docs) {
-              chatList = docs;
-
-              console.log("chatList before modify:")
-              console.log(chatList)
-              let data = res.data;
-              console.log(data)
-              for (let i = 0; i < data.length; i++) {
-                let obj = chatList.find(
-                  (obj) => obj.chatId === data[i].id && obj.type === "UNICAST"
-                );
-                if (obj) {//若找到
-                  let index = chatList.indexOf(obj);
-                  let chat = chatList[index];
-                  chatList.splice(index, 1);
-                  chatList.unshift(chat)
-                  chatList[0].unreadCount += data[i].messages.length;
-                  chatList[0].messageList.push(data[i].messages);
-                }else {//若无
-                  let friendList = self.$store.state.friends;
-                  console.log("friendList:")
-                  console.log(friendList);
-                  let length = data[i].messages.length;
-                  let obj = friendList.find(
-                    obj => obj.id === data[i].id
-                  )
-                  let newChat = {
-                    chatId: data[i].id,
-                    type: "UNICAST",
-                    name: obj.nickname.length === 0?obj.username:obj.nickname,
-                    avatarUrl: obj.avatarUrl,
-                    sign: data[i].messages[length-1].content,
-                    timestamp: data[i].messages[length-1].timestamp,
-                    unReadCount: length,
-                    messageList: data[i].messages,
-                  }
-                  chatList.unshift(newChat);
-                  console.log("chatList:")
-                  console.log(chatList)
-                }
-                self.$store.commit("setChatList", chatList)
+            //逐个解析每个字段
+            for (let p in res.data) {
+              //找到离线的messages
+              let messages = res.data[p];
+              //预处理 给messages里面每个字段加一个mine字段
+              for(let i = 0; i < messages.length; ++i){
+                messages[i].mine = false
               }
-            });
+              //解析这个键值
+              let p1 = p;
+              p1 = p1.substring(1, p1.length - 1); //掐头去尾
+              let keys = p1.split(", "); //分成两个
+              //此时keys[0]为chatId，keys[1]为type
+              let chatId = keys[0],
+                type = keys[1];
+              let query = {
+                chatId: chatId,
+                type: type,
+              };
 
+              //根据type，分别去friendList和groupList里面找到name和avatarUrl
+              let name, avatarUrl;
+              if (type === "UNICAST") {
+                let obj = this.$store.state.friends.find(
+                  (obj) => obj.id === chatId
+                );
+                name = obj.nickname.length === 0 ? obj.username : obj.nickname;
+                avatarUrl = obj.avatarUrl;
+              } else {
+                let obj = this.$store.state.groups.find(
+                  (obj) => (obj.id = chatId)
+                );
+                name = obj.name;
+                avatarUrl =
+                  "https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2121061596,2871071478&fm=26&gp=0.jpg";
+                //todo 放入真正的群头像
+              }
+
+              let self = this;
+              //先把Nedb更新一遍
+              getNedb().localMessage.find(query, function(err, docs) {
+                console.log("find " + chatId + " + " + type + " in nedb");
+                console.log(docs);
+                console.log(111111111);
+                //现在找的是当前要更新的chat
+                if (docs.length === 0) {
+                  //若是本来没有
+                  let newChat = {
+                    chatId: chatId,
+                    type: type,
+                    name: name,
+                    avatarUrl: avatarUrl,
+                    sign: messages[messages.length - 1].content,
+                    timestamp: messages[messages.length - 1].timestamp,
+                    unReadCount: messages.length,
+                    messageList: messages,
+                  };
+                  getNedb().localMessage.insert(newChat, function(err, docs) {
+                    console.log(docs);
+                    console.log(2222222);
+                    self.updateVuexWithNedb();
+                  });
+                } else {
+                  //若是本来就有
+                  let updateChat = docs[0]; //虽然是复数形式 但是理应只有一个
+                  updateChat.unReadCount += messages.length;
+                  updateChat.messageList.push(messages);
+                  updateChat.avatarUrl = avatarUrl;
+                  updateChat.name = name;
+                  updateChat.sign = messages[messages.length - 1].content;
+                  getNedb().localMessage.update(
+                    { query },
+                    { $set: updateChat },
+                    function(err, numupdated) {
+                      console.log(numupdated + "条数据被更新");
+                      console.log(2222222);
+                      self.updateVuexWithNedb();
+                    }
+                  );
+                }
+              });
+            }
           } else console.log("error occurred");
-
         });
-      // this.$axios
-      //   .get(
-      //     "/api/groupmessage?access_token=" +
-      //     this.$store.state.user.access_token +
-      //     "&sort=asc&drop=false"
-      //   )
-      //   .then((res) => {
-      //     if (res.status === 200) {
-      //       var data = res.data;
-      //       for (var i = 0; i < data.length; i++) {
-      //         var obj = chatList.find(
-      //           (obj) => obj.chatID === data[i].id && obj.type === "MULTICAST"
-      //         );
-      //         if (obj) {
-      //           var index = chatList.indexOf(obj);
-      //           chatList[index].unreadCount += data[i].messages.length;
-      //           chatList[index].messageList.push(data[i].messages);
-      //         }
-      //       }
-      //     } else console.log("errpr occurred");
-      //   });
-      // getNedb().updata()
     },
-
-
+    updateVuexWithNedb() {
+      let self = this;
+      getNedb()
+        .localMessage.find({})
+        .sort({ timestamp: 1 })
+        .exec(function(err, docs) {
+          console.log(docs);
+          self.$store.commit("setChatList", docs);
+          console.log(33333333333);
+        });
+    },
     submit1(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
@@ -274,7 +288,6 @@ export default {
             )
             .then((successResponse) => {
               if (successResponse.data.code === 200) {
-
                 var data = successResponse.data.data;
                 var userdata = {
                   id: data.id,
@@ -287,7 +300,6 @@ export default {
                 };
                 //用户信息存入Vuex
                 this.$store.commit("setUser", userdata);
-                console.log(this.$store.state.user);
                 // var tokendata = {
                 //   access_token: data.access_token,
                 //   token_type: data.token_type,
@@ -299,24 +311,27 @@ export default {
                 // ***
                 // NeDB setToken
                 //存入Nedb
-                let query = {id: data.id}
-                getNedb().userInfo.find(query, function (err, docs) {
-                  console.log(1111111111111111)
-                  console.log(docs)
-                  if(docs.length === 0){//没有登陆过
-                    getNedb().userInfo.insert(userdata, function (err, newDocs) {
-                      console.log("new user info inserted")
-                      console.log(newDocs)
-                    })
-                  }else {
-                    getNedb().update(query, {$set:userdata}), {}, function (err, numReplaced) {
-                      console.log(numReplaced)
-                    }
+                let query = { id: data.id };
+                getNedb().userInfo.find(query, function(err, docs) {
+                  console.log(1111111111111111);
+                  console.log(docs);
+                  if (docs.length === 0) {
+                    //没有登陆过
+                    getNedb().userInfo.insert(userdata, function(err, newDocs) {
+                      console.log("new user info inserted");
+                      console.log(newDocs);
+                    });
+                  } else {
+                    getNedb().userInfo.update(query, { $set: userdata }),
+                      {},
+                      function(err, numReplaced) {
+                        console.log(numReplaced);
+                      };
                   }
                 });
                 //加载好友和群聊
-                this.loadGroups();
-                this.loadFriends();
+                this.loadG();
+                this.loadF();
                 //更新系统信息
                 getNedb().systemInfo.remove({}, { multi: true });
                 let updateSystemInfo = {
@@ -326,10 +341,10 @@ export default {
                 };
                 getNedb().systemInfo.insert(updateSystemInfo);
                 //初始化本地聊天记录
-                let self = this
-                setTimeout(function () {
-                  self.initLocalMessages()
-                }, 1000);
+                let self = this;
+                setTimeout(function() {
+                  self.initLocalMessages();
+                }, 500);
 
                 //建立websocket连接
                 getWebsocket();
@@ -455,62 +470,11 @@ export default {
           console.log(error);
         });
     },
-    loadFriends() {
-      this.$axios
-        .get("/api/friends", {
-          params: {
-            access_token: this.$store.state.user.access_token,
-          },
-        })
-        .then((successResponse) => {
-          if (successResponse.status === 404) {
-            this.$notify.error({
-              title: "拉取好友失败",
-              message: successResponse.data.message,
-            });
-          } else if (successResponse.status === 200) {
-            this.$store.commit("setFriends", successResponse.data);
-          } else {
-            // this.$store.commit("setFriends", successResponse.data);
-            // console.log(successResponse);
-            this.$notify.error({
-              title: "Error",
-              message: "known error",
-            });
-          }
-        })
-        .catch((failResponse) => {
-          console.log(failResponse);
-        });
+    loadF() {
+      loadFriends();
     },
-    loadGroups() {
-      this.$axios
-        .get("/api/group", {
-          params: {
-            access_token: this.$store.state.user.access_token,
-            detailed: true,
-          },
-        })
-        .then((successResponse) => {
-          if (successResponse.status === 404) {
-            this.$notify.error({
-              title: "拉取群组失败",
-              message: successResponse.data.message,
-            });
-          } else if (successResponse.status === 200) {
-            this.$store.commit("setGroups", successResponse.data);
-          } else {
-            // this.$store.commit("setGroups", successResponse.data);
-            // console.log(successResponse);
-            this.$notify.error({
-              title: "Error",
-              message: "known error",
-            });
-          }
-        })
-        .catch((failResponse) => {
-          console.log(failResponse);
-        });
+    loadG() {
+      loadGroups();
     },
   },
   mounted() {

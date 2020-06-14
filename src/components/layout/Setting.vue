@@ -54,7 +54,7 @@
           </div>
           <!-- <el-button class="btn" type="text">修改备注</el-button> -->
         </div>
-        <img :src="user.avatar" />
+        <img :src="user.avatarUrl" />
       </div>
       <el-divider class="divider1" />
       <div class="level-2">
@@ -110,6 +110,7 @@
       </div>
       <el-divider class="divider1" />
       <div class="level-3">
+        <el-button @click="clearNeDB">清空本地数据</el-button>
         <el-button @click="save">黑名单</el-button>
         <el-button @click="logout" type="danger">注销</el-button>
       </div>
@@ -119,6 +120,7 @@
 
 <script>
 import getWebsocket from "../../JavaScript/Websocket";
+import getNeDB from "../../JavaScript/NedbConfig";
 export default {
   data() {
     return {
@@ -134,23 +136,15 @@ export default {
         fullscreen: false,
         unseen: false,
       },
-      user: {
-        id: "huyikun",
-        username: "我是达斯吐尔",
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        area: "China",
-        sign: "Coolo(*￣▽￣*)ブ",
-      },
     };
   },
   computed: {
     // 实际应该登录后从vuex中取user
-    // user: {
-    //   get() {
-    //     return this.$store.state.user;
-    //   },
-    // },
+    user: {
+      get() {
+        return this.$store.state.user;
+      },
+    },
   },
   methods: {
     editName: function() {
@@ -219,6 +213,33 @@ export default {
     logout() {
       this.$router.push("/login");
       getWebsocket().close();
+    },
+    clearNeDB() {
+      this.$confirm("此操作将永久删除用户本地数据, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }).then(() => {
+        console.log(getNeDB());
+        getNeDB().userInfo.remove({}, { multi: true }, function(
+          err,
+          numRemoved
+        ) {
+          console.log(numRemoved + "条userInfo数据被删除");
+        });
+        getNeDB().localMessage.remove({}, { multi: true }, function(
+          err,
+          numRemoved
+        ) {
+          console.log(numRemoved + "条localMessage数据被删除");
+        });
+        getNeDB().systemInfo.remove({}, { multi: true }, function(
+          err,
+          numRemoved
+        ) {
+          console.log(numRemoved + "条systemInfo数据被删除");
+        });
+      });
     },
     submit() {
       // 修改个人资料
