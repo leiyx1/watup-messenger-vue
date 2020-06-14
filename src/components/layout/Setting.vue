@@ -54,7 +54,7 @@
           </div>
           <!-- <el-button class="btn" type="text">修改备注</el-button> -->
         </div>
-        <img :src="user.avatar" />
+        <img :src="user.avatarUrl" />
       </div>
       <el-divider class="divider1" />
       <div class="level-2">
@@ -136,23 +136,15 @@ export default {
         fullscreen: false,
         unseen: false,
       },
-      user: {
-        id: "huyikun",
-        username: "我是达斯吐尔",
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        area: "China",
-        sign: "Coolo(*￣▽￣*)ブ",
-      },
     };
   },
   computed: {
     // 实际应该登录后从vuex中取user
-    // user: {
-    //   get() {
-    //     return this.$store.state.user;
-    //   },
-    // },
+    user: {
+      get() {
+        return this.$store.state.user;
+      },
+    },
   },
   methods: {
     editName: function() {
