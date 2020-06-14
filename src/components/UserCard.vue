@@ -86,11 +86,11 @@ export default {
   },
   methods: {
     goChat() {
-      var foundChat = this.chatList.find((obj) => obj.chatID === this.user.id
-                                                  && obj.type === "UNICAST");
+      var foundChat = this.chatList.find(
+        (obj) => obj.chatId === this.user.id && obj.type === "UNICAST"
+      );
       if (foundChat) {
         this.$store.commit("unshiftChatList", foundChat);
-
       } else {
         var newChat = {
           type: "UNICAST",

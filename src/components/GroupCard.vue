@@ -68,6 +68,8 @@
 <script>
   import InviteFriendToGroupDialog from "./InviteFriendToGroupDialog";
   import RemoveFriendFromGroupDialog from "./RemoveFriendFromGroupDialog";
+  import getNeDB from "../JavaScript/NedbConfig";
+
 export default {
   name: "GroupCard",
   props: ["group"],
@@ -106,6 +108,11 @@ export default {
               this.$store.commit("setFriends", JSON.parse(JSON.stringify(val)));
           },
       },
+    chatList: {
+      get() {
+        return this.$store.state.chatList;
+      },
+    },
   },
   methods: {
       goUser(member){
@@ -136,6 +143,26 @@ export default {
               this.$message.info(failedMembers.join(", ") + "信息未成功获取");
       },
     goChat() {
+      var foundChat = this.chatList.find(
+        (obj) => obj.chatId === this.group.id && obj.type === "MULTICAST"
+      );
+      if (foundChat) {
+        this.$store.commit("unshiftChatList", foundChat);
+      } else {
+        console.log(this.group);
+        var newChat = {
+          type: "MULTICAST",
+          chatId: this.group.id,
+          name: this.group.name,
+          sign: "",
+          avatarUrl: this.group.avatarUrl,
+          messageList: [],
+        };
+        this.$store.commit("unshiftChatList", newChat);
+        getNeDB().localMessage.insert(newChat, function(err, docs) {
+          console.log("add new item:" + docs);
+        });
+      }
       this.$router.push("/index/chatpanel");
     },
     editNick() {

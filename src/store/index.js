@@ -42,7 +42,7 @@ export default new Vuex.Store({
       state.chatList = val;
     },
     unshiftChatList(state, val) {
-      var obj = state.chatList.find((obj) => obj.chatID == val.chatID);
+      var obj = state.chatList.find((obj) => obj.chatId == val.chatId);
       if (obj == null) {
         state.chatList.unshift(val);
         state.currentChat = val;
