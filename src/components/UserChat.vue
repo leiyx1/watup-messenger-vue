@@ -217,6 +217,10 @@ export default {
       }
       li.chat-mine {
         flex-direction: row-reverse;
+
+      }
+      li.chat-mine.el-card{
+        color: #409EFF;
       }
     }
   }
