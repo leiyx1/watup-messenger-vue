@@ -62,8 +62,10 @@ export default new Vuex.Store({
     setMessageList(state, val) {
       state.currentChat.messageList = val;
     },
-    resetUnread(state) {
+    resetUnread(state, index) {
       state.currentChat.unReadCount = 0;
+      state.chatList[index].unReadCount = 0;
+      state.chatList[index] = state.currentChat;
     },
     setFriends(state, val) {
       state.friends = val;

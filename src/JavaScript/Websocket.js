@@ -50,7 +50,9 @@ function createWebsocket() {
       if (data.type === currentChat.type && currentChat.chatId === chatId) {
         //将newMessage放入chat的messageList中
         currentChat.messageList.push(newMessage);
-
+        //更新sign timestamp
+        currentChat.sign = newMessage.content;
+        currentChat.timestamp = newMessage.timestamp;
         //更新unreadCount
         if (
           currentChat.type === store.state.currentChat.type &&

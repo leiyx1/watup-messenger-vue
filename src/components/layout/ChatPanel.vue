@@ -38,7 +38,7 @@
             </div>
             <div class="item-word">
               <span>{{ chat.sign }}</span
-              ><span>{{chat.timestamp}}</span>
+              ><span class="right">{{ time(chat.timestamp) }}</span>
             </div>
           </div>
         </el-menu-item>
@@ -93,26 +93,38 @@ export default {
       },
     },
   },
-  mounted() {
-
-  },
+  mounted() {},
   methods: {
+    time: function(val) {
+      var x = new Date();
+      var c = val.split("T");
+      var cm = parseInt(c[0].split("-")[1]),
+        cd = parseInt(c[0].split("-")[2]);
+      var xm = x.getMonth() + 1,
+        xd = x.getDate();
+      console.log(xm, cm, xd, cd);
+      if (xm == cm && xd == cd) {
+        // today's message
+        var res = c[1].split(":");
+        return res[0] + ":" + res[1];
+      } else {
+        res = c[0].split("-");
+        return res[1] + "-" + res[2];
+      }
+    },
+
     showChat(chat, index) {
       this.show = true;
       this.currentChat = chat;
-      console.log("currentChat:")
-      console.log(chat)
-      this.$store.commit("resetUnread");
-      this.chatList[index] = this.$store.state.currentChat;
-      console.log(this.currentChat);
+      this.$store.commit("resetUnread", index);
       // setMessageListByChatID
       let self = this;
       let query = {
         chatId: this.currentChat.chatId,
         type: this.currentChat.type,
       };
-      getNedb().localMessage
-        .find(query)
+      getNedb()
+        .localMessage.find(query)
         .sort({ timestamp: 1 })
         .exec(function(err, docs) {
           self.messageList = docs[0].messageList;
@@ -189,6 +201,10 @@ export default {
             padding-left: 5px;
             color: #808080;
             // height: 67%;
+          }
+          .right {
+            float: right;
+            padding-right: 15px;
           }
         }
       }

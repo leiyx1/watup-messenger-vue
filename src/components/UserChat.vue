@@ -129,16 +129,18 @@ export default {
       }
     },
     sendUniMessage() {
-      console.log(this.currentChat)
-      console.log(`send uni message:` + this.text + " to " + this.currentChat.chatId);
+      console.log(this.currentChat);
+      console.log(
+        `send uni message:` + this.text + " to " + this.currentChat.chatId
+      );
       let message = {
         type: this.currentChat.type,
         receiverId: this.currentChat.chatId,
         content: `${this.text}`,
-      }
-      if(this.currentChat.type === "UNICAST")
+      };
+      if (this.currentChat.type === "UNICAST")
         message.receiverId = this.currentChat.chatId;
-      else if(this.currentChat.type === "MULTICAST")
+      else if (this.currentChat.type === "MULTICAST")
         message.groupId = this.currentChat.chatId;
       getWebsocket().send(JSON.stringify(message));
       this.text = "";
