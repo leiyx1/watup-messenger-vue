@@ -39,7 +39,7 @@
               <el-tooltip content="按回车保存" placement="bottom">
                 <el-input
                   id="nameput"
-                  maxlength="6"
+                  maxlength="12"
                   show-word-limit
                   v-model="newName"
                   placeholder="回车保存"
@@ -73,7 +73,7 @@
                 地区：
                 <el-input
                   id="areaput"
-                  maxlength="6"
+                  maxlength="12"
                   show-word-limit
                   v-model="newArea"
                   placeholder="回车保存"
@@ -96,7 +96,7 @@
               <el-tooltip content="按回车保存" placement="bottom">
                 <el-input
                   id="signput"
-                  maxlength="10"
+                  maxlength="30"
                   show-word-limit
                   v-model="newSign"
                   placeholder="回车保存"
