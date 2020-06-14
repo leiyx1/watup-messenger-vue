@@ -187,7 +187,7 @@ export default {
               //解析这个键值
               let p1 = p;
               p1 = p1.substring(1,p1.length - 1);//掐头去尾
-              let keys = p1.split(",")//分成两个
+              let keys = p1.split(", ")//分成两个
               //此时keys[0]为chatId，keys[1]为type
               let chatId = keys[0], type = keys[1];
               let query = {
@@ -212,10 +212,12 @@ export default {
                 //todo 放入真正的群头像
               }
 
+              let self = this
               //先把Nedb更新一遍
               getNedb().localMessage.find(query,function (err, docs) {
                 console.log("find " + chatId + " + " + type + " in nedb")
                 console.log(docs)
+                console.log(111111111)
                 //现在找的是当前要更新的chat
                 if(docs.length === 0){//若是本来没有
                   let newChat = {
@@ -228,8 +230,12 @@ export default {
                     unReadCount: messages.length,
                     messageList: messages,
                   };
-                  getNedb().localMessage.insert(newChat);
+                  getNedb().localMessage.insert(newChat, function (err, docs) {
+                    console.log(docs)
+                    console.log(2222222)
 
+                  });
+                  self.updateVuexWithNedb();
                 }else {//若是本来就有
                   let updateChat = docs[0];//虽然是复数形式 但是理应只有一个
                   updateChat.unReadCount += messages.length;
@@ -239,21 +245,24 @@ export default {
                   updateChat.sign = messages[messages.length - 1].content;
                   getNedb().localMessage.update({query}, {$set: updateChat}, function (err, numupdated) {
                     console.log(numupdated + "条数据被更新")
+                    console.log(2222222)
                   })
+                  self.updateVuexWithNedb();
                 }
-              })
-
-              //再用Nedb更新一遍vuex
-              let self = this
-              getNedb().localMessage.find({}).sort({timestap: 1}).exec(function (err, docs) {
-                self.$store.commit("setChatList", docs)
               })
             }
 
           } else console.log("error occurred");
         });
     },
-
+    updateVuexWithNedb(){
+      let self = this
+      getNedb().localMessage.find({}).sort({timestamp: 1}).exec(function (err, docs) {
+        console.log(docs)
+        self.$store.commit("setChatList", docs)
+        console.log(33333333333)
+      })
+    },
     submit1(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
@@ -319,7 +328,7 @@ export default {
                 let self = this;
                 setTimeout(function() {
                   self.initLocalMessages();
-                }, 1000);
+                }, 500);
 
                 //建立websocket连接
                 getWebsocket();
