@@ -116,8 +116,11 @@ export default {
   },
   methods: {
       goUser(member){
-          console.log(member)
-          this.$emit("showGroupFriend",member);
+          if(member.id===this.$store.state.user.id){
+              this.$router.push("/index/setting");
+          }else {
+              this.$emit("showGroupFriend",member);
+          }
       },
       loadGroupMembers(){
           this.groupMembers=[];
