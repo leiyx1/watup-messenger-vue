@@ -87,10 +87,11 @@
                 activeName: 'second',
                 friendRequest:[],
                 groupRequest:[],
+                friendRefresh:0,
+                groupRefresh:0,
             };
         },
         created() {
-            //this.loadFriends();
             this.loadFriendRequest();
             this.loadGroupRequest();
         },
@@ -120,7 +121,6 @@
                             message: "失效的邀请"
                         })
                     })
-
             },
             rejectFriendRequest(index, row) {
                 this.$axios
@@ -146,7 +146,6 @@
                             message: "请求已被处理"
                         })
                     })
-
             },
             handleFriendRequest(index, row) {
                 this.$axios
@@ -172,7 +171,6 @@
                             message: "请求已被处理"
                         })
                     })
-
             },
             loadGroupRequest(){
                 this.$axios

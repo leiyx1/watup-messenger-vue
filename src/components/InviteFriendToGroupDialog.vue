@@ -1,19 +1,19 @@
 <template>
   <div>
-    <el-dialog :visible.sync="dialogVisible" title="新建群聊" width="600px" center="true" :modal-append-to-body="false">
+    <el-dialog :visible.sync="dialogVisible" title="邀请好友" width="600px" center="true" :modal-append-to-body="false">
       <div id="dialog">
         <div id="search-input">
-            <el-input v-model="search" placeholder="搜索好友" size="mini" prefix-icon="el-icon-search"></el-input>
+          <el-input v-model="search" placeholder="搜索好友" size="mini" prefix-icon="el-icon-search"></el-input>
         </div>
         <div id="friend-list">
           <el-table
-                    :data="friends.filter(data => data.username.toLowerCase().includes(search.toLowerCase()))"
-                    style="width: 100%"
-                    height="300px"
-                    :row-style="{height:'60px'}"
-                    :cell-style="{padding:'0 0'}"
-                    :show-header="false"
-                    @row-click="handleRowClick">
+              :data="friends.filter(data => data.username.toLowerCase().includes(search.toLowerCase())&&(groupMembers.indexOf(data.id)===-1))"
+              style="width: 100%"
+              height="300px"
+              :row-style="{height:'60px'}"
+              :cell-style="{padding:'0 0'}"
+              :show-header="false"
+              @row-click="handleRowClick">
             <el-table-column>
               <template slot-scope="scope">
                 <div id="user-button">
@@ -29,9 +29,6 @@
             </el-table-column>
           </el-table>
         </div>
-        <div id="name-input">
-            <el-input v-model="groupName" placeholder="请输入群聊名称" size="mini"></el-input>
-        </div>
         <div id="selected-icons">
           <div v-for="selectedFriend in selectedFriends" :key="selectedFriend.id">
             <div id="selected-icon">
@@ -42,7 +39,7 @@
         </div>
       </div>
       <span slot="footer">
-        <el-button @click="handleAddGroup"> 确认 </el-button>
+        <el-button @click="handleInviteToGroup"> 确认 </el-button>
       </span>
     </el-dialog>
   </div>
@@ -50,13 +47,12 @@
 
 <script>
     export default {
-        name: "NewGroupDialog",
-        props: ['visible'],
+        name: "InviteFriendToGroupDialog",
+        props: ['visible','groupId','groupMembers'],
         data() {
             return {
                 dialogVisible: this.visible,
                 search: "",
-                groupName: "",
                 selectedFriends: [],
             }
         },
@@ -86,43 +82,31 @@
                     this.selectedFriends.push(row);
                 }
             },
-            handleAddGroup() {
-                  this.$axios
-                      .post('/api/group', null, {
-                          params: {
-                              access_token: this.$store.state.user.access_token,
-                              name: this.groupName.length === 0 ? "群聊" : this.groupName
-                          }
-                      }).then(res => {
-                          let groupId = res.data;
-                          let failedFriends = [];
-                          Array.prototype.forEach.call(this.selectedFriends, selectedFriend => {
-                              console.log(selectedFriend);
-                              this.$axios
-                                  .post('/api/request', {
-                                      groupId: groupId,
-                                      userId: selectedFriend.id
-                                  }, {
-                                      params: {
-                                          access_token: this.$store.state.user.access_token
-                                      }
-                                  })
-                                  .then(() => {})
-                                  .catch(function (error) {
-                                      console.log(error);
-                                      failedFriends.push(selectedFriend.username)
-                                  })
-                          });
-                          this.$message.success("添加成功");
-                          if (failedFriends.length > 0)
-                            this.$message.info(failedFriends.join(", ") + " 未成功邀请");
-                          this.selectedFriends = [];
-                          this.$emit("new-group");
-                          this.dialogVisible = false
-                      }).catch(function(error) {
-                          console.log(error);
-                          this.$message.error("添加失败")
-                      }.bind(this))
+            handleInviteToGroup() {
+                    let groupId = this.groupId;
+                    let failedFriends = [];
+                    [].forEach.call(this.selectedFriends, selectedFriend => {
+                        console.log(selectedFriend);
+                        this.$axios
+                            .post('/api/request', {
+                                groupId: groupId,
+                                userId: selectedFriend.id
+                            }, {
+                                params: {
+                                    access_token: this.$store.state.user.access_token
+                                }
+                            })
+                            .then(() => {})
+                            .catch(function (error) {
+                                console.log(error);
+                                failedFriends.push(selectedFriend.username)
+                            })
+                    });
+                    this.$message.success("成功邀请");
+                    if (failedFriends.length > 0)
+                        this.$message.info(failedFriends.join(", ") + " 未成功邀请");
+                    this.selectedFriends = [];
+                    this.dialogVisible = false
             }
         }
     }

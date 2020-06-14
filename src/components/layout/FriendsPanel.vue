@@ -80,7 +80,7 @@
         v-else-if="hasShowFriend && !hasShowGroup&&!hasShowRequest"
       />
       <RequestCard v-else-if="hasShowRequest"/>
-      <GroupCard :group="currentItem" v-else />
+      <GroupCard :group="currentItem" @exit-group="showBlank" @showGroupFriend="showFriend" v-else />
     </div>
   </div>
 </template>
@@ -165,6 +165,13 @@ export default {
     // },
   },
   methods: {
+      showBlank(){
+          console.log("444");
+          this.hasShowGroup = false;
+          this.hasShowFriend = false;
+          this.hasShowRequest = false;
+      },
+      loadGroups(){},
       showRequest(){
           console.log("333");
           this.hasShowGroup = false;

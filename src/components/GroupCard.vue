@@ -1,8 +1,11 @@
 <template>
   <div class="group-card">
+    <InviteFriendToGroupDialog :visible.sync="inviteFriendDialogVisible" :group-id="group.id" :groupMembers="group.usersId" friend-list="friends"></InviteFriendToGroupDialog>
+    <RemoveFriendFromGroupDialog :visible.sync="removeFriendDialogVisible" :group-id="group.id" :members="groupMembers" @remove-friend="loadGroupMembers" ></RemoveFriendFromGroupDialog>
     <div class="level-1">
       <div class="level-1-word">
         <div style="height: 60px">
+
           <span v-if="!editName" class="span1"
             >{{ group.name }}
             <el-button
@@ -28,90 +31,112 @@
         </div>
         <!-- <el-button class="btn" type="text">修改备注</el-button> -->
       </div>
-      <img :src="group.avatarUrl" />
+      <div class="avatar"><img src="https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2121061596,2871071478&fm=26&gp=0.jpg"
+                alt="头像"  width="100px" height="100px" /></div>
+
     </div>
     <el-divider class="divider1" />
     <div class="level-2">
-      <div>
-        <el-card> </el-card>
-      </div>
+        <div id="members">
+          <div v-for="member in groupMembers" :key="member.id">
+            <div class="member" @click="goUser(member)">
+              <el-avatar  shape="square" size="medium" :src="member.avatarUrl" ></el-avatar>
+              <span class="name">{{member.username}}</span>
+            </div>
+          </div>
+          <div class="member"><el-button icon="el-icon-plus" @click="inviteFriendDialogVisible=true"></el-button></div>
+          <div class="member" v-if="isManager"><el-button icon="el-icon-minus" @click="removeFriendDialogVisible=true"></el-button></div>
+        </div>
     </div>
     <el-divider class="divider1" />
     <div class="level-3">
       <el-button @click="goChat" style="margin-right:5%">发起聊天</el-button>
-      <el-button @click="exitGroup" style="margin-right:5%">{{
-        isManager ? "解散群聊" : "退出群聊"
-      }}</el-button>
+      <el-popconfirm
+          icon="el-icon-info"
+          iconColor="red"
+          title="您确定吗？"
+          @onConfirm="exitGroup"
+      >
+        <el-button style="margin-right:5%" slot="reference">{{
+          isManager ? "解散群聊" : "退出群聊"
+          }}</el-button>
+      </el-popconfirm>
     </div>
   </div>
 </template>
 
 <script>
+  import InviteFriendToGroupDialog from "./InviteFriendToGroupDialog";
+  import RemoveFriendFromGroupDialog from "./RemoveFriendFromGroupDialog";
 export default {
   name: "GroupCard",
   props: ["group"],
+    components: {
+        InviteFriendToGroupDialog,
+        RemoveFriendFromGroupDialog,
+    },
   data() {
     return {
       editName: false,
-      newNick: "",
+        inviteFriendDialogVisible:false,
+        removeFriendDialogVisible:false,
+        newNick: "",
+        groupMembers:[],
     };
   },
-  mounted() {
-    console.log("");
-    console.log();
+  created() {
+    this.loadGroupMembers();
   },
+    watch: {
+        group(){
+            this.loadGroupMembers();
+        }
+    },
   computed: {
     isManager: {
       get() {
         return this.$store.state.user.id === this.group.managerId;
       },
     },
+      friends: {
+          get: function() {
+              return this.$store.state.friends;
+          },
+          set: function(val) {
+              this.$store.commit("setFriends", JSON.parse(JSON.stringify(val)));
+          },
+      },
   },
   methods: {
+      goUser(member){
+          console.log(member)
+          this.$emit("showGroupFriend",member);
+      },
+      loadGroupMembers(){
+          this.groupMembers=[];
+          let ids = this.group.usersId;
+          let failedMembers = [];
+          [].forEach.call(ids, id => {
+              this.$axios
+                  .get('/api/friend/user',  {
+                      params: {
+                          access_token: this.$store.state.user.access_token,
+                          keyword:id,
+                      }
+                  })
+                  .then(res => {
+                      this.groupMembers.push(res.data)
+                  })
+                  .catch(function (error) {
+                      console.log(error);
+                      failedMembers .push(id)
+                  })
+          });
+          if (failedMembers.length > 0)
+              this.$message.info(failedMembers.join(", ") + "信息未成功获取");
+      },
     goChat() {
       this.$router.push("/index/chatpanel");
-      // findChatByUserID
-      var foundChat = {
-        id: "1",
-        name: "找到的聊天",
-        sign: "最后一条..",
-        avatarUrl:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-        messageList: [
-          {
-            mine: true,
-            avatarUrl:
-              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-            content: "第一条消息",
-          },
-          {
-            mine: true,
-            avatarUrl:
-              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-            content: "第2条消息",
-          },
-          {
-            mine: false,
-            avatarUrl:
-              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-            content: "第3条消息",
-          },
-          {
-            mine: true,
-            avatarUrl:
-              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-            content: "hahha",
-          },
-          {
-            mine: true,
-            avatarUrl:
-              "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-            content: "我是达斯吐尔😄",
-          },
-        ],
-      };
-      this.$store.commit("unshiftChatList", foundChat);
-      // this.$store.commit("setCurrentChat", this.user);
     },
     editNick() {
       this.editName = true;
@@ -120,45 +145,39 @@ export default {
         document.getElementById("NickInput").focus();
       });
     },
-    handleCommand(command) {
-      if (command == "a") {
-        this.$confirm("此操作将拉黑该好友, 是否继续?", "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning",
-        })
-          .then(() => {
-            // 发送拉黑请求并更新
-            this.$message({
-              type: "success",
-              message: "拉黑成功!",
-            });
-          })
-          .catch(() => {});
-      } else {
-        this.$confirm("此操作将删除该好友, 是否继续?", "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning",
-        })
-          .then(() => {
-            // 发送删除请求并更新
-            this.$message({
-              type: "success",
-              message: "删除成功!",
-            });
-          })
-          .catch(() => {});
-      }
-    },
     saveNick() {
-      console.log("1");
       this.editName = !this.editName;
-      this.user.nickname = this.newNick;
-
-      // 涉及到更新数据库
+      this.group.name = this.newNick;
+        this.$axios
+            .put("/api/group/"+this.group.id+"?access_token="+this.$store.state.user.access_token+"&name="+this.newNick)
+            .then(res => {
+                if(res.status===200){
+                    this.$notify.success("修改成功")
+                }else {
+                    this.$notify.error("无效操作")
+                }
+            })
+            .catch(function (error) {
+                this.$notify.error("无效操作")
+                console.log(error);
+            })
     },
-    exitGroup() {},
+    exitGroup() {
+        this.$axios
+            .delete("/api/group/"+this.group.id+"?access_token="+this.$store.state.user.access_token)
+            .then(res => {
+                if(res.status===200){
+                    this.$notify.success("成功退群")
+                }else {
+                    this.$notify.error("无效操作")
+                }
+            })
+            .catch(function (error) {
+                this.$notify.error("无效操作")
+                console.log(error);
+            })
+        this.$emit("exit-group");
+    },
   },
 };
 </script>
@@ -194,8 +213,7 @@ export default {
         margin: 5px 0px;
       }
     }
-    img {
-      // padding-right: 10%;
+    .avatar {
       position: absolute;
       right: 10%;
       float: right;
@@ -218,5 +236,32 @@ export default {
       margin-top: 10%;
     }
   }
+  #members {
+    padding-left: 20%;
+    align-self: start;
+    grid-column: 3;
+    grid-row: 3;
+    overflow: auto;
+    display: grid;
+    height: 300px;
+    grid-template-columns: 60px 60px 60px 60px;
+    grid-template-rows: 60px 60px;
+    grid-auto-rows: 60px;
+    align-items: center;
+  }
+  .member {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor:pointer;
+  }
+  .name {
+    text-align: center;
+    width: 50px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
+
 </style>
