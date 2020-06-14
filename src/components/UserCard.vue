@@ -103,49 +103,6 @@ export default {
         });
       }
       this.$router.push("/index/chatpanel");
-
-      // // findChatByUserID
-      // var foundChat = {
-      //   id: "1",
-      //   name: "找到的聊天",
-      //   sign: "最后一条..",
-      //   avatarUrl:
-      //     "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      //   messageList: [
-      //     {
-      //       mine: true,
-      //       avatarUrl:
-      //         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      //       content: "第一条消息",
-      //     },
-      //     {
-      //       mine: true,
-      //       avatarUrl:
-      //         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      //       content: "第2条消息",
-      //     },
-      //     {
-      //       mine: false,
-      //       avatarUrl:
-      //         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      //       content: "第3条消息",
-      //     },
-      //     {
-      //       mine: true,
-      //       avatarUrl:
-      //         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      //       content: "hahha",
-      //     },
-      //     {
-      //       mine: true,
-      //       avatarUrl:
-      //         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      //       content: "我是达斯吐尔😄",
-      //     },
-      //   ],
-      // };
-      // this.$store.commit("unshiftChatList", foundChat);
-      // this.$store.commit("setCurrentChat", this.user);
     },
     editNick() {
       this.editName = true;
@@ -155,7 +112,7 @@ export default {
       });
     },
     handleCommand(command) {
-      if (command == "a") {
+      if (command === "a") {
         this.$confirm("此操作将拉黑该好友, 是否继续?", "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
@@ -163,6 +120,19 @@ export default {
         })
           .then(() => {
             // 发送拉黑请求并更新
+              this.$axios
+                  .put("/api/friend/block"+"?access_token="+this.$store.state.user.access_token+"&friendId="+this.user.id)
+                  .then(res => {
+                      if(res.status===200){
+                          this.$notify.success("拉黑成功")
+                      }else {
+                          this.$notify.error("无效操作")
+                      }
+                  })
+                  .catch(function (error) {
+                      this.$notify.error("无效操作")
+                      console.log(error);
+                  })
             this.$message({
               type: "success",
               message: "拉黑成功!",
@@ -177,6 +147,19 @@ export default {
         })
           .then(() => {
             // 发送删除请求并更新
+              this.$axios
+                  .delete("/api/friend"+"?access_token="+this.$store.state.user.access_token+"&friendId="+this.user.id)
+                  .then(res => {
+                      if(res.status===200){
+                          this.$notify.success("删除成功")
+                      }else {
+                          this.$notify.error("无效操作")
+                      }
+                  })
+                  .catch(function (error) {
+                      this.$notify.error("无效操作")
+                      console.log(error);
+                  })
             this.$message({
               type: "success",
               message: "删除成功!",
@@ -186,11 +169,21 @@ export default {
       }
     },
     saveNick() {
-      console.log("1");
       this.editName = !this.editName;
       this.user.nickname = this.newNick;
-
-      // 涉及到更新数据库
+        this.$axios
+            .put("/api/friend/nickname"+"?access_token="+this.$store.state.user.access_token+"&friendId="+this.user.id+"&nickname="+this.newNick)
+            .then(res => {
+                if(res.status===200){
+                    this.$notify.success("修改成功")
+                }else {
+                    this.$notify.error("无效操作")
+                }
+            })
+            .catch(function (error) {
+                this.$notify.error("无效操作")
+                console.log(error);
+            })
     },
   },
 };
