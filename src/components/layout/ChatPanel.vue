@@ -96,20 +96,28 @@ export default {
   mounted() {},
   methods: {
     time: function(val) {
-      var x = new Date();
-      var c = val.split("T");
-      var cm = parseInt(c[0].split("-")[1]),
-        cd = parseInt(c[0].split("-")[2]);
-      var xm = x.getMonth() + 1,
-        xd = x.getDate();
-      console.log(xm, cm, xd, cd);
-      if (xm == cm && xd == cd) {
-        // today's message
-        var res = c[1].split(":");
-        return res[0] + ":" + res[1];
+      if (!val) {
+        var t = new Date();
+        var h = t.getHours(),
+          m = t.getMinutes();
+        if (!h / 10) h = "0" + h;
+        if (!m / 10) m = "0" + m;
+        return h + ":" + m;
       } else {
-        res = c[0].split("-");
-        return res[1] + "-" + res[2];
+        var x = new Date();
+        var c = val.split("T");
+        var cm = parseInt(c[0].split("-")[1]),
+          cd = parseInt(c[0].split("-")[2]);
+        var xm = x.getMonth() + 1,
+          xd = x.getDate();
+        if (xm == cm && xd == cd) {
+          // today's message
+          var res = c[1].split(":");
+          return res[0] + ":" + res[1];
+        } else {
+          res = c[0].split("-");
+          return res[1] + "-" + res[2];
+        }
       }
     },
 

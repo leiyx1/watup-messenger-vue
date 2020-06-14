@@ -86,11 +86,11 @@ export default {
   },
   methods: {
     goChat() {
-      var foundChat = this.chatList.find((obj) => obj.chatID === this.user.id
-                                                  && obj.type === "UNICAST");
+      var foundChat = this.chatList.find(
+        (obj) => obj.chatId === this.user.id && obj.type === "UNICAST"
+      );
       if (foundChat) {
         this.$store.commit("unshiftChatList", foundChat);
-
       } else {
         var newChat = {
           type: "UNICAST",
@@ -106,49 +106,6 @@ export default {
         });
       }
       this.$router.push("/index/chatpanel");
-
-      // // findChatByUserID
-      // var foundChat = {
-      //   id: "1",
-      //   name: "找到的聊天",
-      //   sign: "最后一条..",
-      //   avatarUrl:
-      //     "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      //   messageList: [
-      //     {
-      //       mine: true,
-      //       avatarUrl:
-      //         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      //       content: "第一条消息",
-      //     },
-      //     {
-      //       mine: true,
-      //       avatarUrl:
-      //         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      //       content: "第2条消息",
-      //     },
-      //     {
-      //       mine: false,
-      //       avatarUrl:
-      //         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      //       content: "第3条消息",
-      //     },
-      //     {
-      //       mine: true,
-      //       avatarUrl:
-      //         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      //       content: "hahha",
-      //     },
-      //     {
-      //       mine: true,
-      //       avatarUrl:
-      //         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      //       content: "我是达斯吐尔😄",
-      //     },
-      //   ],
-      // };
-      // this.$store.commit("unshiftChatList", foundChat);
-      // this.$store.commit("setCurrentChat", this.user);
     },
     editNick() {
       this.editName = true;
