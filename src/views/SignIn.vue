@@ -184,6 +184,10 @@ export default {
             for (let p in res.data) {
               //找到离线的messages
               let messages = res.data[p];
+              //预处理 给messages里面每个字段加一个mine字段
+              for(let i = 0; i < messages.length; ++i){
+                messages[i].mine = false
+              }
               //解析这个键值
               let p1 = p;
               p1 = p1.substring(1, p1.length - 1); //掐头去尾
