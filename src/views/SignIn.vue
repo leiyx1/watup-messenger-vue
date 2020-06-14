@@ -147,6 +147,7 @@ export default {
         id: [
           { required: true, message: "请设置你的watup号" },
           { min: 3, max: 12, message: "长度在3-12之间" },
+          { pattern: /^[A-Za-z0-9]+$/, message: "由字母和数字组成" },
         ],
         username: [
           { required: true, message: "请设置你的用户名" },
@@ -179,47 +180,49 @@ export default {
         )
         .then((res) => {
           if (res.status === 200) {
-
             //逐个解析每个字段
-            for(let p in res.data){
+            for (let p in res.data) {
               //找到离线的messages
               let messages = res.data[p];
               //解析这个键值
               let p1 = p;
-              p1 = p1.substring(1,p1.length - 1);//掐头去尾
-              let keys = p1.split(", ")//分成两个
+              p1 = p1.substring(1, p1.length - 1); //掐头去尾
+              let keys = p1.split(", "); //分成两个
               //此时keys[0]为chatId，keys[1]为type
-              let chatId = keys[0], type = keys[1];
+              let chatId = keys[0],
+                type = keys[1];
               let query = {
                 chatId: chatId,
                 type: type,
-              }
+              };
 
               //根据type，分别去friendList和groupList里面找到name和avatarUrl
-              let name, avatarUrl
-              if(type === "UNICAST"){
+              let name, avatarUrl;
+              if (type === "UNICAST") {
                 let obj = this.$store.state.friends.find(
                   (obj) => obj.id === chatId
-                )
+                );
                 name = obj.nickname.length === 0 ? obj.username : obj.nickname;
                 avatarUrl = obj.avatarUrl;
-              }else {
+              } else {
                 let obj = this.$store.state.groups.find(
-                  (obj) => obj.id = chatId
-                )
+                  (obj) => (obj.id = chatId)
+                );
                 name = obj.name;
-                avatarUrl = "https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2121061596,2871071478&fm=26&gp=0.jpg";
+                avatarUrl =
+                  "https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2121061596,2871071478&fm=26&gp=0.jpg";
                 //todo 放入真正的群头像
               }
 
-              let self = this
+              let self = this;
               //先把Nedb更新一遍
-              getNedb().localMessage.find(query,function (err, docs) {
-                console.log("find " + chatId + " + " + type + " in nedb")
-                console.log(docs)
-                console.log(111111111)
+              getNedb().localMessage.find(query, function(err, docs) {
+                console.log("find " + chatId + " + " + type + " in nedb");
+                console.log(docs);
+                console.log(111111111);
                 //现在找的是当前要更新的chat
-                if(docs.length === 0){//若是本来没有
+                if (docs.length === 0) {
+                  //若是本来没有
                   let newChat = {
                     chatId: chatId,
                     type: type,
@@ -230,38 +233,44 @@ export default {
                     unReadCount: messages.length,
                     messageList: messages,
                   };
-                  getNedb().localMessage.insert(newChat, function (err, docs) {
-                    console.log(docs)
-                    console.log(2222222)
-
+                  getNedb().localMessage.insert(newChat, function(err, docs) {
+                    console.log(docs);
+                    console.log(2222222);
+                    self.updateVuexWithNedb();
                   });
-                  self.updateVuexWithNedb();
-                }else {//若是本来就有
-                  let updateChat = docs[0];//虽然是复数形式 但是理应只有一个
+                } else {
+                  //若是本来就有
+                  let updateChat = docs[0]; //虽然是复数形式 但是理应只有一个
                   updateChat.unReadCount += messages.length;
                   updateChat.messageList.push(messages);
                   updateChat.avatarUrl = avatarUrl;
                   updateChat.name = name;
                   updateChat.sign = messages[messages.length - 1].content;
-                  getNedb().localMessage.update({query}, {$set: updateChat}, function (err, numupdated) {
-                    console.log(numupdated + "条数据被更新")
-                    console.log(2222222)
-                  })
-                  self.updateVuexWithNedb();
+                  getNedb().localMessage.update(
+                    { query },
+                    { $set: updateChat },
+                    function(err, numupdated) {
+                      console.log(numupdated + "条数据被更新");
+                      console.log(2222222);
+                      self.updateVuexWithNedb();
+                    }
+                  );
                 }
-              })
+              });
             }
-
           } else console.log("error occurred");
         });
     },
-    updateVuexWithNedb(){
-      let self = this
-      getNedb().localMessage.find({}).sort({timestamp: 1}).exec(function (err, docs) {
-        console.log(docs)
-        self.$store.commit("setChatList", docs)
-        console.log(33333333333)
-      })
+    updateVuexWithNedb() {
+      let self = this;
+      getNedb()
+        .localMessage.find({})
+        .sort({ timestamp: 1 })
+        .exec(function(err, docs) {
+          console.log(docs);
+          self.$store.commit("setChatList", docs);
+          console.log(33333333333);
+        });
     },
     submit1(formName) {
       this.$refs[formName].validate((valid) => {
@@ -298,19 +307,22 @@ export default {
                 // ***
                 // NeDB setToken
                 //存入Nedb
-                let query = {id: data.id}
-                getNedb().userInfo.find(query, function (err, docs) {
-                  console.log(1111111111111111)
-                  console.log(docs)
-                  if(docs.length === 0){//没有登陆过
-                    getNedb().userInfo.insert(userdata, function (err, newDocs) {
-                      console.log("new user info inserted")
-                      console.log(newDocs)
-                    })
-                  }else {
-                    getNedb().userInfo.update(query, {$set:userdata}), {}, function (err, numReplaced) {
-                      console.log(numReplaced)
-                    }
+                let query = { id: data.id };
+                getNedb().userInfo.find(query, function(err, docs) {
+                  console.log(1111111111111111);
+                  console.log(docs);
+                  if (docs.length === 0) {
+                    //没有登陆过
+                    getNedb().userInfo.insert(userdata, function(err, newDocs) {
+                      console.log("new user info inserted");
+                      console.log(newDocs);
+                    });
+                  } else {
+                    getNedb().userInfo.update(query, { $set: userdata }),
+                      {},
+                      function(err, numReplaced) {
+                        console.log(numReplaced);
+                      };
                   }
                 });
                 //加载好友和群聊
