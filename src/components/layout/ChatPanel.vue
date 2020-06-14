@@ -34,10 +34,10 @@
           </div>
           <div class="item-body">
             <div class="item-title">
-              <b>{{ chat.name }}</b>
+              <b>{{ chat.name | ellipsis}}</b>
             </div>
             <div class="item-word">
-              <span>{{ chat.sign }}</span
+              <span>{{ chat.sign | ellipsis}}</span
               ><span class="right">{{ time(chat.timestamp) }}</span>
             </div>
           </div>
@@ -62,6 +62,34 @@ export default {
   },
   components: {
     userChat,
+  },
+  filters: {
+    ellipsis(value) {
+      if (!value) return "";
+
+      let reg = /^[\u4e00-\u9fa5]{0,}$/;
+      let len = 0, sliceLen = 0;
+      for(let i = 0;i<value.length;i++){
+        sliceLen ++;//又多一个字符了呢
+        if(reg.test(value[i])){
+          if(len >= 10) {//最多再容纳一个中文
+            len += 2
+            break;
+          }
+          len += 2;
+        }else{
+          if(len >= 11) {//最多再容纳一个非中文
+            len += 1;
+            break;
+          }
+          len++;
+        }
+      }
+      if (len >= 12) {
+        return value.slice(0, sliceLen) + "...";
+      }
+      return value;
+    }
   },
   computed: {
     currentChat: {
