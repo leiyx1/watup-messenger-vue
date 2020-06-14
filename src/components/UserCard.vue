@@ -86,9 +86,11 @@ export default {
   },
   methods: {
     goChat() {
-      var foundChat = this.chatList.find((obj) => obj.chatID === this.user.id);
+      var foundChat = this.chatList.find((obj) => obj.chatID === this.user.id
+                                                  && obj.type === "UNICAST");
       if (foundChat) {
         this.$store.commit("unshiftChatList", foundChat);
+
       } else {
         var newChat = {
           type: "UNICAST",
@@ -156,7 +158,7 @@ export default {
       });
     },
     handleCommand(command) {
-      if (command == "a") {
+      if (command === "a") {
         this.$confirm("此操作将拉黑该好友, 是否继续?", "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",

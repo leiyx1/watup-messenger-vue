@@ -115,7 +115,7 @@ export default {
         .find(query)
         .sort({ timestamp: 1 })
         .exec(function(err, docs) {
-          self.messageList = docs;
+          self.messageList = docs[0].messageList;
         });
     },
     goFriendPanel() {

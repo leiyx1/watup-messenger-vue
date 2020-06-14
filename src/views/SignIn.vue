@@ -171,137 +171,87 @@ export default {
     initLocalMessages() {
       //获取离线聊天 记录
       //获取离线私聊记录
-      let chatList;
-      let self = this;
       this.$axios
         .get(
           "/api/message?access_token=" +
-            self.$store.state.user.access_token +
+            this.$store.state.user.access_token +
             "&sort=asc&drop=false"
         )
         .then((res) => {
           if (res.status === 200) {
-            getNedb().localMessage.find({}, function(err, docs) {
-              chatList = docs;
-              console.log("start init local messages: uniChat")
-              console.log("chatList before modify:")
-              console.log(chatList)
-              let data = res.data;
-              for (let i = 0; i < data.length; i++) {
-                let obj = chatList.find(
-                  (obj) => obj.chatId === data[i].id && obj.type === "UNICAST"
-                );
-                if (obj) {
-                  //若找到
-                  let index = chatList.indexOf(obj);
-                  let chat = chatList[index];
-                  chatList.splice(index, 1);
-                  chatList.unshift(chat);
-                  chatList[0].unreadCount += data[i].messages.length;
-                  chatList[0].messageList.push(data[i].messages);
-                } else {
-                  //若无
-                  let friendList = self.$store.state.friends;
-                  console.log("friendList:");
-                  console.log(friendList);
-                  let length = data[i].messages.length;
-                  let obj = friendList.find((obj) => obj.id === data[i].id);
+
+            //逐个解析每个字段
+            for(let p in res.data){
+              //找到离线的messages
+              let messages = res.data[p];
+              //解析这个键值
+              let p1 = p;
+              p1 = p1.substring(1,p1.length - 1);//掐头去尾
+              let keys = p1.split(",")//分成两个
+              //此时keys[0]为chatId，keys[1]为type
+              let chatId = keys[0], type = keys[1];
+              let query = {
+                chatId: chatId,
+                type: type,
+              }
+
+              //根据type，分别去friendList和groupList里面找到name和avatarUrl
+              let name, avatarUrl
+              if(type === "UNICAST"){
+                let obj = this.$store.state.friends.find(
+                  (obj) => obj.id === chatId
+                )
+                name = obj.nickname.length === 0 ? obj.username : obj.nickname;
+                avatarUrl = obj.avatarUrl;
+              }else {
+                let obj = this.$store.state.groups.find(
+                  (obj) => obj.id = chatId
+                )
+                name = obj.name;
+                avatarUrl = "https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2121061596,2871071478&fm=26&gp=0.jpg";
+                //todo 放入真正的群头像
+              }
+
+              //先把Nedb更新一遍
+              getNedb().localMessage.find(query,function (err, docs) {
+                console.log("find " + chatId + " + " + type + " in nedb")
+                console.log(docs)
+                //现在找的是当前要更新的chat
+                if(docs.length === 0){//若是本来没有
                   let newChat = {
-                    chatId: data[i].id,
-                    type: "UNICAST",
-                    name:
-                      obj.nickname.length === 0 ? obj.username : obj.nickname,
-                    avatarUrl: obj.avatarUrl,
-                    sign: data[i].messages[length - 1].content,
-                    timestamp: data[i].messages[length - 1].timestamp,
-                    unReadCount: length,
-                    messageList: data[i].messages,
+                    chatId: chatId,
+                    type: type,
+                    name: name,
+                    avatarUrl: avatarUrl,
+                    sign: messages[messages.length - 1].content,
+                    timestamp: messages[messages.length - 1].timestamp,
+                    unReadCount: messages.length,
+                    messageList: messages,
                   };
-                  chatList.unshift(newChat);
-                  console.log("chatList:");
-                  console.log(chatList);
+                  getNedb().localMessage.insert(newChat);
+
+                }else {//若是本来就有
+                  let updateChat = docs[0];//虽然是复数形式 但是理应只有一个
+                  updateChat.unReadCount += messages.length;
+                  updateChat.messageList.push(messages);
+                  updateChat.avatarUrl = avatarUrl;
+                  updateChat.name = name;
+                  updateChat.sign = messages[messages.length - 1].content;
+                  getNedb().localMessage.update({query}, {$set: updateChat}, function (err, numupdated) {
+                    console.log(numupdated + "条数据被更新")
+                  })
                 }
-              }
-              self.$store.commit("setChatList", chatList)
-            });
+              })
+
+              //再用Nedb更新一遍vuex
+              let self = this
+              getNedb().localMessage.find({}).sort({timestap: 1}).exec(function (err, docs) {
+                self.$store.commit("setChatList", docs)
+              })
+            }
 
           } else console.log("error occurred");
-
         });
-      this.$axios
-        .get(
-          "/api/groupmessage?access_token=" +
-          this.$store.state.user.access_token +
-          "&sort=asc&drop=false"
-        )
-        .then((res) => {
-          if (res.status === 200) {
-            getNedb().localMessage.find({}, function(err, docs) {
-              chatList = docs;
-              console.log("start init local messages: groupChat")
-              console.log("chatList before modify:")
-              console.log(chatList)
-              let data = res.data;
-              for (let i = 0; i < data.length; i++) {
-                let obj = chatList.find(
-                  (obj) => obj.chatId === data[i].id && obj.type === "MULTICAST"
-                );
-                if (obj) {//若找到
-                  let index = chatList.indexOf(obj);
-                  let chat = chatList[index];
-                  chatList.splice(index, 1);
-                  chatList.unshift(chat)
-                  chatList[0].unreadCount += data[i].messages.length;
-                  chatList[0].messageList.push(data[i].messages);
-                }else {//若无
-                  let friendList = self.$store.state.friends;
-                  console.log("friendList:")
-                  console.log(friendList);
-                  let length = data[i].messages.length;
-                  let obj = friendList.find(
-                    obj => obj.id === data[i].id
-                  )
-                  let newChat = {
-                    chatId: data[i].id,
-                    type: "UNICAST",
-                    name: obj.nickname.length === 0?obj.username:obj.nickname,
-                    avatarUrl: obj.avatarUrl,
-                    sign: data[i].messages[length-1].content,
-                    timestamp: data[i].messages[length-1].timestamp,
-                    unReadCount: length,
-                    messageList: data[i].messages,
-                  }
-                  chatList.unshift(newChat);
-                  console.log("chatList:")
-                  console.log(chatList)
-                }
-              }
-              self.$store.commit("setChatList", chatList)
-            });
-          } else console.log("error occurred");
-        });
-      // this.$axios
-      //   .get(
-      //     "/api/groupmessage?access_token=" +
-      //     this.$store.state.user.access_token +
-      //     "&sort=asc&drop=false"
-      //   )
-      //   .then((res) => {
-      //     if (res.status === 200) {
-      //       var data = res.data;
-      //       for (var i = 0; i < data.length; i++) {
-      //         var obj = chatList.find(
-      //           (obj) => obj.chatID === data[i].id && obj.type === "MULTICAST"
-      //         );
-      //         if (obj) {
-      //           var index = chatList.indexOf(obj);
-      //           chatList[index].unreadCount += data[i].messages.length;
-      //           chatList[index].messageList.push(data[i].messages);
-      //         }
-      //       }
-      //     } else console.log("errpr occurred");
-      //   });
-      // getNedb().updata()
     },
 
     submit1(formName) {
@@ -328,7 +278,6 @@ export default {
                 };
                 //用户信息存入Vuex
                 this.$store.commit("setUser", userdata);
-                console.log(getNedb());
                 // var tokendata = {
                 //   access_token: data.access_token,
                 //   token_type: data.token_type,

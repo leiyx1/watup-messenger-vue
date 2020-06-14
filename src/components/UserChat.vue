@@ -142,18 +142,9 @@ export default {
         message.groupId = this.currentChat.chatId;
       getWebsocket().send(JSON.stringify(message));
       this.text = "";
-      this.refreshMessages();
+      this.scrollToBottom();
     },
-    refreshMessages() {
-      let self = this;
-      let query = {
-        chatId: this.currentChat.chatId,
-        type: this.currentChat.type,
-      };
-      getNedb().localMessage.find(query,function(err, docs) {
-          self.messageList = docs;
-        });
-
+    scrollToBottom() {
       this.$nextTick(() => {
         let msg = document.getElementById("message"); // 获取对象
         if (msg.scrollHeight !== null && msg.scrollTop !== null)

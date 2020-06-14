@@ -1,5 +1,6 @@
 import getNedb from "./NedbConfig";
 import store from "../store/index";
+import getNeDB from "./NedbConfig";
 
 let websock;
 export default function getWebsocket() {
@@ -59,6 +60,14 @@ function createWebsocket() {
         //将chatList中的老chat删除，新chat插到数组头
         updateChatList.splice(i, 1)
         updateChatList.unshift(currentChat)
+
+        //存入Nedb
+        let query = {chatId: currentChat.chatId, type: currentChat.type}
+        getNedb().localMessage.update(query, {$set: currentChat},{multi:true}, function (err, numUpdated) {
+          console.log(numUpdated)
+          console.log("存入nedb")
+        })
+
         modified = true;//标记cahtList被修改
         break;
       }
@@ -105,20 +114,16 @@ function createWebsocket() {
 
       //插入updateChatList
       updateChatList.unshift(newChat);
-
-    }
-    this.$store.commit("setChatList", updateChatList)
-
-    let currentChat = store.state.currentChat;
-    let query = { chatId: currentChat.chatId, type: currentChat.type };
-    getNedb().localMessage
-      .find(query)
-      .sort({ timestamp: 1 })
-      .exec(function(err, docs) {
-        console.log("setMessageList");
-        console.log(docs);
-        store.commit("setMessageList", docs);
+      //存入nedb
+      getNeDB().localMessage.insert(newChat, function(err, docs) {
+        console.log("add new item:" + docs);
       });
+    }
+    store.commit("setChatList", updateChatList)
+
+    //todo gochat肯定有问题
+    //todo 肯定有地方nedb插错了 检查
+
   };
   websock.onopen = function() {
     var string = `WebSocket is open now.`;
