@@ -157,6 +157,7 @@ export default {
           sign: "",
           avatarUrl: this.group.avatarUrl,
           messageList: [],
+            groupMembers:this.groupMembers,
         };
         this.$store.commit("unshiftChatList", newChat);
         getNeDB().localMessage.insert(newChat, function(err, docs) {
