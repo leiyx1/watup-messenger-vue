@@ -151,9 +151,57 @@ export default {
     showChat(chat, index) {
       this.show = true;
       this.currentChat = chat;
+
+      //若是群聊 则刷新群聊成员信息
+      if(chat.type === "MULTICAST"){
+        let groups = this.$store.state.groups;
+        let obj =  groups.find(
+          (obj) => obj.id === chat.chatId
+        )
+        this.loadGroupMembers(obj)
+      }
+      else if(chat.type === "UNICAST"){
+        //todo @huyikun
+      }
+
       this.$store.commit("resetUnread", index);
       console.log("showChat")
 
+    },
+    loadGroupMembers(group){
+      this.groupMembers=[];
+      let ids = this.group.usersId;
+      let failedMembers = [];
+      let userCache = this.$store.state.userCache;
+      [].forEach.call(ids, id => {
+        this.$axios
+          .get('/api/friend/user',  {
+            params: {
+              access_token: this.$store.state.user.access_token,
+              keyword:id,
+            }
+          })
+          .then(res => {
+            this.groupMembers.push(res.data)
+
+            let obj = userCache.find(
+              (obj) => obj.id === res.data.id
+            )
+            if(obj){
+              let index = userCache.indexOf(obj)
+              userCache[index] = res.data;
+            }else userCache.push(res.data)
+
+            this.$store.commit("setUserCache", userCache);
+
+          })
+          .catch(function (error) {
+            console.log(error);
+            failedMembers .push(id)
+          })
+      });
+      if (failedMembers.length > 0)
+        this.$message.info(failedMembers.join(", ") + "信息未成功获取");
     },
     goFriendPanel() {
       this.$router.push("/index/friends");

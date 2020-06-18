@@ -23,11 +23,15 @@ export default new Vuex.Store({
     currentChat: {
       messageList: [],
     },
+    userCache: [],
   },
   mutations: {
     setUsername(state, val) {
       //todo 理应存userId
       state.user.username = val;
+    },
+    setUserCache(state, val) {
+      state.userCache = val;
     },
     setId(state, val) {
       state.user.id = val;
