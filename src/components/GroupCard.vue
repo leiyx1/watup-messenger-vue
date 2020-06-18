@@ -88,11 +88,12 @@ export default {
   },
   created() {
     this.loadGroupMembers();
+    this.loadSingleGroup()
   },
     watch: {
-        group(){
-            this.loadGroupMembers();
-        }
+      group(){
+        this.loadGroupMembers();
+      }
     },
   computed: {
     isManager: {
@@ -115,10 +116,33 @@ export default {
     },
   },
   methods: {
-      goUser(member){
-          console.log(member)
-          this.$emit("showGroupFriend",member);
-      },
+    goUser(member){
+      console.log(member)
+      this.$emit("showGroupFriend",member);
+    },
+    loadSingleGroup(){
+      this.$axios.get('/api/group/' +
+        this.group.id + `?access_token=`+
+        this.$store.state.user.access_token
+      ).then(res =>{
+        if(res.status === 400){
+          console.log("error occurred!")
+        }
+        else if(res.status === 200){
+          let groups = this.$store.state.groups;
+          let obj = groups.find(
+            (obj) => obj.id === this.group.id
+          )
+          if(obj){
+            let index = groups.indexOf(obj)
+            groups[index] = res.data;
+          }else {
+            groups.unshift(res.data);
+          }
+          this.$store.commit("setGroups", groups)
+        }
+      })
+    },
       loadGroupMembers(){
           this.groupMembers=[];
           let ids = this.group.usersId;

@@ -169,9 +169,9 @@ export default {
       //若是群聊 则刷新群聊成员信息
       if (chat.type === "MULTICAST") {
         let groups = this.$store.state.groups;
-
         let obj = groups.find((obj) => obj.id === chat.chatId);
         this.loadGroupMembers(obj);
+        this.loadSingleGroup(obj);
       } else if (chat.type === "UNICAST") {
         // todo @huyikun
         this.$axios
@@ -192,6 +192,30 @@ export default {
 
       this.$store.commit("resetUnread", index);
       console.log("showChat");
+    },
+    loadSingleGroup(group) {
+      this.$axios
+        .get(
+          "/api/group/" +
+            group.id +
+            `?access_token=` +
+            this.$store.state.user.access_token
+        )
+        .then((res) => {
+          if (res.status === 400) {
+            console.log("error occurred!");
+          } else if (res.status === 200) {
+            let groups = this.$store.state.groups;
+            let obj = groups.find((obj) => obj.id === group.id);
+            if (obj) {
+              let index = groups.indexOf(obj);
+              groups[index] = res.data;
+            } else {
+              groups.unshift(res.data);
+            }
+            this.$store.commit("setGroups", groups);
+          }
+        });
     },
     loadGroupMembers(group) {
       this.groupMembers = [];

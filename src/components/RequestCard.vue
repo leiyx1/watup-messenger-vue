@@ -113,6 +113,7 @@
                                 message: "失效的邀请"
                             })
                         }
+                        this.$emit("joinGroup");
                     })
                     .catch(error => {
                         console.log(error);
@@ -121,6 +122,7 @@
                             message: "失效的邀请"
                         })
                     })
+
             },
             rejectFriendRequest(index, row) {
                 this.$axios
@@ -138,6 +140,7 @@
                                 message: "请求已被处理"
                             })
                         }
+                        this.$emit("addFriend");
                     })
                     .catch(error => {
                         console.log(error);
@@ -163,6 +166,7 @@
                                 message: "请求已被处理"
                             })
                         }
+                        this.$emit("addFriend");
                     })
                     .catch(error => {
                         console.log(error);
