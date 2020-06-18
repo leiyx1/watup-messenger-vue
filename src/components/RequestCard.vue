@@ -3,7 +3,7 @@
     <el-tabs v-model="activeName" :stretch="true">
       <el-tab-pane label="好友申请" name="first">
         <el-table
-          :data="friendRequest"
+          :data="this.$store.state.friendRequest"
           stripe
           highlight-current-row
           style="width: 100%;text-align: center;cursor:pointer"
