@@ -58,7 +58,7 @@
           </div>
           <div class="item-body">
             <div class="item-word">
-              <b>{{ CardInfo(item).name }}</b>
+              <b>{{ GInfo(item).name }}</b>
             </div>
           </div>
         </el-menu-item>
@@ -71,14 +71,14 @@
           @click="showFriend(item, index)"
         >
           <div class="item-avatar">
-            <img :src="CardInfo(item).avatarUrl" alt="头像" />
+            <img :src="FInfo(item).avatarUrl" alt="头像" />
           </div>
           <div class="item-body">
             <div class="item-word">
               <b>{{
-                CardInfo(item).nickname === ""
-                  ? CardInfo(item).username
-                  : CardInfo(item).nickname
+                FInfo(item).nickname === ""
+                  ? FInfo(item).username
+                  : FInfo(item).nickname
               }}</b>
             </div>
           </div>
@@ -154,19 +154,15 @@ export default {
         this.$store.commit("setFriends", JSON.parse(JSON.stringify(val)));
       },
     },
-    CardInfo: {
-      get: function(chat) {
-        if (chat.type === "UNICAST") {
-          return this.$store.state.userCache.find(
-            (obj) => obj.id === chat.chatId
-          );
-        } else {
-          return this.$store.state.groups.find((obj) => obj.id === chat.chatId);
-        }
-      },
-    },
   },
   methods: {
+    FInfo: function(item) {
+      return this.$store.state.userCache.find((obj) => obj.id === item.id);
+    },
+    GInfo: function(item) {
+      return this.$store.state.groups.find((obj) => obj.id === item.id);
+    },
+
     showBlank() {
       console.log("444");
       this.hasShowGroup = false;
