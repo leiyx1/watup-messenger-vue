@@ -3,7 +3,7 @@
     <el-tabs v-model="activeName" :stretch="true">
       <el-tab-pane label="好友申请" name="first" >
         <el-table
-            :data="friendRequest"
+            :data="this.$store.state.friendRequest"
             stripe
             highlight-current-row
             style="width: 100%;text-align: center;cursor:pointer">
@@ -47,7 +47,7 @@
       </el-tab-pane>
       <el-tab-pane label="群聊邀请" name="second">
         <el-table
-            :data="groupRequest"
+            :data="this.$store.state.groupRequest"
             stripe
             highlight-current-row
             style="width: 100%;text-align: center;cursor:pointer">
@@ -84,11 +84,7 @@
         name: "RequestCard",
         data() {
             return {
-                activeName: 'second',
-                friendRequest:this.$store.state.friendRequest,
-                groupRequest:this.$store.state.groupRequest,
-                friendRefresh:0,
-                groupRefresh:0,
+                activeName: 'first',
             };
         },
         methods: {
