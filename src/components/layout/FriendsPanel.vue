@@ -87,7 +87,7 @@
         :user="currentItem"
         v-else-if="hasShowFriend && !hasShowGroup && !hasShowRequest"
       />
-      <RequestCard v-else-if="hasShowRequest" />
+      <RequestCard v-else-if="hasShowRequest" @joinGroup="loadG" @addFriend="loadF"/>
       <GroupCard
         :group="currentItem"
         @exit-group="showBlank"
@@ -99,7 +99,7 @@
 </template>
 
 <script>
-import { loadGroups } from "@/JavaScript/load.js";
+import { loadGroups,loadFriends } from "@/JavaScript/load.js";
 import UserCard from "../UserCard.vue";
 import NewFriendDialog from "@/components/NewFriendDialog";
 import NewGroupDialog from "@/components/NewGroupDialog";
@@ -163,7 +163,6 @@ export default {
       this.hasShowFriend = false;
       this.hasShowRequest = false;
     },
-    loadGroups() {},
     showRequest() {
       console.log("333");
       this.hasShowGroup = false;
@@ -173,6 +172,9 @@ export default {
     loadG() {
       loadGroups();
     },
+      loadF(){
+        loadFriends();
+      },
     showFriend(item) {
       console.log("111");
       this.hasShowGroup = false;
