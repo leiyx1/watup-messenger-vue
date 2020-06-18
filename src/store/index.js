@@ -30,6 +30,9 @@ export default new Vuex.Store({
       //todo 理应存userId
       state.user.username = val;
     },
+    setUserCache(state, val) {
+      state.userCache = val;
+    },
     setId(state, val) {
       state.user.id = val;
     },

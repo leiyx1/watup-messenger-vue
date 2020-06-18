@@ -123,6 +123,7 @@ export default {
           this.groupMembers=[];
           let ids = this.group.usersId;
           let failedMembers = [];
+          let userCache = this.$store.state.userCache;
           [].forEach.call(ids, id => {
               this.$axios
                   .get('/api/friend/user',  {
@@ -132,7 +133,18 @@ export default {
                       }
                   })
                   .then(res => {
-                      this.groupMembers.push(res.data)
+                    this.groupMembers.push(res.data)
+
+                    let obj = userCache.find(
+                      (obj) => obj.id === res.data.id
+                    )
+                    if(obj){
+                      let index = userCache.indexOf(obj)
+                      userCache[index] = res.data;
+                    }else userCache.push(res.data)
+
+                    this.$store.commit("setUserCache", userCache);
+
                   })
                   .catch(function (error) {
                       console.log(error);
