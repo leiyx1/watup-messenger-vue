@@ -158,7 +158,8 @@ export default {
         let obj =  groups.find(
           (obj) => obj.id === chat.chatId
         )
-        this.loadGroupMembers(obj)
+        this.loadGroupMembers(obj);
+        this.loadSingleGroup(obj);
       }
       else if(chat.type === "UNICAST"){
         //todo @huyikun
@@ -168,9 +169,32 @@ export default {
       console.log("showChat")
 
     },
+    loadSingleGroup(group){
+      this.$axios.get('/api/group/' +
+        group.id + `?access_token=`+
+        this.$store.state.user.access_token
+      ).then(res =>{
+        if(res.status === 400){
+          console.log("error occurred!")
+        }
+        else if(res.status === 200){
+          let groups = this.$store.state.groups;
+          let obj = groups.find(
+            (obj) => obj.id === group.id
+          )
+          if(obj){
+            let index = groups.indexOf(obj)
+            groups[index] = res.data;
+          }else {
+            groups.unshift(res.data);
+          }
+        this.$store.commit("setGroups", groups)
+        }
+      })
+    },
     loadGroupMembers(group){
       this.groupMembers=[];
-      let ids = this.group.usersId;
+      let ids = group.usersId;
       let failedMembers = [];
       let userCache = this.$store.state.userCache;
       [].forEach.call(ids, id => {
