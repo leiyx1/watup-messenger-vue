@@ -107,10 +107,10 @@
 </template>
 
 <script>
-import { loadGroups, loadFriends } from "@/JavaScript/load.js";
+import { loadGroups, loadFriends } from "../../JavaScript/load.js";
 import UserCard from "../UserCard.vue";
-import NewFriendDialog from "@/components/NewFriendDialog";
-import NewGroupDialog from "@/components/NewGroupDialog";
+import NewFriendDialog from "../../components/NewFriendDialog";
+import NewGroupDialog from "../../components/NewGroupDialog";
 import GroupCard from "../GroupCard.vue";
 import RequestCard from "../RequestCard";
 export default {

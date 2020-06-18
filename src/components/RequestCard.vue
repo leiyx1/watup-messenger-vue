@@ -79,7 +79,7 @@
 </template>
 
 <script>
-    import { loadGroupRequest, loadFriendRequest } from "@/JavaScript/load.js";
+    import { loadGroupRequests, loadFriendRequests } from "../JavaScript/load.js";
     export default {
         name: "RequestCard",
         data() {
@@ -109,7 +109,7 @@
                                 message: "失效的邀请"
                             })
                         }
-                        loadGroupRequest();
+                        loadGroupRequests();
                         this.$emit("joinGroup");
                     })
                     .catch(error => {
@@ -137,7 +137,7 @@
                                 message: "请求已被处理"
                             })
                         }
-                        loadFriendRequest();
+                        loadFriendRequests();
                         this.$emit("addFriend");
                     })
                     .catch(error => {
@@ -164,7 +164,7 @@
                                 message: "请求已被处理"
                             })
                         }
-                        loadFriendRequest();
+                        loadFriendRequests();
                         this.$emit("addFriend");
                     })
                     .catch(error => {
