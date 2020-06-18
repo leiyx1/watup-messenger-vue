@@ -23,6 +23,7 @@ export default new Vuex.Store({
     currentChat: {
       messageList: [],
     },
+    userCache: [],
   },
   mutations: {
     setUsername(state, val) {
@@ -69,6 +70,15 @@ export default new Vuex.Store({
     },
     setFriends(state, val) {
       state.friends = val;
+    },
+    updateUserCache(state, val) {
+      var found = state.userCache.find((obj) => obj.id == val.id);
+      var index = state.userCache.indexOf(found);
+      if (found) {
+        state.userCache[index] = val;
+      } else {
+        state.userCache.push(val);
+      }
     },
     setGroups(state, val) {
       state.groups = val;
