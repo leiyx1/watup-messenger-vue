@@ -42,7 +42,7 @@
       </el-tab-pane>
       <el-tab-pane label="群聊邀请" name="second">
         <el-table
-          :data="groupRequest"
+          :data="this.$store.state.groupRequest"
           stripe
           highlight-current-row
           style="width: 100%;text-align: center;cursor:pointer"
@@ -74,16 +74,12 @@
 </template>
 
 <script>
-import { loadGroupRequest, loadFriendRequest } from "@/JavaScript/load.js";
+import { loadGroupRequests, loadFriendRequests } from "../JavaScript/load.js";
 export default {
   name: "RequestCard",
   data() {
     return {
-      activeName: "second",
-      friendRequest: this.$store.state.friendRequest,
-      groupRequest: this.$store.state.groupRequest,
-      friendRefresh: 0,
-      groupRefresh: 0,
+      activeName: "first",
     };
   },
   methods: {
@@ -109,7 +105,7 @@ export default {
               message: "失效的邀请",
             });
           }
-          loadGroupRequest();
+          loadGroupRequests();
           this.$emit("joinGroup");
         })
         .catch((error) => {
@@ -141,7 +137,7 @@ export default {
               message: "请求已被处理",
             });
           }
-          loadFriendRequest();
+          loadFriendRequests();
           this.$emit("addFriend");
         })
         .catch((error) => {
@@ -173,7 +169,7 @@ export default {
               message: "请求已被处理",
             });
           }
-          loadFriendRequest();
+          loadFriendRequests();
           this.$emit("addFriend");
         })
         .catch((error) => {
