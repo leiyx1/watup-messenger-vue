@@ -39,8 +39,10 @@ export function loadFriends() {
       } else if (successResponse.status === 200) {
         store.commit("setFriends", successResponse.data);
         var friends = successResponse.data;
-        for (var friend in friends) {
-          store.commit("updateUserCache", friend);
+        for (var i = 0; i < friends.length; i++) {
+          console.log(friends[i]);
+          store.commit("updateUserCache", friends[i]);
+          console.log(store.state.userCache);
         }
       } else {
         console.log("known error");

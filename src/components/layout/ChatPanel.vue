@@ -105,17 +105,7 @@ export default {
         );
       },
     },
-    chatInfo: {
-      get: function(chat) {
-        if (chat.type === "UNICAST") {
-          return this.$store.state.userCache.find(
-            (obj) => obj.id === chat.chatId
-          );
-        } else {
-          return this.$store.state.group.find((obj) => obj.id === chat.chatId);
-        }
-      },
-    },
+
     chatList: {
       get: function() {
         return this.$store.state.chatList;
@@ -136,6 +126,19 @@ export default {
   },
   mounted() {},
   methods: {
+    chatInfo: function(chat) {
+      if (chat.type === "UNICAST") {
+        console.log(
+          this.$store.state.userCache.find((obj) => obj.id === chat.chatId)
+        );
+        return this.$store.state.userCache.find(
+          (obj) => obj.id === chat.chatId
+        );
+      } else {
+        return this.$store.state.groups.find((obj) => obj.id === chat.chatId);
+      }
+    },
+
     time: function(val) {
       if (!val) {
         var t = new Date();

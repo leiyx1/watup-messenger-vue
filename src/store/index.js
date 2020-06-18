@@ -77,10 +77,12 @@ export default new Vuex.Store({
     updateUserCache(state, val) {
       var found = state.userCache.find((obj) => obj.id == val.id);
       var index = state.userCache.indexOf(found);
+      val.name = val.nickname ? val.nickname : val.username;
       if (found) {
         state.userCache[index] = val;
       } else {
         state.userCache.push(val);
+        console.log(state.userCache);
       }
     },
     setGroups(state, val) {

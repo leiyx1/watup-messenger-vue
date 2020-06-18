@@ -185,8 +185,8 @@ export default {
               //找到离线的messages
               let messages = res.data[p];
               //预处理 给messages里面每个字段加一个mine字段
-              for(let i = 0; i < messages.length; ++i){
-                messages[i].mine = false
+              for (let i = 0; i < messages.length; ++i) {
+                messages[i].mine = false;
               }
               //解析这个键值
               let p1 = p;
@@ -246,7 +246,7 @@ export default {
                   //若是本来就有
                   let updateChat = docs[0]; //虽然是复数形式 但是理应只有一个
                   updateChat.unReadCount += messages.length;
-                  for(let i = 0; i < messages.length; ++i){
+                  for (let i = 0; i < messages.length; ++i) {
                     updateChat.messageList.push(messages[i]);
                   }
                   updateChat.avatarUrl = avatarUrl;
@@ -350,7 +350,9 @@ export default {
 
                 //建立websocket连接
                 getWebsocket();
-                this.$router.push("/index/chatpanel");
+                setTimeout(() => {
+                  self.$router.push("/index/chatpanel");
+                }, 5000);
                 this.$notify({
                   title: "成功",
                   message: "登录成功！",

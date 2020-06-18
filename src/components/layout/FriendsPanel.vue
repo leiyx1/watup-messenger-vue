@@ -161,7 +161,7 @@ export default {
             (obj) => obj.id === chat.chatId
           );
         } else {
-          return this.$store.state.group.find((obj) => obj.id === chat.chatId);
+          return this.$store.state.groups.find((obj) => obj.id === chat.chatId);
         }
       },
     },
