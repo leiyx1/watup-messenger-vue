@@ -1,6 +1,7 @@
 import getNedb from "./NedbConfig";
 import store from "../store/index";
 import getNeDB from "./NedbConfig";
+import {loadGroupRequests} from "./load";
 
 let websock;
 export default function getWebsocket() {
@@ -99,12 +100,16 @@ function createWebsocket() {
         console.log(obj);
         name = obj.nickname.length === 0 ? obj.username : obj.nickname;
         avatarUrl = obj.avatarUrl;
-      } else {
+      } else if(data.type === "MULTICAST"){
         obj = gourpList.find((obj) => obj.id === chatId);
         name = obj.name;
         avatarUrl =
           "https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2121061596,2871071478&fm=26&gp=0.jpg";
         //todo 放入真正的群头像
+      }else { // type === NOTIFICATION
+        if(data.notificationType === "GROUP_REQUEST"){
+          loadGroupRequests()
+        }
       }
 
       let newChat = {
