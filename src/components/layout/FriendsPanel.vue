@@ -58,7 +58,7 @@
           </div>
           <div class="item-body">
             <div class="item-word">
-              <b>{{ item.name }}</b>
+              <b>{{ CardInfo(item).name }}</b>
             </div>
           </div>
         </el-menu-item>
@@ -71,11 +71,15 @@
           @click="showFriend(item, index)"
         >
           <div class="item-avatar">
-            <img :src="item.avatarUrl" alt="头像" />
+            <img :src="CardInfo(item).avatarUrl" alt="头像" />
           </div>
           <div class="item-body">
             <div class="item-word">
-              <b>{{ item.nickname === "" ? item.username : item.nickname }}</b>
+              <b>{{
+                CardInfo(item).nickname === ""
+                  ? CardInfo(item).username
+                  : CardInfo(item).nickname
+              }}</b>
             </div>
           </div>
         </el-menu-item>
@@ -128,7 +132,6 @@ export default {
   },
   mounted() {
     console.log("hao" + this.$store.state.user.access_token);
-
   },
   computed: {
     groups: {
@@ -147,17 +150,19 @@ export default {
         this.$store.commit("setFriends", JSON.parse(JSON.stringify(val)));
       },
     },
-    // currentFriend: {
-    //   get: function() {
-    //     return this.$store.state.currentFriend;
-    //   },
-    //   set: function(val) {
-    //     this.$store.commit("setFriends", JSON.parse(JSON.stringify(val)));
-    //   },
-    // },
+    CardInfo: {
+      get: function(chat) {
+        if (chat.type === "UNICAST") {
+          return this.$store.state.userCache.find(
+            (obj) => obj.id === chat.chatId
+          );
+        } else {
+          return this.$store.state.group.find((obj) => obj.id === chat.chatId);
+        }
+      },
+    },
   },
   methods: {
-
     showBlank() {
       console.log("444");
       this.hasShowGroup = false;
@@ -180,6 +185,20 @@ export default {
       this.hasShowRequest = false;
       this.hasShowFriend = true;
       this.currentItem = item;
+      this.$axios
+        .get("/api/friend/search/id", {
+          params: {
+            access_token: this.$store.state.user.access_token,
+            friendId: item.id,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            this.$store.commit("updateUserCache", res.data);
+          } else {
+            console.log("errrorrrr");
+          }
+        });
       // this.chatList[index] = this.$store.state.currentChat;
       // console.log(this.currentItem);
       // setMessageListByChatID
@@ -190,6 +209,8 @@ export default {
       this.hasShowRequest = false;
       this.hasShowGroup = true;
       this.currentItem = item;
+      // 更新group by item.id
+
       // this.chatList[index] = this.$store.state.currentChat;
       // console.log(this.currentItem);
       // setMessageListByChatID
