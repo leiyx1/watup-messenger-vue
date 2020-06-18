@@ -50,3 +50,45 @@ export function loadFriends() {
       console.log(failResponse);
     });
 }
+
+export function loadFriendRequests() {
+  axios
+      .get("/api/friend/request", {
+        params: {
+          access_token: store.state.user.access_token,
+        },
+      })
+      .then((successResponse) => {
+        if (successResponse.status === 404) {
+          console.log("拉取好友邀请失败");
+        } else if (successResponse.status === 200) {
+          store.commit("setFriendRequest", successResponse.data);
+        } else {
+          console.log("known error");
+        }
+      })
+      .catch((failResponse) => {
+        console.log(failResponse);
+      });
+}
+
+export function loadGroupRequests() {
+  axios
+      .get("/api/request", {
+        params: {
+          access_token: store.state.user.access_token,
+        },
+      })
+      .then((successResponse) => {
+        if (successResponse.status === 404) {
+          console.log("拉取群聊申请失败");
+        } else if (successResponse.status === 200) {
+          store.commit("setGroupRequest", successResponse.data);
+        } else {
+          console.log("known error");
+        }
+      })
+      .catch((failResponse) => {
+        console.log(failResponse);
+      });
+}
