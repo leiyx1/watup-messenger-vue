@@ -107,7 +107,7 @@
 <script>
 import getNedb from "../JavaScript/NedbConfig";
 import getWebsocket from "../JavaScript/Websocket";
-import { loadGroups, loadFriends } from "../JavaScript/load";
+import { loadGroups, loadFriends,loadFriendRequests,loadGroupRequests } from "../JavaScript/load";
 export default {
   name: "Home",
   data() {
@@ -334,6 +334,8 @@ export default {
                 //加载好友和群聊
                 this.loadG();
                 this.loadF();
+                loadFriendRequests();
+                loadGroupRequests();
                 //更新系统信息
                 getNedb().systemInfo.remove({}, { multi: true });
                 let updateSystemInfo = {
