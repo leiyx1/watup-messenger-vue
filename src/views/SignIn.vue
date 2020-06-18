@@ -246,7 +246,9 @@ export default {
                   //若是本来就有
                   let updateChat = docs[0]; //虽然是复数形式 但是理应只有一个
                   updateChat.unReadCount += messages.length;
-                  updateChat.messageList.push(messages);
+                  for(let i = 0; i < messages.length; ++i){
+                    updateChat.messageList.push(messages[i]);
+                  }
                   updateChat.avatarUrl = avatarUrl;
                   updateChat.name = name;
                   updateChat.sign = messages[messages.length - 1].content;

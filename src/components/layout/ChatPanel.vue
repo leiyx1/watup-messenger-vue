@@ -52,7 +52,6 @@
 
 <script>
 import userChat from "../UserChat.vue";
-import getNedb from "../../JavaScript/NedbConfig";
 
 export default {
   data() {
@@ -153,18 +152,8 @@ export default {
       this.show = true;
       this.currentChat = chat;
       this.$store.commit("resetUnread", index);
-      // setMessageListByChatID
-      let self = this;
-      let query = {
-        chatId: this.currentChat.chatId,
-        type: this.currentChat.type,
-      };
-      getNedb()
-        .localMessage.find(query)
-        .sort({ timestamp: 1 })
-        .exec(function(err, docs) {
-          self.messageList = docs[0].messageList;
-        });
+      console.log("showChat")
+
     },
     goFriendPanel() {
       this.$router.push("/index/friends");

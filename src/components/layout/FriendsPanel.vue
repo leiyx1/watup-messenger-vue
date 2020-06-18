@@ -128,29 +128,7 @@ export default {
   },
   mounted() {
     console.log("hao" + this.$store.state.user.access_token);
-    // this.friends = [
-    //   {
-    //     id: "1",
-    //     username: "老板",
-    //     nickname: "",
-    //     avatarUrl:
-    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-    //   },
-    //   {
-    //     id: "2",
-    //     username: "钢铁侠",
-    //     nickname: "老大",
-    //     avatarUrl:
-    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-    //   },
-    //   {
-    //     id: "3",
-    //     username: "Happy",
-    //     nickname: "绿巨人",
-    //     avatarUrl:
-    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-    //   },
-    // ];
+
   },
   computed: {
     groups: {

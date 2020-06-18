@@ -178,7 +178,20 @@ export default {
             .put("/api/friend/nickname"+"?access_token="+this.$store.state.user.access_token+"&friendId="+this.user.id+"&nickname="+this.newNick)
             .then(res => {
                 if(res.status===200){
-                    this.$notify.success("修改成功")
+                  this.$notify.success("修改成功")
+                  //更新chatList里面的name
+                  let updateChatList = this.chatList
+                  let obj = updateChatList.find(
+                    (obj) => obj.type === "UNICAST" && obj.chatId === this.user.id,
+                  )
+                  if(obj){
+                    let index = updateChatList.indexOf(obj);
+                    updateChatList[index].name = this.newNick;
+                    this.chatList = updateChatList;
+                  }
+                //更新friends里面的nickname
+
+
                 }else {
                     this.$notify.error("无效操作")
                 }
