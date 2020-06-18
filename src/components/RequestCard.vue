@@ -79,21 +79,17 @@
 </template>
 
 <script>
-    //import qs from 'qs'
+    import { loadGroupRequest, loadFriendRequest } from "@/JavaScript/load.js";
     export default {
         name: "RequestCard",
         data() {
             return {
                 activeName: 'second',
-                friendRequest:[],
-                groupRequest:[],
+                friendRequest:this.$store.state.friendRequest,
+                groupRequest:this.$store.state.groupRequest,
                 friendRefresh:0,
                 groupRefresh:0,
             };
-        },
-        created() {
-            this.loadFriendRequest();
-            this.loadGroupRequest();
         },
         methods: {
             handleGroupRequest(index, row) {
@@ -113,6 +109,7 @@
                                 message: "失效的邀请"
                             })
                         }
+                        loadGroupRequest();
                         this.$emit("joinGroup");
                     })
                     .catch(error => {
@@ -140,6 +137,7 @@
                                 message: "请求已被处理"
                             })
                         }
+                        loadFriendRequest();
                         this.$emit("addFriend");
                     })
                     .catch(error => {
@@ -166,6 +164,7 @@
                                 message: "请求已被处理"
                             })
                         }
+                        loadFriendRequest();
                         this.$emit("addFriend");
                     })
                     .catch(error => {
@@ -176,48 +175,48 @@
                         })
                     })
             },
-            loadGroupRequest(){
-                this.$axios
-                    .get("api/request", {
-                        params: {
-                            access_token:this.$store.state.user.access_token,
-                        },
-                    })
-                    .then((successResponse) => {
-                        if (successResponse.status === 200) {
-                            this.groupRequest=successResponse.data
-                        } else {
-                            this.$notify.error({
-                                title: "错误",
-                                message: "拉取群聊邀请出错",
-                            });
-                        }
-                    })
-                    .catch((failResponse) => {
-                        console.log(failResponse);
-                    });
-            },
-            loadFriendRequest(){
-                this.$axios
-                    .get("api/friend/request", {
-                        params: {
-                            access_token:this.$store.state.user.access_token,
-                        },
-                    })
-                    .then((successResponse) => {
-                        if (successResponse.status === 200) {
-                            this.friendRequest=successResponse.data
-                        } else {
-                            this.$notify.error({
-                                title: "错误",
-                                message: "拉取好友申请出错",
-                            });
-                        }
-                    })
-                    .catch((failResponse) => {
-                        console.log(failResponse);
-                    });
-            },
+            // loadGroupRequest(){
+            //     this.$axios
+            //         .get("api/request", {
+            //             params: {
+            //                 access_token:this.$store.state.user.access_token,
+            //             },
+            //         })
+            //         .then((successResponse) => {
+            //             if (successResponse.status === 200) {
+            //                 this.groupRequest=successResponse.data
+            //             } else {
+            //                 this.$notify.error({
+            //                     title: "错误",
+            //                     message: "拉取群聊邀请出错",
+            //                 });
+            //             }
+            //         })
+            //         .catch((failResponse) => {
+            //             console.log(failResponse);
+            //         });
+            // },
+            // loadFriendRequest(){
+            //     this.$axios
+            //         .get("api/friend/request", {
+            //             params: {
+            //                 access_token:this.$store.state.user.access_token,
+            //             },
+            //         })
+            //         .then((successResponse) => {
+            //             if (successResponse.status === 200) {
+            //                 this.friendRequest=successResponse.data
+            //             } else {
+            //                 this.$notify.error({
+            //                     title: "错误",
+            //                     message: "拉取好友申请出错",
+            //                 });
+            //             }
+            //         })
+            //         .catch((failResponse) => {
+            //             console.log(failResponse);
+            //         });
+            // },
         }
     }
 </script>
