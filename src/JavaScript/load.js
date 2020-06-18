@@ -38,6 +38,10 @@ export function loadFriends() {
         console.log("拉取好友失败");
       } else if (successResponse.status === 200) {
         store.commit("setFriends", successResponse.data);
+        var friends = successResponse.data;
+        for (var friend in friends) {
+          store.commit("updateUserCache", friend);
+        }
       } else {
         console.log("known error");
       }
