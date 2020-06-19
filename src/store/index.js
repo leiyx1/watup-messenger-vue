@@ -20,23 +20,26 @@ export default new Vuex.Store({
     groups: [],
     blacklist: [],
     chatList: [],
-    friendRequest:[],
-    groupRequest:[],
+    friendRequest: [],
+    groupRequest: [],
     currentChat: {
       messageList: [],
     },
     userCache: [],
   },
   mutations: {
-    setGroupRequest(state,val){
-      state.groupRequest=val;
+    setGroupRequest(state, val) {
+      state.groupRequest = val;
     },
-    setFriendRequest(state,val){
-      state.friendRequest=val;
+    setFriendRequest(state, val) {
+      state.friendRequest = val;
     },
     setUsername(state, val) {
       //todo 理应存userId
       state.user.username = val;
+    },
+    setUserAvatar(state, val) {
+      state.user.avatar = val;
     },
     setUserCache(state, val) {
       state.userCache = val;

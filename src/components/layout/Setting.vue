@@ -54,7 +54,15 @@
           </div>
           <!-- <el-button class="btn" type="text">修改备注</el-button> -->
         </div>
-        <img :src="user.avatarUrl" />
+        <el-upload
+          class="avatar-uploader"
+          :action="upUrl"
+          :show-file-list="false"
+          :on-success="handleAvatarSuccess"
+          :before-upload="beforeAvatarUpload"
+        >
+          <img :src="user.avatarUrl" />
+        </el-upload>
       </div>
       <el-divider class="divider1" />
       <div class="level-2">
@@ -124,6 +132,12 @@ import getNeDB from "../../JavaScript/NedbConfig";
 export default {
   data() {
     return {
+      token: {
+        access_token: this.$store.state.user.access_token,
+      },
+      upUrl:
+        "http://106.13.123.20:8080/api/user/updateAvatar?access_token=" +
+        this.$store.state.user.access_token,
       newName: "",
       newSign: "",
       newArea: "",
@@ -138,6 +152,9 @@ export default {
       },
     };
   },
+  mounted() {
+    console.log(this.user);
+  },
   computed: {
     // 实际应该登录后从vuex中取user
     user: {
@@ -147,6 +164,41 @@ export default {
     },
   },
   methods: {
+    handleAvatarSuccess(res) {
+      if (res.code === 200) {
+        this.$store.commit("setUserAvatar", res.data);
+        this.user.avatarUrl = res.data;
+        console.log(res.data);
+        // this.$axios
+        //   .get("usercenter/uploadAvatar", {
+        //     params: {
+        //       username: this.user.username,
+        //       avatarUrl: this.url[0]
+        //     }
+        //   })
+        //   .then(response => {
+        //     console.log(response);
+        //   });
+      } else if (res.code === 400) {
+        console.log("fail");
+      } else {
+        console.log(res);
+      }
+      //location.reload();
+    },
+    beforeAvatarUpload(file) {
+      const isJPG = file.type === "image/jpeg";
+      const isPNG = file.type === "image/png";
+      const isLt2M = file.size / 1024 / 1024 < 2;
+
+      if (!isJPG && !isPNG) {
+        this.$message.error("上传头像图片只能是 JPG或PNG格式!");
+      }
+      if (!isLt2M) {
+        this.$message.error("上传头像图片大小不能超过 2MB!");
+      }
+      return (isPNG || isJPG) && isLt2M;
+    },
     editName: function() {
       this.newName = "";
       this.hasEditName = true;

@@ -93,6 +93,10 @@ export default {
       return value;
     },
   },
+  mounted() {
+    console.log(this.chatList);
+    console.log(this.$store.state.groups);
+  },
   computed: {
     currentChat: {
       get: function() {
@@ -124,7 +128,6 @@ export default {
       },
     },
   },
-  mounted() {},
   methods: {
     chatInfo: function(chat) {
       if (chat.type === "UNICAST") {
