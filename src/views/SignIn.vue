@@ -107,7 +107,7 @@
 <script>
 import getNedb from "../JavaScript/NedbConfig";
 import getWebsocket from "../JavaScript/Websocket";
-import { loadGroups, loadFriends } from "../JavaScript/load";
+import { loadGroups, loadFriends,loadFriendRequests,loadGroupRequests } from "../JavaScript/load";
 export default {
   name: "Home",
   data() {
@@ -185,8 +185,8 @@ export default {
               //找到离线的messages
               let messages = res.data[p];
               //预处理 给messages里面每个字段加一个mine字段
-              for(let i = 0; i < messages.length; ++i){
-                messages[i].mine = false
+              for (let i = 0; i < messages.length; ++i) {
+                messages[i].mine = false;
               }
               //解析这个键值
               let p1 = p;
@@ -246,7 +246,9 @@ export default {
                   //若是本来就有
                   let updateChat = docs[0]; //虽然是复数形式 但是理应只有一个
                   updateChat.unReadCount += messages.length;
-                  updateChat.messageList.push(messages);
+                  for (let i = 0; i < messages.length; ++i) {
+                    updateChat.messageList.push(messages[i]);
+                  }
                   updateChat.avatarUrl = avatarUrl;
                   updateChat.name = name;
                   updateChat.sign = messages[messages.length - 1].content;
@@ -332,6 +334,8 @@ export default {
                 //加载好友和群聊
                 this.loadG();
                 this.loadF();
+                loadFriendRequests();
+                loadGroupRequests();
                 //更新系统信息
                 getNedb().systemInfo.remove({}, { multi: true });
                 let updateSystemInfo = {
@@ -348,7 +352,9 @@ export default {
 
                 //建立websocket连接
                 getWebsocket();
-                this.$router.push("/index/chatpanel");
+                setTimeout(() => {
+                  self.$router.push("/index/chatpanel");
+                }, 5000);
                 this.$notify({
                   title: "成功",
                   message: "登录成功！",

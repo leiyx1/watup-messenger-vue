@@ -20,14 +20,26 @@ export default new Vuex.Store({
     groups: [],
     blacklist: [],
     chatList: [],
+    friendRequest:[],
+    groupRequest:[],
     currentChat: {
       messageList: [],
     },
+    userCache: [],
   },
   mutations: {
+    setGroupRequest(state,val){
+      state.groupRequest=val;
+    },
+    setFriendRequest(state,val){
+      state.friendRequest=val;
+    },
     setUsername(state, val) {
       //todo 理应存userId
       state.user.username = val;
+    },
+    setUserCache(state, val) {
+      state.userCache = val;
     },
     setId(state, val) {
       state.user.id = val;
@@ -69,6 +81,17 @@ export default new Vuex.Store({
     },
     setFriends(state, val) {
       state.friends = val;
+    },
+    updateUserCache(state, val) {
+      var found = state.userCache.find((obj) => obj.id == val.id);
+      var index = state.userCache.indexOf(found);
+      val.name = val.nickname ? val.nickname : val.username;
+      if (found) {
+        state.userCache[index] = val;
+      } else {
+        state.userCache.push(val);
+        console.log(state.userCache);
+      }
     },
     setGroups(state, val) {
       state.groups = val;

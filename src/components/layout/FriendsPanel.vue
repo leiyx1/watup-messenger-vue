@@ -58,7 +58,7 @@
           </div>
           <div class="item-body">
             <div class="item-word">
-              <b>{{ item.name }}</b>
+              <b>{{ GInfo(item).name }}</b>
             </div>
           </div>
         </el-menu-item>
@@ -71,11 +71,15 @@
           @click="showFriend(item, index)"
         >
           <div class="item-avatar">
-            <img :src="item.avatarUrl" alt="头像" />
+            <img :src="FInfo(item).avatarUrl" alt="头像" />
           </div>
           <div class="item-body">
             <div class="item-word">
-              <b>{{ item.nickname === "" ? item.username : item.nickname }}</b>
+              <b>{{
+                FInfo(item).nickname === ""
+                  ? FInfo(item).username
+                  : FInfo(item).nickname
+              }}</b>
             </div>
           </div>
         </el-menu-item>
@@ -87,7 +91,11 @@
         :user="currentItem"
         v-else-if="hasShowFriend && !hasShowGroup && !hasShowRequest"
       />
-      <RequestCard v-else-if="hasShowRequest" />
+      <RequestCard
+        v-else-if="hasShowRequest"
+        @joinGroup="loadG"
+        @addFriend="loadF"
+      />
       <GroupCard
         :group="currentItem"
         @exit-group="showBlank"
@@ -99,10 +107,10 @@
 </template>
 
 <script>
-import { loadGroups } from "@/JavaScript/load.js";
+import { loadGroups, loadFriends } from "../../JavaScript/load.js";
 import UserCard from "../UserCard.vue";
-import NewFriendDialog from "@/components/NewFriendDialog";
-import NewGroupDialog from "@/components/NewGroupDialog";
+import NewFriendDialog from "../../components/NewFriendDialog";
+import NewGroupDialog from "../../components/NewGroupDialog";
 import GroupCard from "../GroupCard.vue";
 import RequestCard from "../RequestCard";
 export default {
@@ -128,29 +136,6 @@ export default {
   },
   mounted() {
     console.log("hao" + this.$store.state.user.access_token);
-    // this.friends = [
-    //   {
-    //     id: "1",
-    //     username: "老板",
-    //     nickname: "",
-    //     avatarUrl:
-    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-    //   },
-    //   {
-    //     id: "2",
-    //     username: "钢铁侠",
-    //     nickname: "老大",
-    //     avatarUrl:
-    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-    //   },
-    //   {
-    //     id: "3",
-    //     username: "Happy",
-    //     nickname: "绿巨人",
-    //     avatarUrl:
-    //       "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-    //   },
-    // ];
   },
   computed: {
     groups: {
@@ -169,23 +154,21 @@ export default {
         this.$store.commit("setFriends", JSON.parse(JSON.stringify(val)));
       },
     },
-    // currentFriend: {
-    //   get: function() {
-    //     return this.$store.state.currentFriend;
-    //   },
-    //   set: function(val) {
-    //     this.$store.commit("setFriends", JSON.parse(JSON.stringify(val)));
-    //   },
-    // },
   },
   methods: {
+    FInfo: function(item) {
+      return this.$store.state.userCache.find((obj) => obj.id === item.id);
+    },
+    GInfo: function(item) {
+      return this.$store.state.groups.find((obj) => obj.id === item.id);
+    },
+
     showBlank() {
       console.log("444");
       this.hasShowGroup = false;
       this.hasShowFriend = false;
       this.hasShowRequest = false;
     },
-    loadGroups() {},
     showRequest() {
       console.log("333");
       this.hasShowGroup = false;
@@ -195,12 +178,29 @@ export default {
     loadG() {
       loadGroups();
     },
+    loadF() {
+      loadFriends();
+    },
     showFriend(item) {
       console.log("111");
       this.hasShowGroup = false;
       this.hasShowRequest = false;
       this.hasShowFriend = true;
       this.currentItem = item;
+      this.$axios
+        .get("/api/friend/search/id", {
+          params: {
+            access_token: this.$store.state.user.access_token,
+            friendId: item.id,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            this.$store.commit("updateUserCache", res.data);
+          } else {
+            console.log("errrorrrr");
+          }
+        });
       // this.chatList[index] = this.$store.state.currentChat;
       // console.log(this.currentItem);
       // setMessageListByChatID
@@ -211,6 +211,8 @@ export default {
       this.hasShowRequest = false;
       this.hasShowGroup = true;
       this.currentItem = item;
+      // 更新group by item.id
+
       // this.chatList[index] = this.$store.state.currentChat;
       // console.log(this.currentItem);
       // setMessageListByChatID

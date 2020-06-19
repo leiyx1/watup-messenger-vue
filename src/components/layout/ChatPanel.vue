@@ -29,15 +29,15 @@
               class="item"
               id="badge"
             >
-              <img :src="chat.avatarUrl" alt="头像" />
+              <img :src="chatInfo(chat).avatarUrl" alt="头像" />
             </el-badge>
           </div>
           <div class="item-body">
             <div class="item-title">
-              <b>{{ chat.name | ellipsis}}</b>
+              <b>{{ chatInfo(chat).name | ellipsis }}</b>
             </div>
             <div class="item-word">
-              <span>{{ chat.sign | ellipsis}}</span
+              <span>{{ chat.sign | ellipsis }}</span
               ><span class="right">{{ time(chat.timestamp) }}</span>
             </div>
           </div>
@@ -52,7 +52,6 @@
 
 <script>
 import userChat from "../UserChat.vue";
-import getNedb from "../../JavaScript/NedbConfig";
 
 export default {
   data() {
@@ -68,17 +67,20 @@ export default {
       if (!value) return "";
 
       let reg = /^[\u4e00-\u9fa5]{0,}$/;
-      let len = 0, sliceLen = 0;
-      for(let i = 0;i<value.length;i++){
-        sliceLen ++;//又多一个字符了呢
-        if(reg.test(value[i])){
-          if(len >= 10) {//最多再容纳一个中文
-            len += 2
+      let len = 0,
+        sliceLen = 0;
+      for (let i = 0; i < value.length; i++) {
+        sliceLen++; //又多一个字符了呢
+        if (reg.test(value[i])) {
+          if (len >= 10) {
+            //最多再容纳一个中文
+            len += 2;
             break;
           }
           len += 2;
-        }else{
-          if(len >= 11) {//最多再容纳一个非中文
+        } else {
+          if (len >= 11) {
+            //最多再容纳一个非中文
             len += 1;
             break;
           }
@@ -89,7 +91,7 @@ export default {
         return value.slice(0, sliceLen) + "...";
       }
       return value;
-    }
+    },
   },
   computed: {
     currentChat: {
@@ -103,6 +105,7 @@ export default {
         );
       },
     },
+
     chatList: {
       get: function() {
         return this.$store.state.chatList;
@@ -123,6 +126,19 @@ export default {
   },
   mounted() {},
   methods: {
+    chatInfo: function(chat) {
+      if (chat.type === "UNICAST") {
+        console.log(
+          this.$store.state.userCache.find((obj) => obj.id === chat.chatId)
+        );
+        return this.$store.state.userCache.find(
+          (obj) => obj.id === chat.chatId
+        );
+      } else {
+        return this.$store.state.groups.find((obj) => obj.id === chat.chatId);
+      }
+    },
+
     time: function(val) {
       if (!val) {
         var t = new Date();
@@ -152,19 +168,89 @@ export default {
     showChat(chat, index) {
       this.show = true;
       this.currentChat = chat;
+
+      //若是群聊 则刷新群聊成员信息
+      if (chat.type === "MULTICAST") {
+        let groups = this.$store.state.groups;
+        let obj = groups.find((obj) => obj.id === chat.chatId);
+        this.loadGroupMembers(obj);
+        this.loadSingleGroup(obj);
+      } else if (chat.type === "UNICAST") {
+        // todo @huyikun
+        this.$axios
+          .get("/api/friend/search/id", {
+            params: {
+              access_token: this.$store.state.user.access_token,
+              friendId: chat.chatId,
+            },
+          })
+          .then((res) => {
+            if (res.status === 200) {
+              this.$store.commit("updateUserCache", res.data);
+            } else {
+              console.log("errrorrrr");
+            }
+          });
+      }
+
       this.$store.commit("resetUnread", index);
-      // setMessageListByChatID
-      let self = this;
-      let query = {
-        chatId: this.currentChat.chatId,
-        type: this.currentChat.type,
-      };
-      getNedb()
-        .localMessage.find(query)
-        .sort({ timestamp: 1 })
-        .exec(function(err, docs) {
-          self.messageList = docs[0].messageList;
+      console.log("showChat");
+    },
+    loadSingleGroup(group) {
+      this.$axios
+        .get(
+          "/api/group/" +
+            group.id +
+            `?access_token=` +
+            this.$store.state.user.access_token
+        )
+        .then((res) => {
+          if (res.status === 400) {
+            console.log("error occurred!");
+          } else if (res.status === 200) {
+            let groups = this.$store.state.groups;
+            let obj = groups.find((obj) => obj.id === group.id);
+            if (obj) {
+              let index = groups.indexOf(obj);
+              groups[index] = res.data;
+            } else {
+              groups.unshift(res.data);
+            }
+            this.$store.commit("setGroups", groups);
+          }
         });
+    },
+    loadGroupMembers(group) {
+      this.groupMembers = [];
+      let ids = group.usersId;
+      let failedMembers = [];
+      let userCache = this.$store.state.userCache;
+      [].forEach.call(ids, (id) => {
+        this.$axios
+          .get("/api/friend/user", {
+            params: {
+              access_token: this.$store.state.user.access_token,
+              keyword: id,
+            },
+          })
+          .then((res) => {
+            this.groupMembers.push(res.data);
+
+            let obj = userCache.find((obj) => obj.id === res.data.id);
+            if (obj) {
+              let index = userCache.indexOf(obj);
+              userCache[index] = res.data;
+            } else userCache.push(res.data);
+
+            this.$store.commit("setUserCache", userCache);
+          })
+          .catch(function(error) {
+            console.log(error);
+            failedMembers.push(id);
+          });
+      });
+      if (failedMembers.length > 0)
+        this.$message.info(failedMembers.join(", ") + "信息未成功获取");
     },
     goFriendPanel() {
       this.$router.push("/index/friends");
