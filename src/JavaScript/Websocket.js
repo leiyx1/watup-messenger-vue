@@ -185,6 +185,7 @@ function createWebsocket() {
         case "friendRequestAdd":
           desktopNotify("收到新的好友申请")
           loadFriendRequests();
+
           break;
         case "friendRequestPass":
           loadFriends();
@@ -207,6 +208,7 @@ function createWebsocket() {
           break;
         case "friendRequestReject":
           //fjc说什么都不用做
+
           break;
         case "friendRemoved":
           loadFriends();

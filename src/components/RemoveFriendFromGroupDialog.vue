@@ -132,6 +132,7 @@ export default {
           )
           .then((res) => {
               this.$notify.success("移除群员成功")
+              this.$emit("remove-friend");
             console.log(res);
           })
           .catch(function(error) {
@@ -143,7 +144,6 @@ export default {
       if (failedFriends.length > 0)
         this.$message.info(failedFriends.join(", ") + " 未成功移除");
       this.selectedFriends = [];
-      this.$emit("remove-friend");
       this.dialogVisible = false;
     },
   },

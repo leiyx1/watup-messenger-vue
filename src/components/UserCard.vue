@@ -6,6 +6,7 @@
           <span v-if="!editName" class="span1"
             >{{ user.nickname === "" ? user.username : user.nickname }}
             <el-button
+                v-if="inFriendList"
               type="text"
               icon="el-icon-edit"
               @click="editNick"
@@ -45,7 +46,8 @@
     </div>
     <el-divider class="divider1" />
     <div class="level-3">
-      <el-button @click="goChat" style="margin-right:5%">发起聊天</el-button>
+      <el-button v-if="inFriendList" @click="goChat" style="margin-right:5%">发起聊天</el-button>
+      <el-button v-else @click="newFriendDialogVisible=true" style="margin-right:5%">添加好友</el-button>
       <el-dropdown @command="handleCommand">
         <el-button>
           更多操作<i class="el-icon-arrow-down el-icon--right"></i>
@@ -57,19 +59,29 @@
         </el-dropdown-menu>
       </el-dropdown>
     </div>
+    <new-friend-dialog
+        :visible.sync="newFriendDialogVisible"
+        :default-id="user.id"
+    ></new-friend-dialog>
   </div>
 </template>
 
 <script>
 import getNeDB from "../JavaScript/NedbConfig";
+
 import { loadBlockList,loadFriends } from "../JavaScript/load.js";
+import NewFriendDialog from "./NewFriendDialog";
 export default {
   name: "UserCard",
   props: ["user"],
+    components: {
+        NewFriendDialog,
+    },
   data() {
     return {
       editName: false,
       newNick: "",
+        newFriendDialogVisible:false,
     };
   },
   mounted() {
@@ -84,6 +96,11 @@ export default {
         this.$store.commit("setChatList", JSON.parse(JSON.stringify(val)));
       },
     },
+      inFriendList:{
+          get: function() {
+              return this.$store.state.friends.find((obj) => obj.id === this.user.id);
+          },
+      },
       inBlockList:{
           get: function() {
               return this.$store.state.blacklist.find((obj) => obj.id === this.user.id);
