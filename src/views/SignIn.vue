@@ -206,6 +206,8 @@ export default {
                 let obj = this.$store.state.friends.find(
                   (obj) => obj.id === chatId
                 );
+                console.log(p);
+                console.log(obj);
                 name = obj.nickname.length === 0 ? obj.username : obj.nickname;
                 avatarUrl = obj.avatarUrl;
               } else {
@@ -291,6 +293,7 @@ export default {
             .then((successResponse) => {
               if (successResponse.data.code === 200) {
                 var data = successResponse.data.data;
+                console.log(data);
                 var userdata = {
                   id: data.id,
                   username: data.username,
@@ -355,7 +358,7 @@ export default {
                 getWebsocket();
                 setTimeout(() => {
                   self.$router.push("/index/chatpanel");
-                }, 5000);
+                }, 2000);
                 this.$notify({
                   title: "成功",
                   message: "登录成功！",
