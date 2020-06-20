@@ -26,21 +26,21 @@ export default new Vuex.Store({
       messageList: [],
     },
     userCache: [],
-      unreadFriendRequest:0,
-      unReadGroupRequest:0,
+    unreadFriendRequest: 0,
+    unReadGroupRequest: 0,
   },
   mutations: {
-      addUnreadGroupRequest(state){
-          state.unreadFriendRequest++
-      },
-      addUnreadFriendRequest(state){
-          state.unreadFriendRequest++
-      },
-    setBlacklist(state,val){
-      state.blacklist=val;
+    addUnreadGroupRequest(state) {
+      state.unreadFriendRequest++;
     },
-    setGroupRequest(state,val){
-      state.groupRequest=val;
+    addUnreadFriendRequest(state) {
+      state.unreadFriendRequest++;
+    },
+    setBlacklist(state, val) {
+      state.blacklist = val;
+    },
+    setGroupRequest(state, val) {
+      state.groupRequest = val;
     },
     setFriendRequest(state, val) {
       state.friendRequest = val;
@@ -109,6 +109,28 @@ export default new Vuex.Store({
     },
     setGroups(state, val) {
       state.groups = val;
+    },
+    resetVuex(state) {
+      (state.user = {
+        id: "",
+        token: "",
+        username: "",
+        email: "",
+        area: "",
+        sign: "",
+        avatarUrl: "",
+        access_token: "",
+      }),
+        (state.friends = []),
+        (state.groups = []),
+        (state.blacklist = []),
+        (state.chatList = []),
+        (state.friendRequest = []),
+        (state.groupRequest = []),
+        (state.currentChat = {
+          messageList: [],
+        }),
+        (state.userCache = []);
     },
   },
   actions: {},

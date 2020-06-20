@@ -44,6 +44,8 @@ export function loadFriends() {
           store.commit("updateUserCache", friends[i]);
           console.log(store.state.userCache);
         }
+        // 把自己也加入到映射表
+        store.commit("updateUserCache", store.state.user);
       } else {
         console.log("known error");
       }
@@ -55,63 +57,64 @@ export function loadFriends() {
 
 export function loadFriendRequests() {
   axios
-      .get("/api/friend/request", {
-        params: {
-          access_token: store.state.user.access_token,
-        },
-      })
-      .then((successResponse) => {
-        if (successResponse.status === 404) {
-          console.log("拉取好友邀请失败");
-        } else if (successResponse.status === 200) {
-          store.commit("setFriendRequest", successResponse.data);
-        } else {
-          console.log("known error");
-        }
-      })
-      .catch((failResponse) => {
-        console.log(failResponse);
-      });
+    .get("/api/friend/request", {
+      params: {
+        access_token: store.state.user.access_token,
+      },
+    })
+    .then((successResponse) => {
+      if (successResponse.status === 404) {
+        console.log("拉取好友邀请失败");
+      } else if (successResponse.status === 200) {
+        console.log(successResponse.data);
+        store.commit("setFriendRequest", successResponse.data);
+      } else {
+        console.log("known error");
+      }
+    })
+    .catch((failResponse) => {
+      console.log(failResponse);
+    });
 }
 
 export function loadGroupRequests() {
   axios
-      .get("/api/request", {
-        params: {
-          access_token: store.state.user.access_token,
-        },
-      })
-      .then((successResponse) => {
-        if (successResponse.status === 404) {
-          console.log("拉取群聊申请失败");
-        } else if (successResponse.status === 200) {
-          store.commit("setGroupRequest", successResponse.data);
-        } else {
-          console.log("known error");
-        }
-      })
-      .catch((failResponse) => {
-        console.log(failResponse);
-      });
+    .get("/api/request", {
+      params: {
+        access_token: store.state.user.access_token,
+      },
+    })
+    .then((successResponse) => {
+      if (successResponse.status === 404) {
+        console.log("拉取群聊申请失败");
+      } else if (successResponse.status === 200) {
+        store.commit("setGroupRequest", successResponse.data);
+      } else {
+        console.log("known error");
+      }
+    })
+    .catch((failResponse) => {
+      console.log(failResponse);
+    });
 }
 
 export function loadBlockList() {
-    axios
-        .get("/api/friend/blocks", {
-            params: {
-                access_token: store.state.user.access_token,
-            },
-        })
-        .then((successResponse) => {
-            if (successResponse.status === 404) {
-                console.log("拉取黑名单失败");
-            } else if (successResponse.status === 200) {
-                store.commit("setBlacklist", successResponse.data);
-            } else {
-                console.log("known error");
-            }
-        })
-        .catch((failResponse) => {
-            console.log(failResponse);
-        });
+  axios
+    .get("/api/friend/blocks", {
+      params: {
+        access_token: store.state.user.access_token,
+      },
+    })
+    .then((successResponse) => {
+      if (successResponse.status === 404) {
+        console.log("拉取黑名单失败");
+      } else if (successResponse.status === 200) {
+        store.commit("setBlacklist", successResponse.data);
+      } else {
+        console.log("known error");
+      }
+    })
+    .catch((failResponse) => {
+      console.log(failResponse);
+    });
 }

@@ -109,20 +109,7 @@ export default {
         );
       },
     },
-    chatInfo(){
-      return function (chat) {
-        if (chat.type === "UNICAST") {
-          console.log(
-            this.$store.state.userCache.find((obj) => obj.id === chat.chatId)
-          );
-          return this.$store.state.userCache.find(
-            (obj) => obj.id === chat.chatId
-          );
-        } else {
-          return this.$store.state.groups.find((obj) => obj.id === chat.chatId);
-        }
-      }
-    },
+
     chatList: {
       get: function() {
         return this.$store.state.chatList;
@@ -142,8 +129,19 @@ export default {
     },
   },
   methods: {
-
-
+    chatInfo(chat) {
+      if (chat.type === "UNICAST") {
+        console.log(
+          this.$store.state.userCache.find((obj) => obj.id === chat.chatId)
+        );
+        console.log(chat);
+        return this.$store.state.userCache.find(
+          (obj) => obj.id === chat.chatId
+        );
+      } else {
+        return this.$store.state.groups.find((obj) => obj.id === chat.chatId);
+      }
+    },
     time: function(val) {
       if (!val) {
         var t = new Date();

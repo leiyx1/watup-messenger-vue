@@ -107,7 +107,13 @@
 <script>
 import getNedb from "../JavaScript/NedbConfig";
 import getWebsocket from "../JavaScript/Websocket";
-import { loadGroups, loadFriends,loadFriendRequests,loadGroupRequests,loadBlockList } from "../JavaScript/load";
+import {
+  loadGroups,
+  loadFriends,
+  loadFriendRequests,
+  loadGroupRequests,
+  loadBlockList,
+} from "../JavaScript/load";
 
 export default {
   name: "Home",
@@ -180,6 +186,7 @@ export default {
             "&sort=asc&drop=true"
         )
         .then((res) => {
+          console.log(res);
           if (res.status === 200) {
             //逐个解析每个字段
             for (let p in res.data) {
@@ -209,7 +216,7 @@ export default {
                 );
                 name = obj.nickname.length === 0 ? obj.username : obj.nickname;
                 avatarUrl = obj.avatarUrl;
-              } else if(type === "MULTICAST"){
+              } else if (type === "MULTICAST") {
                 let obj = this.$store.state.groups.find(
                   (obj) => (obj.id = chatId)
                 );
@@ -351,6 +358,10 @@ export default {
                 //建立websocket连接
                 getWebsocket();
                 setTimeout(() => {
+<<<<<<< HEAD
+                  getNedb().localMessage.find({}, function() {});
+=======
+>>>>>>> 5892eec25cc78e9412db7cd56b034e0bfb0b9ac8
                   self.$router.push("/index/chatpanel");
                 }, 2000);
                 this.$notify({
