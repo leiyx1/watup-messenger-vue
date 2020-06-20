@@ -219,7 +219,6 @@ export default {
                 //todo 放入真正的群头像
               }
 
-              let self = this;
               //先把Nedb更新一遍
               getNedb().localMessage.find(query, function(err, docs) {
                 console.log("find " + chatId + " + " + type + " in nedb");
@@ -241,7 +240,6 @@ export default {
                   getNedb().localMessage.insert(newChat, function(err, docs) {
                     console.log(docs);
                     console.log(2222222);
-                    self.updateVuexWithNedb();
                   });
                 } else {
                   //若是本来就有
@@ -259,12 +257,12 @@ export default {
                     function(err, numupdated) {
                       console.log(numupdated + "条数据被更新");
                       console.log(2222222);
-                      self.updateVuexWithNedb();
                     }
                   );
                 }
               });
             }
+            this.updateVuexWithNedb()
           } else console.log("error occurred");
         });
     },
