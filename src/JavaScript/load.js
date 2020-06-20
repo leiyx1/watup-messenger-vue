@@ -94,3 +94,24 @@ export function loadGroupRequests() {
         console.log(failResponse);
       });
 }
+
+export function loadBlockList() {
+    axios
+        .get("/api/friend/blocks", {
+            params: {
+                access_token: store.state.user.access_token,
+            },
+        })
+        .then((successResponse) => {
+            if (successResponse.status === 404) {
+                console.log("拉取黑名单失败");
+            } else if (successResponse.status === 200) {
+                store.commit("setBlacklist", successResponse.data);
+            } else {
+                console.log("known error");
+            }
+        })
+        .catch((failResponse) => {
+            console.log(failResponse);
+        });
+}

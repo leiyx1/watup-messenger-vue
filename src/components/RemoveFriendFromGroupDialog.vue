@@ -131,6 +131,7 @@ export default {
               selectedFriend.id
           )
           .then((res) => {
+              this.$notify.success("移除群员成功")
             console.log(res);
           })
           .catch(function(error) {

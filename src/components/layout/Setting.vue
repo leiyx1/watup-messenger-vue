@@ -119,17 +119,22 @@
       <el-divider class="divider1" />
       <div class="level-3">
         <el-button @click="clearNeDB">清空本地数据</el-button>
-        <el-button @click="save">黑名单</el-button>
+        <el-button @click="blockListVisible=true">管理黑名单</el-button>
         <el-button @click="logout" type="danger">注销</el-button>
       </div>
     </div>
+    <BlockListDialog :visible.sync="blockListVisible" ></BlockListDialog>
   </div>
 </template>
 
 <script>
 import getWebsocket from "../../JavaScript/Websocket";
 import getNeDB from "../../JavaScript/NedbConfig";
+import BlockListDialog from "../BlockListDialog";
 export default {
+    components: {
+        BlockListDialog,
+    },
   data() {
     return {
       token: {
@@ -144,6 +149,7 @@ export default {
       hasEditArea: false,
       hasEditName: false,
       hasEditSign: false,
+        blockListVisible:false,
       permissions: {
         notify: true,
         voice: true,
