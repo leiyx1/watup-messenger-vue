@@ -144,12 +144,14 @@ function createWebsocket() {
           break;
         case "friendRequestAdd":
           loadFriendRequests();
+
           break;
         case "friendRequestPass":
           loadFriends();
           break;
         case "friendRequestReject":
           //fjc说什么都不用做
+
           break;
 
       }

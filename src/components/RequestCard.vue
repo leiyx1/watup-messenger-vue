@@ -75,6 +75,7 @@
 
 <script>
 import { loadGroupRequests, loadFriendRequests } from "../JavaScript/load.js";
+import {loadFriends, loadGroups} from "../JavaScript/load";
 export default {
   name: "RequestCard",
   data() {
@@ -106,6 +107,7 @@ export default {
             });
           }
           loadGroupRequests();
+          loadGroups();
           this.$emit("joinGroup");
         })
         .catch((error) => {
@@ -170,6 +172,7 @@ export default {
             });
           }
           loadFriendRequests();
+          loadFriends();
           this.$emit("addFriend");
         })
         .catch((error) => {
