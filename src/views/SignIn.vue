@@ -184,7 +184,6 @@ export default {
             "&sort=asc&drop=false"
         )
         .then((res) => {
-          console.log(res);
           if (res.status === 200) {
             //逐个解析每个字段
             for (let p in res.data) {
