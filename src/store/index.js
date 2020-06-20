@@ -28,8 +28,11 @@ export default new Vuex.Store({
     userCache: [],
   },
   mutations: {
-    setGroupRequest(state, val) {
-      state.groupRequest = val;
+    setBlacklist(state,val){
+      state.blacklist=val;
+    },
+    setGroupRequest(state,val){
+      state.groupRequest=val;
     },
     setFriendRequest(state, val) {
       state.friendRequest = val;

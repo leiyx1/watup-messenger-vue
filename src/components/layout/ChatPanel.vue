@@ -109,7 +109,20 @@ export default {
         );
       },
     },
-
+    chatInfo(){
+      return function (chat) {
+        if (chat.type === "UNICAST") {
+          console.log(
+            this.$store.state.userCache.find((obj) => obj.id === chat.chatId)
+          );
+          return this.$store.state.userCache.find(
+            (obj) => obj.id === chat.chatId
+          );
+        } else {
+          return this.$store.state.groups.find((obj) => obj.id === chat.chatId);
+        }
+      }
+    },
     chatList: {
       get: function() {
         return this.$store.state.chatList;
@@ -129,18 +142,7 @@ export default {
     },
   },
   methods: {
-    chatInfo: function(chat) {
-      if (chat.type === "UNICAST") {
-        console.log(
-          this.$store.state.userCache.find((obj) => obj.id === chat.chatId)
-        );
-        return this.$store.state.userCache.find(
-          (obj) => obj.id === chat.chatId
-        );
-      } else {
-        return this.$store.state.groups.find((obj) => obj.id === chat.chatId);
-      }
-    },
+
 
     time: function(val) {
       if (!val) {
@@ -179,7 +181,6 @@ export default {
         this.loadGroupMembers(obj);
         this.loadSingleGroup(obj);
       } else if (chat.type === "UNICAST") {
-        // todo @huyikun
         this.$axios
           .get("/api/friend/search/id", {
             params: {

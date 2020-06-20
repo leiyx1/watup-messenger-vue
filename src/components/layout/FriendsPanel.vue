@@ -2,13 +2,12 @@
   <div class="user-panel">
     <div class="side-list">
       <div class="side-top">
-        <el-autocomplete
-          class="inline-input"
-          v-model="state"
-          :fetch-suggestions="querySearch"
-          placeholder="搜索"
-          @select="handleSelect"
-        ></el-autocomplete>
+        <el-input
+            class="inline-input"
+            v-model="state"
+            placeholder="搜索"
+            prefix-icon="el-icon-search"
+        ></el-input>
         <el-dropdown @command="handleCommand" trigger="click">
           <el-button size="large">
             <i class="el-icon-plus"> </i>
@@ -46,7 +45,10 @@
         <el-divider content-position="left" class="divider2">群聊</el-divider>
         <el-menu-item
           class="item"
-          v-for="(item, index) in groups"
+          v-for="(item, index) in groups.filter(
+                (data) =>
+                  data.name.toLowerCase().includes(this.state.toLowerCase())
+              )"
           :key="item.id"
           @click="showGroup(item, index)"
         >
@@ -66,7 +68,10 @@
 
         <el-menu-item
           class="item"
-          v-for="(item, index) in friends"
+          v-for="(item, index) in friends.filter(
+                (data) =>
+                  data.username.toLowerCase().includes(this.state.toLowerCase())
+              )"
           :key="index"
           @click="showFriend(item, index)"
         >
@@ -90,6 +95,7 @@
       <UserCard
         :user="currentItem"
         v-else-if="hasShowFriend && !hasShowGroup && !hasShowRequest"
+        @removeFriend="showBlank"
       />
       <RequestCard
         v-else-if="hasShowRequest"
