@@ -179,7 +179,6 @@ export default {
         this.loadGroupMembers(obj);
         this.loadSingleGroup(obj);
       } else if (chat.type === "UNICAST") {
-        // todo @huyikun
         this.$axios
           .get("/api/friend/search/id", {
             params: {

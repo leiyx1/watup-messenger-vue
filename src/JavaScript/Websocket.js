@@ -1,7 +1,7 @@
 import getNedb from "./NedbConfig";
 import store from "../store/index";
 import getNeDB from "./NedbConfig";
-import {loadGroupRequests} from "./load";
+import {loadFriendRequests, loadFriends, loadGroupRequests, loadGroups} from "./load";
 
 let websock;
 export default function getWebsocket() {
@@ -129,8 +129,35 @@ function createWebsocket() {
       }
       store.commit("setChatList", updateChatList);
     }else { // type === NOTIFICATION
+      //todo 收到notification时给用户发送消息提醒
+      switch (data.notificationType) {
+        case "GROUP_REQUEST":
+          loadGroupRequests();
+          break;
+        case "GROUP_REQUEST_ACCEPTED":
+          loadGroupRequests();
+          loadGroups();
+          break;
+        case "GROUP_REMOVED":
+        case "GROUP_DISBANDED":
+          loadGroups();
+          break;
+        case "friendRequestAdd":
+          loadFriendRequests();
+          break;
+        case "friendRequestPass":
+          loadFriends();
+          break;
+        case "friendRequestReject":
+          //fjc说什么都不用做
+          break;
+
+      }
       if(data.notificationType === "GROUP_REQUEST"){
         loadGroupRequests()
+      }else if(data.notificationType === "GROUP_REQUEST_ACCEPTED"){
+        loadGroupRequests()
+        loadGroups()
       }
     }
 
