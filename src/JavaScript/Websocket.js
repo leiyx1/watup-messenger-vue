@@ -161,6 +161,8 @@ function createWebsocket() {
             updateChatList.splice(index, 1)
             store.commit("setChatList", updateChatList)
           }
+          //删除Nedb中的这一条数据
+          getNedb().localMessage.remove({chatId:obj.chatId, type: "MULTICAST"})
           //最后刷新群组列表
           loadGroups();
           break;
@@ -180,6 +182,9 @@ function createWebsocket() {
             updateChatList.splice(index, 1)
             store.commit("setChatList", updateChatList)
           }
+          //删除Nedb中的这一条数据
+          getNedb().localMessage.remove({chatId:obj.chatId, type: "MULTICAST"})
+          //最后刷新群组列表
           loadGroups();
           break;
         case "friendRequestAdd":
@@ -208,10 +213,11 @@ function createWebsocket() {
           break;
         case "friendRequestReject":
           //fjc说什么都不用做
-
           break;
         case "friendRemoved":
           loadFriends();
+          //删除nedb
+          getNedb().localMessage.remove({chatId:data.content, type: "UNICAST"})
           break;
       }
     }
