@@ -38,11 +38,21 @@
         style="border-right-width: 0;"
       >
         <el-menu-item @click="showRequest">
+
           <div class="item-body">
+
             <div class="item-word">
+              <el-badge
+                  :value="showBadge"
+                  :hidden="showBadge === 0"
+                  style=""
+              ></el-badge>
             <b>申请与邀请</b>
+
             </div>
+
           </div>
+
         </el-menu-item>
         <el-divider content-position="left" class="divider2">群聊</el-divider>
         <el-menu-item
@@ -146,6 +156,11 @@ export default {
     console.log("hao" + this.$store.state.user.access_token);
   },
   computed: {
+      showBadge:{
+          get: function() {
+              return this.$store.state.unReadFriendRequest+this.$store.state.unReadGroupRequest;
+          },
+      },
     groups: {
       get: function() {
         return this.$store.state.groups;
@@ -178,7 +193,8 @@ export default {
       this.hasShowRequest = false;
     },
     showRequest() {
-      console.log("333");
+      console.log(this.showBadge);
+        this.$store.commit("resetUnreadFriendRequest");
       this.hasShowGroup = false;
       this.hasShowFriend = false;
       this.hasShowRequest = true;

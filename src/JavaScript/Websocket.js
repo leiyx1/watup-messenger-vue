@@ -133,6 +133,7 @@ function createWebsocket() {
       switch (data.notificationType) {
         case "GROUP_REQUEST":
           loadGroupRequests();
+          store.commit("addUnreadGroupRequest");
           break;
         case "GROUP_REQUEST_ACCEPTED":
           loadGroupRequests();
@@ -144,7 +145,7 @@ function createWebsocket() {
           break;
         case "friendRequestAdd":
           loadFriendRequests();
-
+          store.commit("addUnreadFriendRequest");
           break;
         case "friendRequestPass":
           loadFriends();
