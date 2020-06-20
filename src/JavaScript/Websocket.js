@@ -2,6 +2,7 @@ import getNedb from "./NedbConfig";
 import store from "../store/index";
 import getNeDB from "./NedbConfig";
 import {loadFriendRequests, loadFriends, loadGroupRequests, loadGroups} from "./load";
+import {desktopNotify} from "./Notification"
 
 let websock;
 export default function getWebsocket() {
@@ -27,14 +28,13 @@ function createWebsocket() {
 
 
     if(data.type === "UNICAST" || data.type === "MULTICAST"){
+      //收到群聊/私聊信息
+
       //设置chatId
       let chatId;
       if (data.type === "MULTICAST") chatId = data.groupId;
       else if (data.type === "UNICAST")
         chatId = userId === data.senderId ? data.receiverId : data.senderId;
-      else {
-        //todo data.type === NOTIFICATION
-      }
 
       //设置新的message
       let newMessage = {
@@ -56,13 +56,16 @@ function createWebsocket() {
           //更新sign timestamp
           currentChat.sign = newMessage.content;
           currentChat.timestamp = newMessage.timestamp;
-          //更新unreadCount
+          //更新unreadCount,同时发送通知
           if (
             currentChat.type === store.state.currentChat.type &&
             currentChat.chatId === store.state.currentChat.chatId
           )
             currentChat.unReadCount = 0;
-          else currentChat.unReadCount++;
+          else {
+            currentChat.unReadCount++;
+            desktopNotify("收到来自" + currentChat.name + "的信息！")
+          }
 
           //将chatList中的老chat删除，新chat插到数组头
           updateChatList.splice(i, 1);
@@ -88,11 +91,11 @@ function createWebsocket() {
       //则插入一个新的chat到chatList中
       if (!modified) {
         let friendList = store.state.friends;
-        let gourpList = store.state.groups;
+        let groupList = store.state.groups;
         console.log("friendList:");
         console.log(friendList);
         console.log("groupList:");
-        console.log(gourpList);
+        console.log(groupList);
 
         let obj, name, avatarUrl;
         console.log("chatId:");
@@ -103,7 +106,7 @@ function createWebsocket() {
           name = obj.nickname.length === 0 ? obj.username : obj.nickname;
           avatarUrl = obj.avatarUrl;
         } else{
-          obj = gourpList.find((obj) => obj.id === chatId);
+          obj = groupList.find((obj) => obj.id === chatId);
           name = obj.name;
           avatarUrl =
             "https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2121061596,2871071478&fm=26&gp=0.jpg";
@@ -119,6 +122,8 @@ function createWebsocket() {
           unReadCount: 1,
           messageList: [newMessage],
         };
+        //通知
+        desktopNotify("收到来自" + name + "的信息！")
 
         //插入updateChatList
         updateChatList.unshift(newChat);
@@ -129,29 +134,59 @@ function createWebsocket() {
       }
       store.commit("setChatList", updateChatList);
     }else { // type === NOTIFICATION
-      //todo 收到notification时给用户发送消息提醒
+      let obj, name, newChat, updateChatList;
       switch (data.notificationType) {
         case "GROUP_REQUEST":
           loadGroupRequests();
+          desktopNotify(data.content + "给你发送了一条群聊邀请")
           break;
         case "GROUP_REQUEST_ACCEPTED":
           loadGroupRequests();
           loadGroups();
+          desktopNotify(data.content + "已通过了你的群聊邀请!")
           break;
         case "GROUP_REMOVED":
+          loadGroups();
+          obj = store.state.groups.find(
+            (obj) => obj.id === data.content
+          )
+          name = obj.name;
+          desktopNotify("你已被移出群聊：" + name)
+          break;
         case "GROUP_DISBANDED":
           loadGroups();
+          obj = store.state.groups.find(
+            (obj) => obj.id === data.content
+          )
+          name = obj.name;
+          desktopNotify("群聊：" + name + "已被解散")
           break;
         case "friendRequestAdd":
+          desktopNotify("收到新的好友申请")
           loadFriendRequests();
           break;
         case "friendRequestPass":
           loadFriends();
+          //直接插入ChatList中
+          obj = store.state.friends.find(
+            (obj) => obj.id === data.content
+          )
+          name = obj.username
+          newChat = {
+            chatId: data.content,
+            name: name,
+            type: "UNICAST",
+            sign: "",
+            unReadCount: 0,
+            messageList: [],
+          }
+          updateChatList = store.state.chatList;
+          updateChatList.unshift(newChat)
+          store.commit("setChatList", updateChatList)
           break;
         case "friendRequestReject":
           //fjc说什么都不用做
           break;
-
       }
       if(data.notificationType === "GROUP_REQUEST"){
         loadGroupRequests()
@@ -163,6 +198,7 @@ function createWebsocket() {
 
   };
   websock.onopen = function() {
+    desktopNotify("服务器已连接！")
     var string = `WebSocket is open now.`;
     console.log(string);
   };
