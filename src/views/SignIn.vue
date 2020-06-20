@@ -108,6 +108,7 @@
 import getNedb from "../JavaScript/NedbConfig";
 import getWebsocket from "../JavaScript/Websocket";
 import { loadGroups, loadFriends,loadFriendRequests,loadGroupRequests,loadBlockList } from "../JavaScript/load";
+
 export default {
   name: "Home",
   data() {
@@ -176,7 +177,7 @@ export default {
         .get(
           "/api/message?access_token=" +
             this.$store.state.user.access_token +
-            "&sort=asc&drop=false"
+            "&sort=asc&drop=true"
         )
         .then((res) => {
           if (res.status === 200) {
@@ -206,11 +207,9 @@ export default {
                 let obj = this.$store.state.friends.find(
                   (obj) => obj.id === chatId
                 );
-                console.log(p);
-                console.log(obj);
                 name = obj.nickname.length === 0 ? obj.username : obj.nickname;
                 avatarUrl = obj.avatarUrl;
-              } else {
+              } else if(type === "MULTICAST"){
                 let obj = this.$store.state.groups.find(
                   (obj) => (obj.id = chatId)
                 );
@@ -318,8 +317,6 @@ export default {
                 //存入Nedb
                 let query = { id: data.id };
                 getNedb().userInfo.find(query, function(err, docs) {
-                  console.log(1111111111111111);
-                  console.log(docs);
                   if (docs.length === 0) {
                     //没有登陆过
                     getNedb().userInfo.insert(userdata, function(err, newDocs) {
@@ -327,11 +324,10 @@ export default {
                       console.log(newDocs);
                     });
                   } else {
-                    getNedb().userInfo.update(query, { $set: userdata }),
-                      {},
+                    getNedb().userInfo.update(query, { $set: userdata }, {},
                       function(err, numReplaced) {
-                        console.log(numReplaced);
-                      };
+                        console.log(numReplaced + "document of userInfo updated");
+                      });
                   }
                 });
                 //加载好友和群聊
