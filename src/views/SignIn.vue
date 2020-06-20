@@ -226,7 +226,6 @@ export default {
                 //todo 放入真正的群头像
               }
 
-              let self = this;
               //先把Nedb更新一遍
               getNedb().localMessage.find(query, function(err, docs) {
                 console.log("find " + chatId + " + " + type + " in nedb");
@@ -248,7 +247,6 @@ export default {
                   getNedb().localMessage.insert(newChat, function(err, docs) {
                     console.log(docs);
                     console.log(2222222);
-                    self.updateVuexWithNedb();
                   });
                 } else {
                   //若是本来就有
@@ -266,12 +264,12 @@ export default {
                     function(err, numupdated) {
                       console.log(numupdated + "条数据被更新");
                       console.log(2222222);
-                      self.updateVuexWithNedb();
                     }
                   );
                 }
               });
             }
+            this.updateVuexWithNedb()
           } else console.log("error occurred");
         });
     },
@@ -324,8 +322,6 @@ export default {
                 //存入Nedb
                 let query = { id: data.id };
                 getNedb().userInfo.find(query, function(err, docs) {
-                  console.log(1111111111111111);
-                  console.log(docs);
                   if (docs.length === 0) {
                     //没有登陆过
                     getNedb().userInfo.insert(userdata, function(err, newDocs) {
@@ -333,11 +329,10 @@ export default {
                       console.log(newDocs);
                     });
                   } else {
-                    getNedb().userInfo.update(query, { $set: userdata }),
-                      {},
+                    getNedb().userInfo.update(query, { $set: userdata }, {},
                       function(err, numReplaced) {
-                        console.log(numReplaced);
-                      };
+                        console.log(numReplaced + "document of userInfo updated");
+                      });
                   }
                 });
                 //加载好友和群聊
@@ -347,13 +342,13 @@ export default {
                 loadGroupRequests();
                 loadBlockList();
                 //更新系统信息
-                // getNedb().systemInfo.remove({}, { multi: true });
-                // let updateSystemInfo = {
-                //   lastUserId: data.id,
-                //   token: data.access_token,
-                //   autoLogin: this.autoLogin,
-                // };
-                // getNedb().systemInfo.insert(updateSystemInfo);
+                getNedb().systemInfo.remove({}, { multi: true });
+                let updateSystemInfo = {
+                  lastUserId: data.id,
+                  token: data.access_token,
+                  autoLogin: this.autoLogin,
+                };
+                getNedb().systemInfo.insert(updateSystemInfo);
                 //初始化本地聊天记录
                 let self = this;
                 setTimeout(function() {
@@ -363,7 +358,10 @@ export default {
                 //建立websocket连接
                 getWebsocket();
                 setTimeout(() => {
+<<<<<<< HEAD
                   getNedb().localMessage.find({}, function() {});
+=======
+>>>>>>> 5892eec25cc78e9412db7cd56b034e0bfb0b9ac8
                   self.$router.push("/index/chatpanel");
                 }, 2000);
                 this.$notify({

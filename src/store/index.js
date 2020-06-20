@@ -26,8 +26,16 @@ export default new Vuex.Store({
       messageList: [],
     },
     userCache: [],
+    unreadFriendRequest: 0,
+    unReadGroupRequest: 0,
   },
   mutations: {
+    addUnreadGroupRequest(state) {
+      state.unreadFriendRequest++;
+    },
+    addUnreadFriendRequest(state) {
+      state.unreadFriendRequest++;
+    },
     setBlacklist(state, val) {
       state.blacklist = val;
     },

@@ -75,7 +75,10 @@ export default {
       this.userId = val;
     },
   },
-  methods: {
+    created() {
+        this.searchUser();
+    },
+    methods: {
     searchUser() {
       this.$axios
         .get("/api/friend/user", {

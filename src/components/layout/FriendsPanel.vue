@@ -39,7 +39,9 @@
       >
         <el-menu-item @click="showRequest">
           <div class="item-body">
+            <div class="item-word">
             <b>申请与邀请</b>
+            </div>
           </div>
         </el-menu-item>
         <el-divider content-position="left" class="divider2">群聊</el-divider>
