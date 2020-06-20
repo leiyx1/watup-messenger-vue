@@ -1,8 +1,13 @@
 import getNedb from "./NedbConfig";
 import store from "../store/index";
 import getNeDB from "./NedbConfig";
-import {loadFriendRequests, loadFriends, loadGroupRequests, loadGroups} from "./load";
-import {desktopNotify} from "./Notification"
+import {
+  loadFriendRequests,
+  loadFriends,
+  loadGroupRequests,
+  loadGroups,
+} from "./load";
+import { desktopNotify } from "./Notification";
 
 let websock;
 export default function getWebsocket() {
@@ -26,8 +31,7 @@ function createWebsocket() {
     console.log("message received");
     console.log(data);
 
-
-    if(data.type === "UNICAST" || data.type === "MULTICAST"){
+    if (data.type === "UNICAST" || data.type === "MULTICAST") {
       //收到群聊/私聊信息
 
       //设置chatId
@@ -42,7 +46,7 @@ function createWebsocket() {
         mine: store.state.user.id === data.senderId,
         timestamp: data.timestamp,
         content: data.content,
-        chatId: chatId,
+        senderId: data.senderId,
       };
 
       //更新现有chatList
@@ -64,7 +68,7 @@ function createWebsocket() {
             currentChat.unReadCount = 0;
           else {
             currentChat.unReadCount++;
-            desktopNotify("收到来自" + currentChat.name + "的信息！")
+            desktopNotify("收到来自" + currentChat.name + "的信息！");
           }
 
           //将chatList中的老chat删除，新chat插到数组头
@@ -105,7 +109,7 @@ function createWebsocket() {
           console.log(obj);
           name = obj.nickname.length === 0 ? obj.username : obj.nickname;
           avatarUrl = obj.avatarUrl;
-        } else{
+        } else {
           obj = groupList.find((obj) => obj.id === chatId);
           name = obj.name;
           avatarUrl =
@@ -123,7 +127,7 @@ function createWebsocket() {
           messageList: [newMessage],
         };
         //通知
-        desktopNotify("收到来自" + name + "的信息！")
+        desktopNotify("收到来自" + name + "的信息！");
 
         //插入updateChatList
         updateChatList.unshift(newChat);
@@ -133,66 +137,61 @@ function createWebsocket() {
         });
       }
       store.commit("setChatList", updateChatList);
-    }else { // type === NOTIFICATION
+    } else {
+      // type === NOTIFICATION
       let obj, index, name, newChat, updateChatList;
       switch (data.notificationType) {
         case "GROUP_REQUEST":
           loadGroupRequests();
-          desktopNotify(data.content + "给你发送了一条群聊邀请")
+          desktopNotify(data.content + "给你发送了一条群聊邀请");
           break;
         case "GROUP_REQUEST_ACCEPTED":
           loadGroupRequests();
           loadGroups();
-          desktopNotify(data.content + "已通过了你的群聊邀请!")
+          desktopNotify(data.content + "已通过了你的群聊邀请!");
           break;
         case "GROUP_REMOVED":
-          obj = store.state.groups.find(
-            (obj) => obj.id === data.content
-          )
+          obj = store.state.groups.find((obj) => obj.id === data.content);
           name = obj.name;
-          desktopNotify("你已被移出群聊：" + name)
+          desktopNotify("你已被移出群聊：" + name);
           //同时删除chatList中的群聊(如果有)
-          updateChatList = store.state.chatList
+          updateChatList = store.state.chatList;
           obj = updateChatList.find(
             (obj) => obj.chatId === data.content && obj.type === "MULTICAST"
-          )
-          if(obj){
-            index = updateChatList.indexOf(obj)
-            updateChatList.splice(index, 1)
-            store.commit("setChatList", updateChatList)
+          );
+          if (obj) {
+            index = updateChatList.indexOf(obj);
+            updateChatList.splice(index, 1);
+            store.commit("setChatList", updateChatList);
           }
           //最后刷新群组列表
           loadGroups();
           break;
         case "GROUP_DISBANDED":
-          obj = store.state.groups.find(
-            (obj) => obj.id === data.content
-          )
+          obj = store.state.groups.find((obj) => obj.id === data.content);
           name = obj.name;
-          desktopNotify("群聊：" + name + "已被解散")
+          desktopNotify("群聊：" + name + "已被解散");
           //同时删除chatList中的群聊(如果有)
-          updateChatList = store.state.chatList
+          updateChatList = store.state.chatList;
           obj = updateChatList.find(
             (obj) => obj.chatId === data.content && obj.type === "MULTICAST"
-          )
-          if(obj){
-            index = updateChatList.indexOf(obj)
-            updateChatList.splice(index, 1)
-            store.commit("setChatList", updateChatList)
+          );
+          if (obj) {
+            index = updateChatList.indexOf(obj);
+            updateChatList.splice(index, 1);
+            store.commit("setChatList", updateChatList);
           }
           loadGroups();
           break;
         case "friendRequestAdd":
-          desktopNotify("收到新的好友申请")
+          desktopNotify("收到新的好友申请");
           loadFriendRequests();
           break;
         case "friendRequestPass":
           loadFriends();
           //直接插入ChatList中
-          obj = store.state.friends.find(
-            (obj) => obj.id === data.content
-          )
-          name = obj.username
+          obj = store.state.friends.find((obj) => obj.id === data.content);
+          name = obj.username;
           newChat = {
             chatId: data.content,
             name: name,
@@ -200,10 +199,10 @@ function createWebsocket() {
             sign: "",
             unReadCount: 0,
             messageList: [],
-          }
+          };
           updateChatList = store.state.chatList;
-          updateChatList.unshift(newChat)
-          store.commit("setChatList", updateChatList)
+          updateChatList.unshift(newChat);
+          store.commit("setChatList", updateChatList);
           break;
         case "friendRequestReject":
           //fjc说什么都不用做
@@ -213,10 +212,9 @@ function createWebsocket() {
           break;
       }
     }
-
   };
   websock.onopen = function() {
-    desktopNotify("服务器已连接！")
+    desktopNotify("服务器已连接！");
     var string = `WebSocket is open now.`;
     console.log(string);
   };

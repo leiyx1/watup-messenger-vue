@@ -26,7 +26,7 @@ function createWindow() {
   // Create the browser window.
   win = new BrowserWindow({
     width: 900,
-    height: 570,
+    height: 600,
     icon: "./src/assets/icon.png",
     // resizable: false,
     // fullscreen: false,

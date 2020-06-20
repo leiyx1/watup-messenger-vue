@@ -28,11 +28,11 @@ export default new Vuex.Store({
     userCache: [],
   },
   mutations: {
-    setBlacklist(state,val){
-      state.blacklist=val;
+    setBlacklist(state, val) {
+      state.blacklist = val;
     },
-    setGroupRequest(state,val){
-      state.groupRequest=val;
+    setGroupRequest(state, val) {
+      state.groupRequest = val;
     },
     setFriendRequest(state, val) {
       state.friendRequest = val;
@@ -101,6 +101,28 @@ export default new Vuex.Store({
     },
     setGroups(state, val) {
       state.groups = val;
+    },
+    resetVuex(state) {
+      (state.user = {
+        id: "",
+        token: "",
+        username: "",
+        email: "",
+        area: "",
+        sign: "",
+        avatarUrl: "",
+        access_token: "",
+      }),
+        (state.friends = []),
+        (state.groups = []),
+        (state.blacklist = []),
+        (state.chatList = []),
+        (state.friendRequest = []),
+        (state.groupRequest = []),
+        (state.currentChat = {
+          messageList: [],
+        }),
+        (state.userCache = []);
     },
   },
   actions: {},
