@@ -51,7 +51,8 @@
           更多操作<i class="el-icon-arrow-down el-icon--right"></i>
         </el-button>
         <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item command="a">拉黑</el-dropdown-item>
+          <el-dropdown-item v-if="inBlockList" command="c">取消拉黑</el-dropdown-item>
+          <el-dropdown-item  v-else command="a">拉黑</el-dropdown-item>
           <el-dropdown-item command="b">删除</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
@@ -61,7 +62,7 @@
 
 <script>
 import getNeDB from "../JavaScript/NedbConfig";
-
+import { loadBlockList,loadFriends } from "../JavaScript/load.js";
 export default {
   name: "UserCard",
   props: ["user"],
@@ -83,6 +84,11 @@ export default {
         this.$store.commit("setChatList", JSON.parse(JSON.stringify(val)));
       },
     },
+      inBlockList:{
+          get: function() {
+              return this.$store.state.blacklist.find((obj) => obj.id === this.user.id);
+          },
+      }
   },
   methods: {
     goChat() {
@@ -131,18 +137,15 @@ export default {
                       }else {
                           this.$notify.error("无效操作")
                       }
+                      loadBlockList();
                   })
                   .catch(function (error) {
                       this.$notify.error("无效操作")
                       console.log(error);
                   })
-            this.$message({
-              type: "success",
-              message: "拉黑成功!",
-            });
           })
           .catch(() => {});
-      } else {
+      } else if (command === "b") {
         this.$confirm("此操作将删除该好友, 是否继续?", "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
@@ -158,17 +161,39 @@ export default {
                       }else {
                           this.$notify.error("无效操作")
                       }
+                      loadFriends();
+                      this.$emit("removeFriend");
                   })
                   .catch(function (error) {
                       this.$notify.error("无效操作")
                       console.log(error);
                   })
-            this.$message({
-              type: "success",
-              message: "删除成功!",
-            });
           })
           .catch(() => {});
+      }else {
+          this.$confirm("此操作将取消拉黑该好友, 是否继续?", "提示", {
+              confirmButtonText: "确定",
+              cancelButtonText: "取消",
+              type: "warning",
+          })
+              .then(() => {
+                  // 发送拉黑请求并更新
+                  this.$axios
+                      .delete("/api/friend/block"+"?access_token="+this.$store.state.user.access_token+"&friendId="+this.user.id)
+                      .then(res => {
+                          if(res.status===200){
+                              this.$notify.success("取消拉黑成功")
+                          }else {
+                              this.$notify.error("无效操作")
+                          }
+                          loadBlockList();
+                      })
+                      .catch(function (error) {
+                          this.$notify.error("无效操作")
+                          console.log(error);
+                      })
+              })
+              .catch(() => {});
       }
     },
     saveNick() {

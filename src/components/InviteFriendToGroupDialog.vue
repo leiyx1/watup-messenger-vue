@@ -135,13 +135,15 @@ export default {
               },
             }
           )
-          .then(() => {})
+            .then((res) => {
+                this.$notify.success("邀请好友成功")
+                console.log(res);
+            })
           .catch(function(error) {
             console.log(error);
             failedFriends.push(selectedFriend.username);
           });
       });
-      this.$message.success("成功邀请");
       if (failedFriends.length > 0)
         this.$message.info(failedFriends.join(", ") + " 未成功邀请");
       this.selectedFriends = [];

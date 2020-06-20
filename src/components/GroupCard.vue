@@ -51,16 +51,9 @@
     <el-divider class="divider1" />
     <div class="level-3">
       <el-button @click="goChat" style="margin-right:5%">发起聊天</el-button>
-      <el-popconfirm
-          icon="el-icon-info"
-          iconColor="red"
-          title="您确定吗？"
-          @onConfirm="exitGroup"
-      >
-        <el-button style="margin-right:5%" slot="reference">{{
+        <el-button style="margin-right:5%" slot="reference" @click="exitGroup">{{
           isManager ? "解散群聊" : "退出群聊"
           }}</el-button>
-      </el-popconfirm>
     </div>
   </div>
 </template>
@@ -69,7 +62,7 @@
   import InviteFriendToGroupDialog from "./InviteFriendToGroupDialog";
   import RemoveFriendFromGroupDialog from "./RemoveFriendFromGroupDialog";
   import getNeDB from "../JavaScript/NedbConfig";
-
+  import { loadGroups } from "../JavaScript/load.js";
 export default {
   name: "GroupCard",
   props: ["group"],
@@ -230,20 +223,29 @@ export default {
             })
     },
     exitGroup() {
-        this.$axios
-            .delete("/api/group/"+this.group.id+"?access_token="+this.$store.state.user.access_token)
-            .then(res => {
-                if(res.status===200){
-                    this.$notify.success("成功退群")
-                }else {
+        this.$confirm("此操作将退出群聊, 是否继续?", "提示", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning",
+        }).then(() => {
+            this.$axios
+                .delete("/api/group/"+this.group.id+"?access_token="+this.$store.state.user.access_token)
+                .then(res => {
+                    if(res.status===200){
+                        this.$notify.success("成功退群")
+                    }else {
+                        this.$notify.error("无效操作")
+                    }
+                    loadGroups();
+                    this.$emit("exit-group");
+                })
+                .catch(function (error) {
                     this.$notify.error("无效操作")
-                }
-            })
-            .catch(function (error) {
-                this.$notify.error("无效操作")
-                console.log(error);
-            })
-        this.$emit("exit-group");
+                    console.log(error);
+                })
+        })
+            .catch(() => {});
+
     },
   },
 };

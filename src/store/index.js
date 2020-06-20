@@ -28,6 +28,9 @@ export default new Vuex.Store({
     userCache: [],
   },
   mutations: {
+    setBlacklist(state,val){
+      state.blacklist=val;
+    },
     setGroupRequest(state,val){
       state.groupRequest=val;
     },

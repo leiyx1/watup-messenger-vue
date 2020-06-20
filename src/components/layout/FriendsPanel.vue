@@ -90,6 +90,7 @@
       <UserCard
         :user="currentItem"
         v-else-if="hasShowFriend && !hasShowGroup && !hasShowRequest"
+        @removeFriend="showBlank"
       />
       <RequestCard
         v-else-if="hasShowRequest"
