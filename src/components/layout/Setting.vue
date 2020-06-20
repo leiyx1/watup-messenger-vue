@@ -263,8 +263,24 @@ export default {
       });
     },
     logout() {
-      this.$router.push("/login");
-      getWebsocket().close();
+      this.$axios
+        .get("/oauth/removeToken?access_token=" + this.user.access_token)
+        .then((res) => {
+          if (res.data.code === 200) {
+            this.$notify({
+              title: "成功",
+              message: res.data.message,
+              type: "success",
+            });
+            this.$router.push("/login");
+            getWebsocket().close();
+          } else {
+            this.$notify.error({
+              title: "Error",
+              message: res.data.message,
+            });
+          }
+        });
     },
     clearNeDB() {
       this.$confirm("此操作将永久删除用户本地数据, 是否继续?", "提示", {
