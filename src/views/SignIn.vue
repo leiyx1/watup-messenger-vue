@@ -317,8 +317,6 @@ export default {
                 //存入Nedb
                 let query = { id: data.id };
                 getNedb().userInfo.find(query, function(err, docs) {
-                  console.log(1111111111111111);
-                  console.log(docs);
                   if (docs.length === 0) {
                     //没有登陆过
                     getNedb().userInfo.insert(userdata, function(err, newDocs) {
@@ -326,11 +324,10 @@ export default {
                       console.log(newDocs);
                     });
                   } else {
-                    getNedb().userInfo.update(query, { $set: userdata }),
-                      {},
+                    getNedb().userInfo.update(query, { $set: userdata }, {},
                       function(err, numReplaced) {
-                        console.log(numReplaced);
-                      };
+                        console.log(numReplaced + "document of userInfo updated");
+                      });
                   }
                 });
                 //加载好友和群聊
@@ -340,26 +337,22 @@ export default {
                 loadGroupRequests();
                 loadBlockList();
                 //更新系统信息
-                // getNedb().systemInfo.remove({}, { multi: true });
-                // let updateSystemInfo = {
-                //   lastUserId: data.id,
-                //   token: data.access_token,
-                //   autoLogin: this.autoLogin,
-                // };
-                // getNedb().systemInfo.insert(updateSystemInfo);
+                getNedb().systemInfo.remove({}, { multi: true });
+                let updateSystemInfo = {
+                  lastUserId: data.id,
+                  token: data.access_token,
+                  autoLogin: this.autoLogin,
+                };
+                getNedb().systemInfo.insert(updateSystemInfo);
                 //初始化本地聊天记录
                 let self = this;
-                // setTimeout(function() {
-                //   self.initLocalMessages();
-                // }, 500);
+                setTimeout(function() {
+                  self.initLocalMessages();
+                }, 500);
 
                 //建立websocket连接
                 getWebsocket();
                 setTimeout(() => {
-                  getNedb().localMessage.find({},function (err, docs) {
-                    
-
-                  })
                   self.$router.push("/index/chatpanel");
                 }, 2000);
                 this.$notify({
