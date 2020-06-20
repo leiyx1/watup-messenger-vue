@@ -177,7 +177,7 @@ export default {
         .get(
           "/api/message?access_token=" +
             this.$store.state.user.access_token +
-            "&sort=asc&drop=false"
+            "&sort=asc&drop=true"
         )
         .then((res) => {
           if (res.status === 200) {
@@ -207,11 +207,9 @@ export default {
                 let obj = this.$store.state.friends.find(
                   (obj) => obj.id === chatId
                 );
-                console.log(p);
-                console.log(obj);
                 name = obj.nickname.length === 0 ? obj.username : obj.nickname;
                 avatarUrl = obj.avatarUrl;
-              } else {
+              } else if(type === "MULTICAST"){
                 let obj = this.$store.state.groups.find(
                   (obj) => (obj.id = chatId)
                 );
@@ -342,22 +340,26 @@ export default {
                 loadGroupRequests();
                 loadBlockList();
                 //更新系统信息
-                getNedb().systemInfo.remove({}, { multi: true });
-                let updateSystemInfo = {
-                  lastUserId: data.id,
-                  token: data.access_token,
-                  autoLogin: this.autoLogin,
-                };
-                getNedb().systemInfo.insert(updateSystemInfo);
+                // getNedb().systemInfo.remove({}, { multi: true });
+                // let updateSystemInfo = {
+                //   lastUserId: data.id,
+                //   token: data.access_token,
+                //   autoLogin: this.autoLogin,
+                // };
+                // getNedb().systemInfo.insert(updateSystemInfo);
                 //初始化本地聊天记录
                 let self = this;
-                setTimeout(function() {
-                  self.initLocalMessages();
-                }, 500);
+                // setTimeout(function() {
+                //   self.initLocalMessages();
+                // }, 500);
 
                 //建立websocket连接
                 getWebsocket();
                 setTimeout(() => {
+                  getNedb().localMessage.find({},function (err, docs) {
+                    
+
+                  })
                   self.$router.push("/index/chatpanel");
                 }, 2000);
                 this.$notify({

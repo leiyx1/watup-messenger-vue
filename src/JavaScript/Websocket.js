@@ -208,12 +208,9 @@ function createWebsocket() {
         case "friendRequestReject":
           //fjc说什么都不用做
           break;
-      }
-      if(data.notificationType === "GROUP_REQUEST"){
-        loadGroupRequests()
-      }else if(data.notificationType === "GROUP_REQUEST_ACCEPTED"){
-        loadGroupRequests()
-        loadGroups()
+        case "friendRemoved":
+          loadFriends();
+          break;
       }
     }
 
