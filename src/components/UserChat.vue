@@ -41,11 +41,11 @@
               'multi-message-body': item.type === 'MULTICAST',
             }"
           >
-            <div>
+            <div class="namebox">
               <span>{{ chatInfo(item.senderId).username }}</span>
             </div>
-            <el-card class="card" shadow="hover"
-              ><div>
+            <el-card shadow="hover"
+              ><div class="wordbox">
                 <span>{{ item.content }}</span>
               </div></el-card
             >
@@ -150,29 +150,22 @@ export default {
       }
     },
     sendUniMessage() {
-      if(this.text === "" || this.text === "\n" || this.text === "\r"){
-        this.text = "";
-        this.$notify.error({
-          title: "错误",
-          message: "输入内容不能为空！",
-        })
-      }else {
-        console.log(
-          `send uni message:` + this.text + " to " + this.currentChat.chatId
-        );
-        let message = {
-          type: this.currentChat.type,
-          receiverId: this.currentChat.chatId,
-          content: `${this.text}`,
-        };
-        if (this.currentChat.type === "UNICAST")
-          message.receiverId = this.currentChat.chatId;
-        else if (this.currentChat.type === "MULTICAST")
-          message.groupId = this.currentChat.chatId;
-        getWebsocket().send(JSON.stringify(message));
-        this.text = "";
-        this.scrollToBottom();
-      }
+      console.log(this.currentChat);
+      console.log(
+        `send uni message:` + this.text + " to " + this.currentChat.chatId
+      );
+      let message = {
+        type: this.currentChat.type,
+        receiverId: this.currentChat.chatId,
+        content: `${this.text}`,
+      };
+      if (this.currentChat.type === "UNICAST")
+        message.receiverId = this.currentChat.chatId;
+      else if (this.currentChat.type === "MULTICAST")
+        message.groupId = this.currentChat.chatId;
+      getWebsocket().send(JSON.stringify(message));
+      this.text = "";
+      this.scrollToBottom();
     },
     scrollToBottom() {
       this.$nextTick(() => {
@@ -243,17 +236,17 @@ export default {
         .message-body {
           display: flex;
           flex-direction: column;
-          min-height: 60px;
-          max-height: 140px;
-          span {
+          min-height: 45px;
+          max-height: 1000px;
+          .namebox {
             display: none;
           }
           .el-card {
             margin-top: 10px;
             margin-bottom: 10px;
             // height: 65%;
-            max-width: 420px;
-            div {
+            max-width: 400px;
+            .wordbox {
               span {
                 margin: 10px;
                 padding-right: 0;
@@ -272,20 +265,21 @@ export default {
           }
         }
         .multi-message-body {
-          height: 60px;
-          div {
+          // height: 60px;
+          .namebox {
+            display: block;
+            margin: 0px;
+            // height: 25%;
+            font-size: 13px;
             span {
-              margin: 0px;
-              display: block;
-              // height: 25%;
+              padding-left: 5px;
               float: left;
-              font-size: 13px;
             }
           }
           .el-card {
             margin-top: 0px;
             margin-bottom: 0px;
-            height: 65%;
+            // height: 65%;
             .el-card__body {
               padding: 0px;
             }
@@ -294,9 +288,10 @@ export default {
       }
       li.chat-mine {
         flex-direction: row-reverse;
-        div {
+        .namebox {
           span {
             float: right;
+            padding-right: 5px;
           }
         }
       }
