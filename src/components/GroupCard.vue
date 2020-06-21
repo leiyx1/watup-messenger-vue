@@ -57,9 +57,9 @@
             <el-avatar
               shape="square"
               size="medium"
-              :src="member.avatarUrl"
+              :src="chatInfo(member.id).avatarUrl"
             ></el-avatar>
-            <span class="name">{{ member.username }}</span>
+            <span class="name">{{ chatInfo(member.id).name }}</span>
           </div>
         </div>
         <div class="member">
@@ -137,8 +137,21 @@ export default {
         return this.$store.state.chatList;
       },
     },
+    userCache:{
+      get(){
+        return this.$store.state.userCache;
+      }
+    }
   },
   methods: {
+    chatInfo(memberId) {
+      console.log(this.$store.state.userCache.find(
+        (obj) => obj.id === memberId
+      ));
+      return this.$store.state.userCache.find(
+        (obj) => obj.id === memberId
+      );
+    },
     goUser(member) {
       if (member.id === this.$store.state.user.id) {
         this.$router.push("/index/setting");

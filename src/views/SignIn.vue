@@ -280,8 +280,28 @@ export default {
         .sort({ timestamp: 1 })
         .exec(function(err, docs) {
           console.log(docs);
+          //若一个好友/群不再在好友列表/群聊列表里面，则将其在chatList中的数据也删除
+          for(let i = 0; i < docs.length; ++i){
+            let thisDoc = docs[i];
+            if(thisDoc.type === "UNICAST"){
+              let obj = self.$store.state.friends.find(
+                (obj) => obj.id === thisDoc.chatId
+              )
+              if(!obj){//如果好友列表里面已经没有这个好友了
+                docs.splice(i, 1)
+                getNedb().localMessage.remove({chatId: thisDoc.chatId})
+              }
+            }else if(thisDoc.type === "MULTICAST"){
+              let obj = self.$store.state.groups.find(
+                (obj) => obj.id === thisDoc.chatId
+              )
+              if(!obj){//如果好友列表里面已经没有这个好友了
+                docs.splice(i, 1)
+                getNedb().localMessage.remove({chatId: thisDoc.chatId})
+              }
+            }
+          }
           self.$store.commit("setChatList", docs);
-          console.log(33333333333);
         });
     },
     submit1(formName) {
