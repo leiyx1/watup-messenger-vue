@@ -126,6 +126,8 @@ export default {
             title: "错误",
             message: "失效的邀请",
           });
+            loadGroupRequests();
+            loadGroups();
         });
     },
     rejectFriendRequest(index, row) {
@@ -143,14 +145,8 @@ export default {
               message: "已拒绝" + row.id,
               type: "success",
             });
-          } else {
-            this.$notify.error({
-              title: "错误",
-              message: "请求已被处理",
-            });
           }
           loadFriendRequests();
-          this.$emit("addFriend");
         })
         .catch((error) => {
           console.log(error);
@@ -158,6 +154,7 @@ export default {
             title: "错误",
             message: "请求已被处理",
           });
+            loadFriendRequests();
         });
     },
     handleFriendRequest(index, row) {
@@ -190,6 +187,8 @@ export default {
             title: "错误",
             message: "请求已被处理",
           });
+            loadFriendRequests();
+            loadFriends();
         });
         let obj = store.state.friends.find((obj) => obj.id === row.id);
         let name = obj.username;
