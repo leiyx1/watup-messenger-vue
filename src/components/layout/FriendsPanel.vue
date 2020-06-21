@@ -54,52 +54,60 @@
           </div>
 
         </el-menu-item>
-        <el-divider content-position="left" class="divider2">群聊</el-divider>
-        <el-menu-item
-          class="item"
-          v-for="(item, index) in groups.filter(
+        <el-collapse v-model="activeNames" @change="handleChange" class="collapseStyle">
+          <el-collapse-item title="群聊" name="1" class="collapseStyle">
+            <el-menu-item
+                class="item"
+                v-for="(item, index) in groups.filter(
                 (data) =>
                   data.name.toLowerCase().includes(this.state.toLowerCase())
               )"
-          :key="item.id"
-          @click="showGroup(item, index)"
-        >
-          <div class="item-avatar">
-            <img
-              :src=GInfo(item).avatarUrl
-              alt="头像"
-            />
-          </div>
-          <div class="item-body">
-            <div class="item-word">
-              <b>{{ GInfo(item).name }}</b>
-            </div>
-          </div>
-        </el-menu-item>
-        <el-divider content-position="left" class="divider2">好友</el-divider>
+                :key="item.id"
+                @click="showGroup(item, index)"
+            >
+              <div class="item-avatar">
+                <img
+                    :src=GInfo(item).avatarUrl
+                    alt="头像"
+                />
+              </div>
+              <div class="item-body">
+                <div class="item-word">
+                  <b>{{ GInfo(item).name }}</b>
+                </div>
+              </div>
+            </el-menu-item>
+          </el-collapse-item>
 
-        <el-menu-item
-          class="item"
-          v-for="(item, index) in friends.filter(
+          <el-collapse-item title="好友" name="2" class="collapseStyle">
+            <el-menu-item
+                class="item"
+                v-for="(item, index) in friends.filter(
                 (data) =>
                   data.username.toLowerCase().includes(this.state.toLowerCase())
               )"
-          :key="index"
-          @click="showFriend(item, index)"
-        >
-          <div class="item-avatar">
-            <img :src="FInfo(item).avatarUrl" alt="头像" />
-          </div>
-          <div class="item-body">
-            <div class="item-word">
-              <b>{{
-                FInfo(item).nickname === ""
-                  ? FInfo(item).username
-                  : FInfo(item).nickname
-              }}</b>
-            </div>
-          </div>
-        </el-menu-item>
+                :key="index"
+                @click="showFriend(item, index)"
+            >
+              <div class="item-avatar">
+                <img :src="FInfo(item).avatarUrl" alt="头像" />
+              </div>
+              <div class="item-body">
+                <div class="item-word">
+                  <b>{{
+                    FInfo(item).nickname === ""
+                    ? FInfo(item).username
+                    : FInfo(item).nickname
+                    }}</b>
+                </div>
+              </div>
+            </el-menu-item>
+          </el-collapse-item>
+
+        </el-collapse>
+
+
+
       </el-menu>
     </div>
     <div class="right-card">
@@ -267,15 +275,17 @@ export default {
 #divider {
   margin: 0px;
 }
-.divider2 {
-  margin-bottom: 20px;
-  .el-divider__text {
-    background-color: #d3d3d3;
-    color: #808080;
-  }
+.collapseStyle{
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 0;
+  color: rgb(211, 211, 211);
+  background-color: rgb(211, 211, 211);
 }
 
+
 .user-panel {
+  min-width: 240px;
   width: 100%;
   height: 100%;
   display: flex;

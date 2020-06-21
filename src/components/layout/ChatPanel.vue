@@ -263,6 +263,7 @@ export default {
 
 <style lang="scss">
 .chat-panel {
+  min-width: 240px;
   height: 100%;
   width: 100%;
   display: flex;
