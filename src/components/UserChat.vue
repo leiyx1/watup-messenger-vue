@@ -33,6 +33,7 @@
               item.mine == true ? mineUrl : chatInfo(item.senderId).avatarUrl
             "
             alt="头像"
+            style="height: 50px; width: 50px"
           />
           <div
             :class="{

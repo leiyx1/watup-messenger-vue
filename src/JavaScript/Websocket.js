@@ -112,9 +112,8 @@ function createWebsocket() {
         } else {
           obj = groupList.find((obj) => obj.id === chatId);
           name = obj.name;
-          avatarUrl =
-            "https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2121061596,2871071478&fm=26&gp=0.jpg";
-          //todo 放入真正的群头像
+          avatarUrl = obj.avatarUrl;
+
         }
 
         let newChat = {
@@ -149,7 +148,7 @@ function createWebsocket() {
         case "GROUP_REQUEST_ACCEPTED":
           loadGroupRequests();
           loadGroups();
-          desktopNotify(data.content + "已通过了你的群聊邀请!");
+          desktopNotify(data.content + "加入了群聊!");
           break;
         case "GROUP_REMOVED":
           obj = store.state.groups.find((obj) => obj.id === data.content);

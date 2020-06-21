@@ -221,9 +221,8 @@ export default {
                   (obj) => (obj.id = chatId)
                 );
                 name = obj.name;
-                avatarUrl =
-                  "https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2121061596,2871071478&fm=26&gp=0.jpg";
-                //todo 放入真正的群头像
+                avatarUrl = obj.avatarUrl;
+
               }
 
               //先把Nedb更新一遍
