@@ -358,10 +358,6 @@ export default {
                 //建立websocket连接
                 getWebsocket();
                 setTimeout(() => {
-<<<<<<< HEAD
-                  getNedb().localMessage.find({}, function() {});
-=======
->>>>>>> 5892eec25cc78e9412db7cd56b034e0bfb0b9ac8
                   self.$router.push("/index/chatpanel");
                 }, 2000);
                 this.$notify({
