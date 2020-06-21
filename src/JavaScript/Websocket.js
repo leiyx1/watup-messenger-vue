@@ -143,7 +143,8 @@ function createWebsocket() {
       switch (data.notificationType) {
         case "GROUP_REQUEST":
           loadGroupRequests();
-          desktopNotify(data.content + "给你发送了一条群聊邀请");
+          store.commit("addUnreadGroupRequest");
+          desktopNotify(data.content + "给你发送了一条群聊邀请")
           break;
         case "GROUP_REQUEST_ACCEPTED":
           loadGroupRequests();
@@ -191,7 +192,7 @@ function createWebsocket() {
         case "friendRequestAdd":
           desktopNotify("收到新的好友申请");
           loadFriendRequests();
-
+          store.commit("addUnreadFriendRequest");
           break;
         case "friendRequestPass":
           loadFriends();

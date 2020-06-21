@@ -84,6 +84,15 @@ export default {
       activeName: "first",
     };
   },
+    watch: {
+        activeName(val){
+            if(val==="first"){
+                this.$store.commit("resetUnreadFriendRequest");
+            }else {
+                this.$store.commit("resetUnreadGroupRequest");
+            }
+        }
+    },
   methods: {
     handleGroupRequest(index, row) {
       this.$axios

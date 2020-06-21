@@ -26,21 +26,27 @@ export default new Vuex.Store({
       messageList: [],
     },
     userCache: [],
-    unreadFriendRequest: 0,
-    unReadGroupRequest: 0,
+      unReadFriendRequest:0,
+      unReadGroupRequest:0,
   },
   mutations: {
-    addUnreadGroupRequest(state) {
-      state.unreadFriendRequest++;
+    resetUnreadFriendRequest(state){
+      state.unReadFriendRequest=0;
     },
-    addUnreadFriendRequest(state) {
-      state.unreadFriendRequest++;
+    resetUnreadGroupRequest(state){
+      state.unReadGroupRequest=0;
     },
-    setBlacklist(state, val) {
-      state.blacklist = val;
+    addUnreadGroupRequest(state){
+        state.unReadGroupRequest++;
     },
-    setGroupRequest(state, val) {
-      state.groupRequest = val;
+    addUnreadFriendRequest(state){
+        state.unReadFriendRequest++;
+    },
+    setBlacklist(state,val){
+      state.blacklist=val;
+    },
+    setGroupRequest(state,val){
+      state.groupRequest=val;
     },
     setFriendRequest(state, val) {
       state.friendRequest = val;
