@@ -17,7 +17,7 @@ module.exports = {
                     ]
                 },
                 "mac": {
-                    "icon": "src/assets/icon.ico"
+                    "icon": "src/assets/icon.png"
                 },
                 "nsis": {
                     "oneClick": false,
