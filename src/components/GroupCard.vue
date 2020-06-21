@@ -372,7 +372,7 @@ export default {
     overflow: auto;
     display: grid;
     height: 300px;
-    grid-template-columns: 60px 60px 60px 60px;
+    grid-template-columns: repeat(5, 8%);
     grid-template-rows: 60px 60px;
     grid-auto-rows: 60px;
     align-items: center;
