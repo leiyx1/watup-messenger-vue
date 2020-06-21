@@ -232,13 +232,24 @@ export default {
         return;
       }
       // 发送改名请求并更新
-      this.user.username = this.newName;
-      this.hasEditName = false;
-      this.$notify({
-        title: "成功",
-        message: "已改名为:" + this.newName,
-        type: "success",
-      });
+        this.$axios
+            .post("/api/user/updateUsername?access_token=" + this.$store.state.user.access_token+"&username="+this.newName)
+            .then((res) => {
+                if (res.data.code === 200) {
+                    this.$notify({
+                        title: "成功",
+                        message: "已改名为:" + this.newName,
+                        type: "success",
+                    });
+                    this.user.username = this.newName;
+                    this.hasEditName = false;
+                } else {
+                    this.$notify.error({
+                        title: "Error",
+                        message: res.data.message,
+                    });
+                }
+            });
     },
     saveArea() {
       if (this.user.area == this.newArea || this.newArea == "") {
@@ -246,27 +257,52 @@ export default {
         return;
       }
       // 发送改地区请求并更新
-      this.user.area = this.newArea;
-      this.hasEditArea = false;
-      this.$notify({
-        title: "成功",
-        message: "地区已改为:" + this.newArea,
-        type: "success",
-      });
+        this.$axios
+            .post("/api/user/updateArea?access_token=" + this.$store.state.user.access_token+"&area="+this.newArea)
+            .then((res) => {
+                if (res.data.code === 200) {
+                    this.user.area = this.newArea;
+                    this.hasEditArea = false;
+                    this.$notify({
+                        title: "成功",
+                        message: "地区已改为:" + this.newArea,
+                        type: "success",
+                    });
+                } else {
+                    this.$notify.error({
+                        title: "Error",
+                        message: res.data.message,
+                    });
+                }
+            });
+
     },
     saveSign() {
       if (this.user.sign == this.newSign || this.newSign == "") {
         this.hasEditSign = false;
         return;
       }
-      this.user.sign = this.newSign;
+
       // 发送改签名请求并更新
-      this.hasEditSign = false;
-      this.$notify({
-        title: "成功",
-        message: "签名已改为:" + this.newSign,
-        type: "success",
-      });
+        this.$axios
+            .post("/api/user/updateSign?access_token=" + this.$store.state.user.access_token+"&sign="+this.newSign)
+            .then((res) => {
+                if (res.data.code === 200) {
+                    this.user.sign = this.newSign;
+                    this.hasEditSign = false;
+                    this.$notify({
+                        title: "成功",
+                        message: "签名已改为:" + this.newSign,
+                        type: "success",
+                    });
+                } else {
+                    this.$notify.error({
+                        title: "Error",
+                        message: res.data.message,
+                    });
+                }
+            });
+
     },
     logout() {
       this.$axios
