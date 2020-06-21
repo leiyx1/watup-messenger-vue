@@ -3,10 +3,10 @@
     <div class="side-list">
       <div class="side-top">
         <el-input
-            class="inline-input"
-            v-model="state"
-            placeholder="搜索"
-            prefix-icon="el-icon-search"
+          class="inline-input"
+          v-model="state"
+          placeholder="搜索"
+          prefix-icon="el-icon-search"
         ></el-input>
         <el-dropdown @command="handleCommand" trigger="click">
           <el-button size="large">
@@ -38,38 +38,29 @@
         style="border-right-width: 0;"
       >
         <el-menu-item @click="showRequest">
-
           <div class="item-body">
-
             <div class="item-word">
               <el-badge
-                  :value="showBadge"
-                  :hidden="showBadge === 0"
-                  style=""
+                :value="showBadge"
+                :hidden="showBadge === 0"
+                style=""
               ></el-badge>
-            <b>申请与邀请</b>
-
+              <b>申请与邀请</b>
             </div>
-
           </div>
-
         </el-menu-item>
-        <el-collapse v-model="activeNames" @change="handleChange" class="collapseStyle">
-          <el-collapse-item title="群聊" name="1" class="collapseStyle">
+        <el-collapse v-model="activeNames">
+          <el-collapse-item title="群聊" name="1">
             <el-menu-item
-                class="item"
-                v-for="(item, index) in groups.filter(
-                (data) =>
-                  data.name.toLowerCase().includes(this.state.toLowerCase())
+              class="item"
+              v-for="(item, index) in groups.filter((data) =>
+                data.name.toLowerCase().includes(this.state.toLowerCase())
               )"
-                :key="item.id"
-                @click="showGroup(item, index)"
+              :key="item.id"
+              @click="showGroup(item, index)"
             >
               <div class="item-avatar">
-                <img
-                    :src=GInfo(item).avatarUrl
-                    alt="头像"
-                />
+                <img :src="GInfo(item).avatarUrl" alt="头像" />
               </div>
               <div class="item-body">
                 <div class="item-word">
@@ -79,15 +70,14 @@
             </el-menu-item>
           </el-collapse-item>
 
-          <el-collapse-item title="好友" name="2" class="collapseStyle">
+          <el-collapse-item title="好友" name="2">
             <el-menu-item
-                class="item"
-                v-for="(item, index) in friends.filter(
-                (data) =>
-                  data.username.toLowerCase().includes(this.state.toLowerCase())
+              class="item"
+              v-for="(item, index) in friends.filter((data) =>
+                data.username.toLowerCase().includes(this.state.toLowerCase())
               )"
-                :key="index"
-                @click="showFriend(item, index)"
+              :key="index"
+              @click="showFriend(item, index)"
             >
               <div class="item-avatar">
                 <img :src="FInfo(item).avatarUrl" alt="头像" />
@@ -96,18 +86,14 @@
                 <div class="item-word">
                   <b>{{
                     FInfo(item).nickname === ""
-                    ? FInfo(item).username
-                    : FInfo(item).nickname
-                    }}</b>
+                      ? FInfo(item).username
+                      : FInfo(item).nickname
+                  }}</b>
                 </div>
               </div>
             </el-menu-item>
           </el-collapse-item>
-
         </el-collapse>
-
-
-
       </el-menu>
     </div>
     <div class="right-card">
@@ -158,17 +144,21 @@ export default {
       newGroupDialogVisible: false,
       currentItem: {},
       newFriendId: "",
+      activeNames: ["2"],
     };
   },
   mounted() {
     console.log("hao" + this.$store.state.user.access_token);
   },
   computed: {
-      showBadge:{
-          get: function() {
-              return this.$store.state.unReadFriendRequest+this.$store.state.unReadGroupRequest;
-          },
+    showBadge: {
+      get: function() {
+        return (
+          this.$store.state.unReadFriendRequest +
+          this.$store.state.unReadGroupRequest
+        );
       },
+    },
     groups: {
       get: function() {
         return this.$store.state.groups;
@@ -202,7 +192,7 @@ export default {
     },
     showRequest() {
       console.log(this.showBadge);
-        this.$store.commit("resetUnreadFriendRequest");
+      this.$store.commit("resetUnreadFriendRequest");
       this.hasShowGroup = false;
       this.hasShowFriend = false;
       this.hasShowRequest = true;
@@ -275,14 +265,13 @@ export default {
 #divider {
   margin: 0px;
 }
-.collapseStyle{
-  padding-left: 10px;
-  padding-right: 10px;
-  padding-bottom: 0;
-  color: rgb(211, 211, 211);
-  background-color: rgb(211, 211, 211);
-}
-
+// .collapseStyle {
+//   padding-left: 10px;
+//   padding-right: 10px;
+//   padding-bottom: 0;
+//   color: rgb(211, 211, 211);
+//   background-color: rgb(211, 211, 211);
+// }
 
 .user-panel {
   min-width: 240px;
@@ -299,7 +288,27 @@ export default {
     display: flex;
     flex-direction: column;
     overflow-y: scroll;
-
+    .el-collapse {
+      border: none;
+      .el-collapse-item {
+        color: #d3d3d3;
+        // border-bottom: solid 1px;
+      }
+      .el-collapse-item__wrap {
+        border: none;
+      }
+      .el-collapse-item__header {
+        // border: none;
+        padding-left: 30px;
+        background-color: #bebaba;
+        border-bottom: 1px solid #d3d3d3;
+      }
+      .el-collapse-item__content {
+        border: none;
+        background-color: #d3d3d3;
+        padding-bottom: 5px;
+      }
+    }
     .side-top {
       top: 0px;
       z-index: 2;
