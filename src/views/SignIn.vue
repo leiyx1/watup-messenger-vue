@@ -208,6 +208,7 @@ export default {
                 type: type,
               };
 
+
               //根据type，分别去friendList和groupList里面找到name和avatarUrl
               let name, avatarUrl;
               if (type === "UNICAST") {
@@ -222,7 +223,6 @@ export default {
                 );
                 name = obj.name;
                 avatarUrl = obj.avatarUrl;
-
               }
 
               //先把Nedb更新一遍
@@ -278,30 +278,29 @@ export default {
         .localMessage.find({})
         .sort({ timestamp: 1 })
         .exec(function(err, docs) {
-          console.log(docs);
-          //若一个好友/群不再在好友列表/群聊列表里面，则将其在chatList中的数据也删除
-          for(let i = 0; i < docs.length; ++i){
-            let thisDoc = docs[i];
-            if(thisDoc.type === "UNICAST"){
-              let obj = self.$store.state.friends.find(
-                (obj) => obj.id === thisDoc.chatId
-              )
-              if(!obj){//如果好友列表里面已经没有这个好友了
-                docs.splice(i, 1)
-                getNedb().localMessage.remove({chatId: thisDoc.chatId})
-              }
-            }else if(thisDoc.type === "MULTICAST"){
-              let obj = self.$store.state.groups.find(
-                (obj) => obj.id === thisDoc.chatId
-              )
-              if(!obj){//如果好友列表里面已经没有这个好友了
-                docs.splice(i, 1)
-                getNedb().localMessage.remove({chatId: thisDoc.chatId})
-              }
-            }
-          }
-          self.$store.commit("setChatList", docs);
+            self.$store.commit("setChatList", docs);
         });
+      //update chatList
+      let updateChatList = [];
+      let chatList = this.$store.state.chatList;
+      for(let i = 0; i < chatList.length; ++i){
+        if(chatList[i].type === "UNICAST"){
+          let obj = this.$store.state.friends.find(
+            (obj) => obj.id === chatList[i].chatId
+          )
+          if(obj){
+            updateChatList.push(chatList[i])
+          }
+        }else if(chatList[i].type === "MULTICAST"){
+          let obj = this.$store.state.groups.find(
+            (obj) => obj.id === chatList[i].chatId
+          )
+          if(obj){
+            updateChatList.push(chatList[i])
+          }
+        }
+      }
+      this.$store.commit("setChatList", updateChatList);
     },
     submit1(formName) {
       this.$refs[formName].validate((valid) => {
@@ -373,7 +372,7 @@ export default {
                 getWebsocket();
                 setTimeout(() => {
                   self.$router.push("/index/chatpanel");
-                }, 2000);
+                }, 1000);
                 this.$notify({
                   title: "成功",
                   message: "登录成功！",

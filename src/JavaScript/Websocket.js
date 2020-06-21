@@ -163,9 +163,9 @@ function createWebsocket() {
             index = updateChatList.indexOf(obj);
             updateChatList.splice(index, 1);
             store.commit("setChatList", updateChatList);
+            //删除Nedb中的这一条数据
+            getNedb().localMessage.remove({chatId:obj.chatId, type: "MULTICAST"})
           }
-          //删除Nedb中的这一条数据
-          getNedb().localMessage.remove({chatId:obj.chatId, type: "MULTICAST"})
           //最后刷新群组列表
           loadGroups();
           break;
@@ -182,9 +182,9 @@ function createWebsocket() {
             index = updateChatList.indexOf(obj);
             updateChatList.splice(index, 1);
             store.commit("setChatList", updateChatList);
+            //删除Nedb中的这一条数据
+            getNedb().localMessage.remove({chatId:obj.chatId, type: "MULTICAST"})
           }
-          //删除Nedb中的这一条数据
-          getNedb().localMessage.remove({chatId:obj.chatId, type: "MULTICAST"})
           //最后刷新群组列表
           loadGroups();
           break;

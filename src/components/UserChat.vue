@@ -150,22 +150,29 @@ export default {
       }
     },
     sendUniMessage() {
-      console.log(this.currentChat);
-      console.log(
-        `send uni message:` + this.text + " to " + this.currentChat.chatId
-      );
-      let message = {
-        type: this.currentChat.type,
-        receiverId: this.currentChat.chatId,
-        content: `${this.text}`,
-      };
-      if (this.currentChat.type === "UNICAST")
-        message.receiverId = this.currentChat.chatId;
-      else if (this.currentChat.type === "MULTICAST")
-        message.groupId = this.currentChat.chatId;
-      getWebsocket().send(JSON.stringify(message));
-      this.text = "";
-      this.scrollToBottom();
+      if(this.text === "" || this.text === "\n" || this.text === "\r"){
+        this.text = "";
+        this.$notify.error({
+          title: "错误",
+          message: "输入内容不能为空！",
+        })
+      }else {
+        console.log(
+          `send uni message:` + this.text + " to " + this.currentChat.chatId
+        );
+        let message = {
+          type: this.currentChat.type,
+          receiverId: this.currentChat.chatId,
+          content: `${this.text}`,
+        };
+        if (this.currentChat.type === "UNICAST")
+          message.receiverId = this.currentChat.chatId;
+        else if (this.currentChat.type === "MULTICAST")
+          message.groupId = this.currentChat.chatId;
+        getWebsocket().send(JSON.stringify(message));
+        this.text = "";
+        this.scrollToBottom();
+      }
     },
     scrollToBottom() {
       this.$nextTick(() => {

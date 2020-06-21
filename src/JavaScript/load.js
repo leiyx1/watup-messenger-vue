@@ -14,10 +14,7 @@ export function loadGroups() {
       if (successResponse.status === 404) {
         console.log("拉取群组失败");
       } else if (successResponse.status === 200) {
-        // let groups = successResponse.data;
-
         store.commit("setGroups", successResponse.data);
-
       } else {
         // this.$store.commit("setGroups", successResponse.data);
         // console.log(successResponse);
