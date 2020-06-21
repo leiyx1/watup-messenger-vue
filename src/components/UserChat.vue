@@ -1,7 +1,7 @@
 <template>
   <div class="windows">
     <div class="top">
-      <span>{{ this.currentChat.name }}</span>
+      <span>{{ chatInfo(currentChat.chatId).name }}</span>
       <el-dropdown trigger="click" class="btn" @command="handleCommand">
         <el-button plain size="small" icon="el-icon-more" circle></el-button>
         <el-dropdown-menu slot="dropdown">
