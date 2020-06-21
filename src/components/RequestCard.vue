@@ -175,30 +175,14 @@ export default {
               message: row.id + " 已成为你的好友",
               type: "success",
             });
-            loadFriends();
+              loadFriendRequests();
+              loadFriends();
+
             //直接插入ChatList中
-            let obj = store.state.friends.find((obj) => obj.id === row.id);
-            let name = obj.username;
-            let newChat = {
-              chatId: row.id,
-              name: name,
-              type: "UNICAST",
-              sign: "",
-              unReadCount: 0,
-              messageList: [],
-            };
-            let updateChatList = store.state.chatList;
-            updateChatList.unshift(newChat);
-            store.commit("setChatList", updateChatList);
-          } else {
-            this.$notify.error({
-              title: "错误",
-              message: "请求已被处理",
-            });
+
+
           }
-          loadFriendRequests();
-          loadFriends();
-          this.$emit("addFriend");
+
         })
         .catch((error) => {
           console.log(error);
@@ -207,6 +191,19 @@ export default {
             message: "请求已被处理",
           });
         });
+        let obj = store.state.friends.find((obj) => obj.id === row.id);
+        let name = obj.username;
+        let newChat = {
+            chatId: row.id,
+            name: name,
+            type: "UNICAST",
+            sign: "",
+            unReadCount: 0,
+            messageList: [],
+        };
+        let updateChatList = store.state.chatList;
+        updateChatList.unshift(newChat);
+        store.commit("setChatList", updateChatList);
     },
     // loadGroupRequest(){
     //     this.$axios
