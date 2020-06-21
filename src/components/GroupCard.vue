@@ -52,26 +52,25 @@
     <el-divider class="divider1" />
     <div class="level-2">
       <div id="members">
-        <div v-for="member in groupMembers" :key="member.id">
-          <div class="member" @click="goUser(member)">
+        <div class="member" v-for="member in groupMembers" :key="member.id"  @click="goUser(member)">
             <el-avatar
+              style="height: 35px; width: 35px"
               shape="square"
               size="medium"
               :src="chatInfo(member.id).avatarUrl"
             ></el-avatar>
             <span class="name">{{ chatInfo(member.id).name }}</span>
-          </div>
         </div>
         <div class="member">
           <el-button
-            size="mini"
+            style="height: 35px; width: 35px"
             icon="el-icon-plus"
             @click="inviteFriendDialogVisible = true"
           ></el-button>
         </div>
         <div class="member" v-if="isManager">
           <el-button
-            size="mini"
+            style="height: 35px; width: 35px"
             icon="el-icon-minus"
             @click="removeFriendDialogVisible = true"
           ></el-button>
@@ -327,7 +326,7 @@ export default {
       padding-right: 10%;
       .span1 {
         float: left;
-        font-size: 40px;
+        font-size: 35px;
       }
       p {
         float: left;
@@ -352,12 +351,6 @@ export default {
         margin: 5px 10%;
       }
     }
-    .member {
-      .el-button {
-        // width: 42px;
-        height: 70%;
-      }
-    }
   }
   .level-3 {
     .el-button {
@@ -367,25 +360,26 @@ export default {
   #members {
     padding-left: 20%;
     align-self: start;
-    grid-column: 3;
-    grid-row: 3;
     overflow: auto;
-    display: grid;
-    height: 300px;
-    grid-template-columns: repeat(5, 8%);
-    grid-template-rows: 60px 60px;
-    grid-auto-rows: 60px;
+    display: flex;
+    height: 150px;
+    flex-flow: row wrap;
     align-items: center;
   }
   .member {
+    width: 70px;
+    height: 75px;
     display: flex;
     flex-direction: column;
     align-items: center;
     cursor: pointer;
   }
   .name {
+    font-size: 15px;
     text-align: center;
     width: 50px;
+    height: 25px;
+    line-height: 25px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

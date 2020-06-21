@@ -6,6 +6,7 @@
       width="600px"
       :center="true"
       :modal-append-to-body="false"
+      top="20px"
     >
       <div id="dialog">
         <div id="search-input">

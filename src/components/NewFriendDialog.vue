@@ -7,6 +7,7 @@
       width="300px"
       :center="true"
       :modal-append-to-body="false"
+      top="20px"
     >
       <el-input
         placeholder="watup code"
