@@ -269,7 +269,7 @@ export default {
                 }
               });
             }
-            this.updateVuexWithNedb()
+            this.updateVuexWithNedb();
           } else console.log("error occurred");
         });
     },
@@ -309,17 +309,6 @@ export default {
                 };
                 //用户信息存入Vuex
                 this.$store.commit("setUser", userdata);
-                // var tokendata = {
-                //   access_token: data.access_token,
-                //   token_type: data.token_type,
-                //   bearer: data.bearer,
-                //   refresh_token: data.refresh_token,
-                //   expires_in: data.expires_in,
-                //   scope: data.scope,
-                // }
-                // ***
-                // NeDB setToken
-                //存入Nedb
                 let query = { id: data.id };
                 getNedb().userInfo.find(query, function(err, docs) {
                   if (docs.length === 0) {
@@ -329,10 +318,16 @@ export default {
                       console.log(newDocs);
                     });
                   } else {
-                    getNedb().userInfo.update(query, { $set: userdata }, {},
+                    getNedb().userInfo.update(
+                      query,
+                      { $set: userdata },
+                      {},
                       function(err, numReplaced) {
-                        console.log(numReplaced + "document of userInfo updated");
-                      });
+                        console.log(
+                          numReplaced + "document of userInfo updated"
+                        );
+                      }
+                    );
                   }
                 });
                 //加载好友和群聊

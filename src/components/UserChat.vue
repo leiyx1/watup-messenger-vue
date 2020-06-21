@@ -247,6 +247,7 @@ export default {
             max-width: 420px;
             div {
               span {
+                margin: 10px;
                 padding-right: 0;
                 text-align: left;
                 display: inline-grid;
@@ -258,7 +259,7 @@ export default {
             }
             // height: 100%;
             .el-card__body {
-              padding: 10px 10px 0px 10px;
+              padding: 0px;
             }
           }
         }
@@ -266,6 +267,7 @@ export default {
           height: 60px;
           div {
             span {
+              margin: 0px;
               display: block;
               // height: 25%;
               float: left;
@@ -277,7 +279,7 @@ export default {
             margin-bottom: 0px;
             height: 65%;
             .el-card__body {
-              padding: 10px 10px 0px 10px;
+              padding: 0px;
             }
           }
         }
@@ -326,7 +328,7 @@ export default {
       }
     }
   }
-  .emoji {
-  }
+  // .emoji {
+  // }
 }
 </style>

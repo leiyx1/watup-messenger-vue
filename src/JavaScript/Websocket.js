@@ -53,33 +53,33 @@ function createWebsocket() {
       let updateChatList = store.state.chatList;
       let modified = false;
       for (let i = 0; i < updateChatList.length; ++i) {
-        let currentChat = updateChatList[i];
-        if (data.type === currentChat.type && currentChat.chatId === chatId) {
+        let thisChat = updateChatList[i];
+        if (data.type === thisChat.type && thisChat.chatId === chatId) {
           //将newMessage放入chat的messageList中
-          currentChat.messageList.push(newMessage);
+          thisChat.messageList.push(newMessage);
           //更新sign timestamp
-          currentChat.sign = newMessage.content;
-          currentChat.timestamp = newMessage.timestamp;
+          thisChat.sign = newMessage.content;
+          thisChat.timestamp = newMessage.timestamp;
           //更新unreadCount,同时发送通知
           if (
-            currentChat.type === store.state.currentChat.type &&
-            currentChat.chatId === store.state.currentChat.chatId
+            thisChat.type === store.state.currentChat.type &&
+            thisChat.chatId === store.state.currentChat.chatId
           )
-            currentChat.unReadCount = 0;
+            thisChat.unReadCount = 0;
           else {
-            currentChat.unReadCount++;
-            desktopNotify("收到来自" + currentChat.name + "的信息！");
+            thisChat.unReadCount++;
+            desktopNotify("收到来自" + thisChat.name + "的信息！");
           }
 
           //将chatList中的老chat删除，新chat插到数组头
           updateChatList.splice(i, 1);
-          updateChatList.unshift(currentChat);
+          updateChatList.unshift(thisChat);
 
           //存入Nedb
-          let query = { chatId: currentChat.chatId, type: currentChat.type };
+          let query = { chatId: thisChat.chatId, type: thisChat.type };
           getNedb().localMessage.update(
             query,
-            { $set: currentChat },
+            { $set: thisChat },
             { multi: true },
             function(err, numUpdated) {
               console.log(numUpdated);
