@@ -87,275 +87,333 @@
 import getWebsocket from "../JavaScript/Websocket";
 import getNedb from "../JavaScript/NedbConfig";
 
-export default {
-  name: "userChat",
-  // components: {
-  //   VEmojiPicker,
-  // },
-  props: ["chat"],
-  data() {
-    return {
-      text: "",
-    };
-  },
-  watch: {
-    messageList() {
-      this.scrollToBottom();
+  export default {
+    name: "userChat",
+    // components: {
+    //   VEmojiPicker,
+    // },
+    props: ["chat"],
+    data() {
+      return {
+        text: "",
+      };
     },
-  },
-  computed: {
-    mineUrl: {
-      get: function() {
-        return this.$store.state.user.avatarUrl;
-      },
-    },
-    mineName:{
-      get: function(){
-        return this.$store.state.user.username;
-      }
-    },
-    messageList: {
-      get: function() {
-        return this.$store.state.currentChat.messageList;
-      },
-      set: function(val) {
-        console.log("messageList setter");
-        this.$store.commit("setMessageList", val);
-      },
-    },
-    currentChat: {
-      get: function() {
-        return this.$store.state.currentChat;
-      },
-      set: function(val) {
-        this.$store.commit("setCurrentChat", val);
-      },
-    },
-
-  },
-  methods: {
-    userInfo(id){
-      let ret
-      ret = this.$store.state.userCache.find((obj) => obj.id === id)
-      return ret
-    },
-    chatInfo(chat) {
-      let ret
-      if (chat.type === "UNICAST") {
-        ret = this.$store.state.userCache.find(
-          (obj) => obj.id === chat.chatId
-        );
-      } else {
-        ret = this.$store.state.groups.find((obj) => obj.id === chat.chatId);
-      }
-      return ret
-    },
-    handleCommand(command) {
-      if (command === "delete") {
-        //删除聊天记录
-        getNedb().localMessage.remove(
-          { type: this.currentChat.type, chatId: this.currentChat.chatId },
-          { multi: true },
-          function(err, numRemove) {
-            if (err !== null) {
-              console.log(err);
-            } else {
-              console.log(`${numRemove} 条数据被删除`);
-            }
-          }
-        );
-      }
-    },
-    sendUniMessage() {
-      if(this.text === "" || this.text === "\n" || this.text === "\r"){
-        this.$notify.error({
-          title: "错误",
-          message: "不可发送给空消息"
-        })
-      }
-      else {
-        console.log(`send uni message:` + this.text + " to " + this.currentChat.chatId);
-        let message = {
-          type: this.currentChat.type,
-          receiverId: this.currentChat.chatId,
-          content: `${this.text}`,
-        };
-        if (this.currentChat.type === "UNICAST")
-          message.receiverId = this.currentChat.chatId;
-        else if (this.currentChat.type === "MULTICAST")
-          message.groupId = this.currentChat.chatId;
-        getWebsocket().send(JSON.stringify(message));
-        this.text = "";
+    watch: {
+      messageList() {
         this.scrollToBottom();
-      }
+      },
+    },
+    computed: {
+      mineUrl: {
+        get: function () {
+          return this.$store.state.user.avatarUrl;
+        },
+      },
+      mineName: {
+        get: function () {
+          return this.$store.state.user.username;
+        }
+      },
+      messageList: {
+        get: function () {
+          return this.$store.state.currentChat.messageList;
+        },
+        set: function (val) {
+          console.log("messageList setter");
+          this.$store.commit("setMessageList", val);
+        },
+      },
+      currentChat: {
+        get: function () {
+          return this.$store.state.currentChat;
+        },
+        set: function (val) {
+          this.$store.commit("setCurrentChat", val);
+        },
+      },
 
     },
-    scrollToBottom() {
-      this.$nextTick(() => {
-        let msg = document.getElementById("message"); // 获取对象
-        if (msg.scrollHeight !== null && msg.scrollTop !== null)
-          msg.scrollTop = msg.scrollHeight; // 滚动高度
-      });
-    },
-    videoChat() {
+    methods: {
+
+      handlePaste(val) {
+        let file = val.clipboardData.files[0];
+        if (file && file.type.match("image/*")) {
+          console.log(file)
+
+          let param = new FormData();
+          param.append('img', file);
+
+          let config = {
+            headers: { "Content-Type": "multipart/form-data" },
+          };
+
+          this.$axios.post(
+            `/api/user/uploadImg` ,param, config
+          ).then(res =>{
+            console.log(res)
+          })
+          this.text = this.text + file;
+          // if(file.type === "image/png" || file.type === "image/jpg"){
+          //   this.text = this.text + "[" + val.clipboardData.files[0].name + "]";
+          // }
+
+        }
+
+
+      },
+      userInfo(id) {
+        let ret
+        ret = this.$store.state.userCache.find((obj) => obj.id === id)
+        return ret
+      },
+      chatInfo(chat) {
+        let ret
+        if (chat.type === "UNICAST") {
+          ret = this.$store.state.userCache.find(
+            (obj) => obj.id === chat.chatId
+          );
+        } else {
+          ret = this.$store.state.groups.find((obj) => obj.id === chat.chatId);
+        }
+        return ret
+      },
+      handleCommand(command) {
+        if (command === "delete") {
+          //删除聊天记录
+          getNedb().localMessage.remove(
+            {type: this.currentChat.type, chatId: this.currentChat.chatId},
+            {multi: true},
+            function (err, numRemove) {
+              if (err !== null) {
+                console.log(err);
+              } else {
+                console.log(`${numRemove} 条数据被删除`);
+              }
+            }
+          );
+        }
+      },
+      sendUniMessage() {
+        if (this.text === "" || this.text === "\n" || this.text === "\r") {
+          this.$notify.error({
+            title: "错误",
+            message: "不可发送给空消息"
+          })
+          this.text = "";
+        } else {
+          console.log(`send uni message:` + this.text + " to " + this.currentChat.chatId);
+          let message = {
+            type: this.currentChat.type,
+            receiverId: this.currentChat.chatId,
+            content: `${this.text}`,
+          };
+          if (this.currentChat.type === "UNICAST")
+            message.receiverId = this.currentChat.chatId;
+          else if (this.currentChat.type === "MULTICAST")
+            message.groupId = this.currentChat.chatId;
+          getWebsocket().send(JSON.stringify(message));
+          this.text = "";
+          this.scrollToBottom();
+        }
+
+      },
+      scrollToBottom() {
+        this.$nextTick(() => {
+          let msg = document.getElementById("message"); // 获取对象
+          if (msg.scrollHeight !== null && msg.scrollTop !== null)
+            msg.scrollTop = msg.scrollHeight; // 滚动高度
+        });
+      },
+      videoChat() {
         this.$router.push({path: "/webrtc", query: {init: true, id: this.currentChat.chatId}})
-    }
-  },
-  mounted() {
-    let msg = document.getElementById("message"); // 获取对象
-    msg.scrollTop = msg.scrollHeight; // 滚动高度
-  },
-  beforeMount() {
-    // setMessageListByChatID
-    // this.refreshMessages();
-  },
-};
+      }
+    },
+    mounted() {
+      let msg = document.getElementById("message"); // 获取对象
+      msg.scrollTop = msg.scrollHeight; // 滚动高度
+    },
+    beforeMount() {
+      // setMessageListByChatID
+      // this.refreshMessages();
+    },
+  };
 </script>
 
 <style lang="scss">
-.windows {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  .divider {
-    margin: 0px;
-  }
-  .top {
-    // display: flex;
-    // flex-direction: row;
-    height: 10%;
-    span {
-      // display: block;
-      float: left;
-      font-size: large;
-      font-weight: 600;
-      padding-left: 15px;
-      padding-top: 3%;
-    }
-    .btn {
-      float: right;
-      margin-top: 2%;
-      // margin-bottom: 4%;
-      margin-right: 2%;
-    }
-  }
-  .message {
+  .windows {
     width: 100%;
-    height: 57%;
-    overflow-y: scroll;
-    ul {
-      width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .divider {
       margin: 0px;
-      padding-inline-start: 0px;
-      list-style: none;
-      li {
-        padding: 5px;
-        display: flex;
-        flex-direction: row;
-        img {
-          padding: 0% 2%;
-          height: 60px;
-        }
-        .message-body {
+    }
+
+    .top {
+      // display: flex;
+      // flex-direction: row;
+      height: 10%;
+
+      span {
+        // display: block;
+        float: left;
+        font-size: large;
+        font-weight: 600;
+        padding-left: 15px;
+        padding-top: 3%;
+      }
+
+      .btn {
+        float: right;
+        margin-top: 2%;
+        // margin-bottom: 4%;
+        margin-right: 2%;
+      }
+    }
+
+    .message {
+      width: 100%;
+      height: 57%;
+      overflow-y: scroll;
+
+      ul {
+        width: 100%;
+        margin: 0px;
+        padding-inline-start: 0px;
+        list-style: none;
+
+        li {
+          padding: 5px;
           display: flex;
-          flex-direction: column;
-          min-height: 45px;
-          max-height: 1000px;
-          .namebox {
-            display: none;
+          flex-direction: row;
+
+          img {
+            padding: 0% 2%;
+            height: 60px;
           }
-          .el-card {
-            margin-top: 10px;
-            margin-bottom: 10px;
-            // height: 65%;
-            max-width: 400px;
-            .wordbox {
-              span {
-                margin: 10px;
-                padding-right: 0;
-                text-align: left;
-                display: inline-grid;
-                white-space: pre-line;
-                word-wrap: break-word;
-                // overflow: hidden;
-                line-height: 20px;
+
+          .message-body {
+            display: flex;
+            flex-direction: column;
+            min-height: 45px;
+            max-height: 1000px;
+
+            .namebox {
+              display: none;
+            }
+
+            .el-card {
+              /*margin-top: 5px;*/
+              /*margin-bottom: 5px;*/
+              // height: 65%;
+              max-width: 400px;
+
+              .wordbox {
+                span {
+                  margin: 10px;
+                  padding-right: 0;
+                  text-align: left;
+                  display: inline-grid;
+                  white-space: pre-line;
+                  word-wrap: break-word;
+                  // overflow: hidden;
+                  line-height: 20px;
+                }
+              }
+
+              // height: 100%;
+              .el-card__body {
+                padding: 0px;
               }
             }
-            // height: 100%;
-            .el-card__body {
-              padding: 0px;
+          }
+
+          .multi-message-body {
+            // height: 60px;
+            .namebox {
+              display: block;
+              margin: 0px;
+              // height: 25%;
+              font-size: 13px;
+
+              span {
+                padding-left: 5px;
+                float: left;
+              }
+            }
+
+            .el-card {
+              margin-top: 0px;
+              margin-bottom: 0px;
+              // height: 65%;
+              .el-card__body {
+                padding: 0px;
+              }
             }
           }
         }
-        .multi-message-body {
-          // height: 60px;
+
+        li.chat-mine {
+          flex-direction: row-reverse;
+
           .namebox {
-            display: block;
-            margin: 0px;
-            // height: 25%;
-            font-size: 13px;
             span {
-              padding-left: 5px;
-              float: left;
-            }
-          }
-          .el-card {
-            margin-top: 0px;
-            margin-bottom: 0px;
-            // height: 65%;
-            .el-card__body {
-              padding: 0px;
+              float: right;
+              padding-right: 5px;
             }
           }
         }
-      }
-      li.chat-mine {
-        flex-direction: row-reverse;
-        .namebox {
-          span {
-            float: right;
-            padding-right: 5px;
-          }
+
+        li.chat-mine.el-card {
+          color: #409eff;
         }
       }
-      li.chat-mine.el-card {
-        color: #409eff;
+    }
+
+    .tools {
+      height: 5%;
+
+      .left {
+        padding-left: 10px;
+        float: left;
       }
-    }
-  }
-  .tools {
-    height: 6%;
-    .left {
-      padding-left: 10px;
-      float: left;
-    }
-    .right {
-      padding-right: 10px;
-      float: right;
-    }
-  }
-  .send {
-    height: 27%;
-    .textarea {
-      // border-style: none;
-      // border: 0px;
-      // outline-style: none;
-      cursor: pointer;
-    }
-    .el-textarea__inner {
-      border-style: none;
-      // outline
-    }
-    .footer {
-      .btn {
-        margin-top: 5px;
-        margin-right: 5px;
+
+      .right {
+        padding-right: 10px;
         float: right;
       }
     }
+
+    .send {
+      height: 27%;
+
+      .sendArea {
+        width: 95%;
+        height: 70%;
+        font-size: 16px;
+        border-style: none;
+
+        // border: 0px;
+        outline-style: none;
+
+      }
+
+      .el-textarea__inner {
+        border-style: none;
+        // outline
+      }
+
+      .footer {
+        .btn {
+          margin-top: 5px;
+          margin-right: 5px;
+          float: right;
+        }
+      }
+    }
+
+    // .emoji {
+    // }
   }
-  // .emoji {
-  // }
-}
 </style>
