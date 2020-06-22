@@ -59,7 +59,8 @@ function createWebsocket() {
           thisChat.sign = newMessage.content;
           thisChat.timestamp = newMessage.timestamp;
           //更新unreadCount,同时发送通知
-          desktopNotify("收到来自" + thisChat.name + "的信息！");
+          if(data.senderId !== store.state.user.id)
+            desktopNotify("收到来自" + thisChat.name + "的信息！");
           if (
             thisChat.type === store.state.currentChat.type &&
             thisChat.chatId === store.state.currentChat.chatId
