@@ -46,9 +46,8 @@
             </div>
             <el-card shadow="hover"
               ><div class="wordbox">
-                <span>{{ item.content }}</span>
-              </div></el-card
-            >
+                <span v-html="realMessage(item.content)"></span>
+              </div></el-card>
           </div>
         </li>
       </ul>
@@ -72,6 +71,8 @@
         class="textarea"
         type="textarea"
         v-model="text"
+        ref="msgInputContainer"
+        contenteditable="true"
         :rows="4"
         @keyup.enter.native="sendUniMessage()"
       >
@@ -104,6 +105,7 @@ import getNedb from "../JavaScript/NedbConfig";
       },
     },
     computed: {
+
       mineUrl: {
         get: function () {
           return this.$store.state.user.avatarUrl;
@@ -134,7 +136,9 @@ import getNedb from "../JavaScript/NedbConfig";
 
     },
     methods: {
-
+        realMessage(val) {
+            return val.search("img:")===0?`<img src="${val.slice(4)}" alt="聊天图片">`:val;
+        },
       handlePaste(val) {
         let file = val.clipboardData.files[0];
         if (file && file.type.match("image/*")) {
@@ -150,17 +154,54 @@ import getNedb from "../JavaScript/NedbConfig";
           this.$axios.post(
             `/api/user/uploadImg` ,param, config
           ).then(res =>{
-            console.log(res)
+              this.text="img:"+res.data.data;
+              console.log(this.text)
           })
-          this.text = this.text + file;
+          //this.text = this.text + file;
           // if(file.type === "image/png" || file.type === "image/jpg"){
           //   this.text = this.text + "[" + val.clipboardData.files[0].name + "]";
           // }
-
         }
 
 
       },
+        // base图片压缩
+        compressPic:function(base64, scale, callback){
+            const that = this;
+            let _img = new Image();
+            _img.src = base64;
+            _img.onload = function() {
+                let _canvas = document.createElement("canvas");
+                let w = this.width / scale;
+                let h = this.height / scale;
+                _canvas.setAttribute("width", w);
+                _canvas.setAttribute("height", h);
+                _canvas.getContext("2d").drawImage(this, 0, 0, w, h);
+                let base64 = _canvas.toDataURL("image/jpeg");
+                // 当canvas对象的原型中没有toBlob方法的时候，手动添加该方法
+                if (!HTMLCanvasElement.prototype.toBlob) {
+                    Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
+                        value: function (callback, type, quality) {
+                            let binStr = atob(this.toDataURL(type, quality).split(',')[1]),
+                                len = binStr.length,
+                                arr = new Uint8Array(len);
+                            for (let i = 0; i < len; i++) {
+                                arr[i] = binStr.charCodeAt(i);
+                            }
+                            callback(new Blob([arr], {type: type || 'image/png'}));
+                        }
+                    });
+                }else{
+                    _canvas.toBlob(function(blob) {
+                        if(blob.size > 1024*1024){
+                            that.compressPic(base64, scale, callback);
+                        }else{
+                            callback(blob, base64);
+                        }
+                    }, "image/jpeg");
+                }
+            }
+        },
       userInfo(id) {
         let ret
         ret = this.$store.state.userCache.find((obj) => obj.id === id)
@@ -231,6 +272,7 @@ import getNedb from "../JavaScript/NedbConfig";
     mounted() {
       let msg = document.getElementById("message"); // 获取对象
       msg.scrollTop = msg.scrollHeight; // 滚动高度
+        document.addEventListener('paste', this.handlePaste)
     },
     beforeMount() {
       // setMessageListByChatID
