@@ -31,6 +31,7 @@ function createWebsocket() {
   userId = store.state.user.id;
 
   let WSUrl = `ws://106.13.110.96:8088/ws?access_token=${token}`;
+  //let WSUrl = `ws://localhost:8088/ws?access_token=${token}`;
   websock = new WebSocket(WSUrl);
   websock.onmessage = function(event) {
     let data = JSON.parse(event.data);
@@ -217,6 +218,7 @@ function createWebsocket() {
           break;
       }
     } else if (data.type === 'SIGNAL') {
+      console.log('incoming signal: ', JSON.stringify(data));
       if (!inVideoChat) {
         inVideoChat = true;
         currentVideoChat = data.senderId;
@@ -228,16 +230,16 @@ function createWebsocket() {
           ]
         };
         peer = new Peer({initiator: false, config: iceConfig});
-        this.peer.on('signal', data => {
+        peer.on('signal', data => {
           console.log('outcoming signal: ', JSON.stringify(data));
           let wrappedData = {
             type: 'SIGNAL',
             receiverId: currentVideoChat,
             signal: data
           };
-          this.ws.send(JSON.stringify(wrappedData));
+          websock.send(JSON.stringify(wrappedData));
         });
-        console.log('incoming signal: ', JSON.stringify(data.signal));
+        console.log('incoming signal: ', JSON.stringify(data));
         peer.signal(data.signal);
 
         MessageBox(data.senderId + ' 邀请你进行视频聊天', '提示', {
@@ -274,10 +276,18 @@ function createWebsocket() {
   return websock;
 }
 
+export function joinVideoChat() {
+  inVideoChat = true;
+}
+
 export function leaveVideoChat() {
-  inVideoChat=false;
+  inVideoChat = false;
 }
 
 export function getPeer() {
   return peer;
+}
+
+export function savePeer(newPeer) {
+  peer = newPeer;
 }
