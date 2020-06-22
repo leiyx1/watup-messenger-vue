@@ -29,7 +29,7 @@
               class="item"
               id="badge"
             >
-              <img :src="chatInfo(chat).avatarUrl" alt="头像" />
+              <img :src="chatInfo(chat).avatarUrl" alt="头像" style="width: 50px;height: 50px"/>
             </el-badge>
           </div>
           <div class="item-body">
@@ -94,9 +94,6 @@ export default {
     },
   },
   mounted() {
-    // console.log(this.chatList);
-    console.log(this.$store.state.userCache);
-    // console.log(this.$store.state.groups);
   },
   computed: {
     currentChat: {
@@ -132,10 +129,6 @@ export default {
   methods: {
     chatInfo(chat) {
       if (chat.type === "UNICAST") {
-        console.log(
-          this.$store.state.userCache.find((obj) => obj.id === chat.chatId)
-        );
-        console.log(chat);
         return this.$store.state.userCache.find(
           (obj) => obj.id === chat.chatId
         );

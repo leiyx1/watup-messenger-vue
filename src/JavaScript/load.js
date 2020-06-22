@@ -40,9 +40,7 @@ export function loadFriends() {
         store.commit("setFriends", successResponse.data);
         var friends = successResponse.data;
         for (var i = 0; i < friends.length; i++) {
-          console.log(friends[i]);
           store.commit("updateUserCache", friends[i]);
-          console.log(store.state.userCache);
         }
         // 把自己也加入到映射表
         store.commit("updateUserCache", store.state.user);
@@ -66,7 +64,6 @@ export function loadFriendRequests() {
       if (successResponse.status === 404) {
         console.log("拉取好友邀请失败");
       } else if (successResponse.status === 200) {
-        console.log(successResponse.data);
         store.commit("setFriendRequest", successResponse.data);
       } else {
         console.log("known error");

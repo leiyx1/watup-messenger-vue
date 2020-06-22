@@ -159,7 +159,6 @@ export default {
     };
   },
   mounted() {
-    console.log(this.user);
   },
   computed: {
     // 实际应该登录后从vuex中取user
@@ -174,7 +173,6 @@ export default {
       if (res.code === 200) {
         this.$store.commit("setUserAvatar", res.data);
         this.user.avatarUrl = res.data;
-        console.log(res.data);
         // this.$axios
         //   .get("usercenter/uploadAvatar", {
         //     params: {
@@ -183,7 +181,6 @@ export default {
         //     }
         //   })
         //   .then(response => {
-        //     console.log(response);
         //   });
       } else if (res.code === 400) {
         console.log("fail");
@@ -331,7 +328,6 @@ export default {
         cancelButtonText: "取消",
         type: "warning",
       }).then(() => {
-        console.log(getNeDB());
         getNeDB().userInfo.remove({}, { multi: true }, function(
           err,
           numRemoved
@@ -350,6 +346,7 @@ export default {
         ) {
           console.log(numRemoved + "条systemInfo数据被删除");
         });
+        this.$store.commit("setChatList", []);
       });
     },
     submit() {

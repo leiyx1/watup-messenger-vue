@@ -103,7 +103,6 @@ export default new Vuex.Store({
       state.friends = val;
     },
     updateUserCache(state, val) {
-      console.log(val);
       var found = state.userCache.find((obj) => obj.id == val.id);
       var index = state.userCache.indexOf(found);
       val.name = val.nickname ? val.nickname : val.username;
@@ -111,7 +110,6 @@ export default new Vuex.Store({
         state.userCache[index] = val;
       } else {
         state.userCache.push(val);
-        console.log(state.userCache);
       }
     },
     setGroups(state, val) {

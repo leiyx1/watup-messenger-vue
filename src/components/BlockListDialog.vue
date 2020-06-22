@@ -120,7 +120,6 @@
             handleBlockList() {
                 let failedFriends = [];
                 [].forEach.call(this.selectedFriends, (selectedFriend) => {
-                    console.log(selectedFriend);
                     this.$axios
                         .delete(
                             "/api/friend/block" +

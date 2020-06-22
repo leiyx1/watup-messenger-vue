@@ -14,7 +14,6 @@ let inVideochat=false;
 
 export default function getWebsocket() {
   if (websock && websock.readyState === 1) {
-    console.log(websock);
     return websock;
   } else {
     return createWebsocket();
@@ -31,7 +30,6 @@ function createWebsocket() {
   websock.onmessage = function(event) {
     let data = JSON.parse(event.data);
     console.log("message received");
-    console.log(data);
 
     if (data.type === "UNICAST" || data.type === "MULTICAST") {
       //收到群聊/私聊信息
@@ -63,6 +61,8 @@ function createWebsocket() {
           thisChat.sign = newMessage.content;
           thisChat.timestamp = newMessage.timestamp;
           //更新unreadCount,同时发送通知
+          if(data.senderId !== store.state.user.id)
+            desktopNotify("收到来自" + thisChat.name + "的信息！");
           if (
             thisChat.type === store.state.currentChat.type &&
             thisChat.chatId === store.state.currentChat.chatId
@@ -70,7 +70,6 @@ function createWebsocket() {
             thisChat.unReadCount = 0;
           else {
             thisChat.unReadCount++;
-            desktopNotify("收到来自" + thisChat.name + "的信息！");
           }
 
           //将chatList中的老chat删除，新chat插到数组头
@@ -84,8 +83,7 @@ function createWebsocket() {
             { $set: thisChat },
             { multi: true },
             function(err, numUpdated) {
-              console.log(numUpdated);
-              console.log("存入nedb");
+              console.log(numUpdated + "条数据存入nedb");
             }
           );
 
@@ -98,17 +96,10 @@ function createWebsocket() {
       if (!modified) {
         let friendList = store.state.friends;
         let groupList = store.state.groups;
-        console.log("friendList:");
-        console.log(friendList);
-        console.log("groupList:");
-        console.log(groupList);
 
         let obj, name, avatarUrl;
-        console.log("chatId:");
-        console.log(chatId);
         if (data.type === "UNICAST") {
           obj = friendList.find((obj) => obj.id === chatId);
-          console.log(obj);
           name = obj.nickname.length === 0 ? obj.username : obj.nickname;
           avatarUrl = obj.avatarUrl;
         } else {
