@@ -22,7 +22,6 @@
     "sass-loader": "^8.0.2",
     "scss-loader": "^0.0.1",
     "simple-peer": "^9.7.2",
-    "socket.io": "^2.3.0",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
     "vue-socket.io": "^3.0.9",

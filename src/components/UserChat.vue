@@ -42,7 +42,9 @@
             }"
           >
             <div class="namebox">
-              <span>{{ item.mine == true ? mineName : userInfo(item.senderId).name }}</span>
+              <span>{{
+                item.mine == true ? mineName : userInfo(item.senderId).name
+              }}</span>
             </div>
             <el-card shadow="hover"
               ><div class="wordbox">
@@ -109,10 +111,10 @@ export default {
         return this.$store.state.user.avatarUrl;
       },
     },
-    mineName:{
-      get: function(){
+    mineName: {
+      get: function() {
         return this.$store.state.user.username;
-      }
+      },
     },
     messageList: {
       get: function() {
@@ -131,24 +133,21 @@ export default {
         this.$store.commit("setCurrentChat", val);
       },
     },
-
   },
   methods: {
-    userInfo(id){
-      let ret
-      ret = this.$store.state.userCache.find((obj) => obj.id === id)
-      return ret
+    userInfo(id) {
+      let ret;
+      ret = this.$store.state.userCache.find((obj) => obj.id === id);
+      return ret;
     },
     chatInfo(chat) {
-      let ret
+      let ret;
       if (chat.type === "UNICAST") {
-        ret = this.$store.state.userCache.find(
-          (obj) => obj.id === chat.chatId
-        );
+        ret = this.$store.state.userCache.find((obj) => obj.id === chat.chatId);
       } else {
         ret = this.$store.state.groups.find((obj) => obj.id === chat.chatId);
       }
-      return ret
+      return ret;
     },
     handleCommand(command) {
       if (command === "delete") {
@@ -167,14 +166,15 @@ export default {
       }
     },
     sendUniMessage() {
-      if(this.text === "" || this.text === "\n" || this.text === "\r"){
+      if (this.text === "" || this.text === "\n" || this.text === "\r") {
         this.$notify.error({
           title: "错误",
-          message: "不可发送给空消息"
-        })
-      }
-      else {
-        console.log(`send uni message:` + this.text + " to " + this.currentChat.chatId);
+          message: "不可发送给空消息",
+        });
+      } else {
+        console.log(
+          `send uni message:` + this.text + " to " + this.currentChat.chatId
+        );
         let message = {
           type: this.currentChat.type,
           receiverId: this.currentChat.chatId,
@@ -188,7 +188,6 @@ export default {
         this.text = "";
         this.scrollToBottom();
       }
-
     },
     scrollToBottom() {
       this.$nextTick(() => {
@@ -198,8 +197,11 @@ export default {
       });
     },
     videoChat() {
-        this.$router.push({path: "/webrtc", query: {init: true, id: this.currentChat.chatId}})
-    }
+      this.$router.push({
+        path: "/webrtc",
+        query: { init: true, id: this.currentChat.chatId },
+      });
+    },
   },
   mounted() {
     let msg = document.getElementById("message"); // 获取对象
@@ -266,8 +268,8 @@ export default {
             display: none;
           }
           .el-card {
-            margin-top: 10px;
-            margin-bottom: 10px;
+            // margin-top: 10px;
+            // margin-bottom: 10px;
             // height: 65%;
             max-width: 400px;
             .wordbox {
