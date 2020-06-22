@@ -9,11 +9,13 @@ import {
 } from "./load";
 import { desktopNotify } from "./Notification";
 import router from "../router";
-
+import { MessageBox, Message } from "element-ui";
 
 let websock;
 let inVideoChat=false;
 let currentVideoChat;
+let Peer = require('simple-peer');
+let peer;
 
 export default function getWebsocket() {
   if (websock && websock.readyState === 1) {
@@ -21,10 +23,6 @@ export default function getWebsocket() {
   } else {
     return createWebsocket();
   }
-}
-
-export function leaveVideoChat() {
-  inVideoChat=false;
 }
 
 function createWebsocket() {
@@ -220,25 +218,45 @@ function createWebsocket() {
       }
     } else if (data.type === 'SIGNAL') {
       if (!inVideoChat) {
-        this.$confirm(data.senderId + ' 邀请你进行视频聊天', '提示', {
+        inVideoChat = true;
+        currentVideoChat = data.senderId;
+
+        let iceConfig = {
+          iceServers: [
+            {urls: 'stun:106.13.79.136:3478'},
+            {urls: 'turn:106.13.79.136:3478?transport=udp', 'credential': 'watup@2020', 'username': 'watup'}
+          ]
+        };
+        peer = new Peer({initiator: false, config: iceConfig});
+        this.peer.on('signal', data => {
+          console.log('outcoming signal: ', JSON.stringify(data));
+          let wrappedData = {
+            type: 'SIGNAL',
+            receiverId: currentVideoChat,
+            signal: data
+          };
+          this.ws.send(JSON.stringify(wrappedData));
+        });
+        console.log('incoming signal: ', JSON.stringify(data.signal));
+        peer.signal(data.signal);
+
+        MessageBox(data.senderId + ' 邀请你进行视频聊天', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'info'
         }).then(() => {
-          inVideoChat = true;
-          currentVideoChat = data.senderId;
           router.push({path: '/webrtc', query: {init: false, id: data.senderId}});
-          this.$refs.WebRtc.signal(data.signal);
         }).catch(() => {
-          this.$message({
+          peer.destroy();
+          inVideoChat = false;
+          Message({
             type: 'info',
             message: '已拒绝'
           });
         });
+      } else if (currentVideoChat === data.senderId) {
+        peer.signal(data.signal)
       }
-    } else {
-      if (currentVideoChat === data.senderId)
-        this.$refs.WebRtc.signal(data.signal);
     }
   };
   websock.onopen = function() {
@@ -256,3 +274,10 @@ function createWebsocket() {
   return websock;
 }
 
+export function leaveVideoChat() {
+  inVideoChat=false;
+}
+
+export function getPeer() {
+  return peer;
+}
