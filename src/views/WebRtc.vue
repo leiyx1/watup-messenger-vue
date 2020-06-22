@@ -8,7 +8,7 @@
 
 <script>
     import getWebsocket from "@/JavaScript/Websocket";
-    import { joinVideoChat, leaveVideoChat, getPeer, savePeer} from "@/JavaScript/Websocket";
+    import { joinVideoChat, leaveVideoChat, getPeer, savePeer, getStream} from "@/JavaScript/Websocket";
 
     export default {
         name: "WebRtc",
@@ -68,18 +68,17 @@
                         this.ws.send(JSON.stringify(wrappedData));
                     });
 
-                    savePeer(this.peer);
-
                     this.peer.on('stream', stream => {
+                        console.log('stream', stream);
                         this.remoteStream = stream;
                     });
+
+                    savePeer(this.peer);
                 } else {
                     this.localStream = stream;
                     this.peer = getPeer();
                     this.peer.addStream(stream);
-                    this.peer.on('stream', stream => {
-                        this.remoteStream = stream;
-                    });
+                    this.remoteStream = getStream();
                 }
             }
         }

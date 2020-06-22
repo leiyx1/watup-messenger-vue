@@ -16,6 +16,7 @@ let inVideoChat=false;
 let currentVideoChat;
 let Peer = require('simple-peer');
 let peer;
+let stream;
 
 export default function getWebsocket() {
   if (websock && websock.readyState === 1) {
@@ -239,6 +240,10 @@ function createWebsocket() {
           };
           websock.send(JSON.stringify(wrappedData));
         });
+        peer.on('stream', remoteStream => {
+          console.log('stream', remoteStream);
+          stream = remoteStream;
+        });
         console.log('incoming signal: ', JSON.stringify(data));
         peer.signal(data.signal);
 
@@ -286,6 +291,10 @@ export function leaveVideoChat() {
 
 export function getPeer() {
   return peer;
+}
+
+export function getStream() {
+  return stream;
 }
 
 export function savePeer(newPeer) {
