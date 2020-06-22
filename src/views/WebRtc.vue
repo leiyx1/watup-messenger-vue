@@ -8,7 +8,7 @@
 
 <script>
     import getWebsocket from "@/JavaScript/Websocket";
-    import leaveVideoChat from "@/JavaScript/Websocket";
+    import {leaveVideoChat} from "@/JavaScript/Websocket";
 
     export default {
         name: "WebRtc",

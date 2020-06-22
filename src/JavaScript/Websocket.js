@@ -10,7 +10,8 @@ import {
 import { desktopNotify } from "./Notification";
 
 let websock;
-let inVideochat=false;
+let inVideoChat=false;
+let currentVideoChat;
 
 export default function getWebsocket() {
   if (websock && websock.readyState === 1) {
@@ -18,6 +19,10 @@ export default function getWebsocket() {
   } else {
     return createWebsocket();
   }
+}
+
+export function leaveVideoChat() {
+  inVideoChat=false;
 }
 
 function createWebsocket() {
@@ -212,13 +217,14 @@ function createWebsocket() {
           break;
       }
     } else if (data.type === 'SIGNAL') {
-      if (!inVideochat) {
+      if (!inVideoChat) {
         this.$confirm(data.receiverId + ' 邀请你进行视频聊天', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'info'
         }).then(() => {
-          inVideochat = true;
+          inVideoChat = true;
+          currentVideoChat = data.receiverId;
           this.$router.push({path: '/webrtc', query: {init: false, id: data.receiverId}});
           this.$refs.WebRtc.signal(data.signal);
         }).catch(() => {
@@ -229,7 +235,8 @@ function createWebsocket() {
         });
       }
     } else {
-      this.$refs.WebRtc.signal(data.signal);
+      if (currentVideoChat === data.receiverId)
+        this.$refs.WebRtc.signal(data.signal);
     }
   };
   websock.onopen = function() {
@@ -247,6 +254,3 @@ function createWebsocket() {
   return websock;
 }
 
-function leaveVideoChat() {
-  inVideochat = false;
-}
