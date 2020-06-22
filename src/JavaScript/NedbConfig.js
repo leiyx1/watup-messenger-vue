@@ -30,7 +30,7 @@ function getNedb() {
     autoload: true,
   });
   db.systemInfo = new Datastore({
-    filename: path.join(remote.app.getAppPath(), id, "db/systemInfo.db"),
+    filename: path.join(remote.app.getAppPath(), "db/systemInfo.db"),
     autoload: true,
   });
 

@@ -33,7 +33,7 @@
         <div></div>
         <div class="btn">
           <el-checkbox v-model="autoLogin" style="padding-right: 10px"
-            >30天内自动登录</el-checkbox
+            >记住密码</el-checkbox
           >
           <el-button class="enter" type="primary" @click="submit1('loginInfo')"
             >登录</el-button
@@ -358,10 +358,11 @@ export default {
                 getNedb().systemInfo.remove({}, { multi: true });
                 let updateSystemInfo = {
                   lastUserId: data.id,
+                  lastUserPassword: this.loginInfo.password,
                   token: data.access_token,
                   autoLogin: this.autoLogin,
                 };
-                getNedb().systemInfo.insert(updateSystemInfo);
+                  getNedb().systemInfo.insert(updateSystemInfo);
                 //初始化本地聊天记录
                 let self = this;
                 setTimeout(function() {
@@ -502,7 +503,19 @@ export default {
     },
   },
   mounted() {
-    //todo 免密码登录
+    let self = this;
+    getNedb().systemInfo.find({},function (err, docs) {
+      //理应只有一条
+      console.log(systemInfo)
+      let systemInfo = docs[0];
+      if(systemInfo){
+        if(systemInfo.autoLogin === true){
+          self.loginInfo.password = systemInfo.lastUserPassword;
+        }
+        self.loginInfo.username = systemInfo.lastUserId;
+      }
+
+    })
   },
 };
 </script>

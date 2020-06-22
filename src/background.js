@@ -25,10 +25,10 @@ Menu.setApplicationMenu(null);
 function createWindow() {
   // Create the browser window.
   win = new BrowserWindow({
-    width: 950,
-    height: 650,
-    minWidth: 950,
-    minHeight: 650,
+    width: 1080,
+    height: 720,
+    minWidth: 1080,
+    minHeight: 720,
     icon: "./src/assets/icon.png",
     // resizable: false,
     // fullscreen: false,
