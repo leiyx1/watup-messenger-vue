@@ -10,6 +10,8 @@ import {
 import { desktopNotify } from "./Notification";
 
 let websock;
+let inVideochat=false;
+
 export default function getWebsocket() {
   if (websock && websock.readyState === 1) {
     console.log(websock);
@@ -136,8 +138,7 @@ function createWebsocket() {
         });
       }
       store.commit("setChatList", updateChatList);
-    } else {
-      // type === NOTIFICATION
+    } else if (data.type === 'NOTIFICATION') {
       let obj, index, name, newChat, updateChatList;
       switch (data.notificationType) {
         case "GROUP_REQUEST":
@@ -219,6 +220,25 @@ function createWebsocket() {
           getNedb().localMessage.remove({chatId:data.content, type: "UNICAST"})
           break;
       }
+    } else if (data.type === 'SIGNAL') {
+      if (!inVideochat) {
+        this.$confirm(data.receiverId + ' 邀请你进行视频聊天', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'info'
+        }).then(() => {
+          inVideochat = true;
+          this.$router.push({path: '/webrtc', query: {init: false, id: data.receiverId}});
+          this.$refs.WebRtc.signal(data.signal);
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已拒绝'
+          });
+        });
+      }
+    } else {
+      this.$refs.WebRtc.signal(data.signal);
     }
   };
   websock.onopen = function() {
@@ -232,5 +252,10 @@ function createWebsocket() {
   websock.onclose = function() {
     console.log("WebSocket is close now");
   };
+
   return websock;
+}
+
+function leaveVideoChat() {
+  inVideochat = false;
 }

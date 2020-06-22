@@ -46,7 +46,7 @@ const routes = [
     ],
   },
   {
-    path: "/webtrc",
+    path: "/webrtc",
     name: "WebRtc",
     component:loadView("WebRtc")
   }

@@ -61,7 +61,7 @@
         ></el-button>
       </div>
       <div class="right">
-        <el-button circle type="text"
+        <el-button circle type="text" @click="videoChat"
           ><i class="el-icon-phone-outline"></i
         ></el-button>
       </div>
@@ -201,6 +201,9 @@ export default {
           msg.scrollTop = msg.scrollHeight; // 滚动高度
       });
     },
+    videoChat() {
+        this.$router.push({path: "/webrtc", query: {init: true, id: this.currentChat.chatId}})
+    }
   },
   mounted() {
     let msg = document.getElementById("message"); // 获取对象
