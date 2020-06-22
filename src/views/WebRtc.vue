@@ -8,7 +8,7 @@
 
 <script>
     import getWebsocket from "@/JavaScript/Websocket";
-    import {leaveVideoChat, getPeer} from "@/JavaScript/Websocket";
+    import { joinVideoChat, leaveVideoChat, getPeer, savePeer} from "@/JavaScript/Websocket";
 
     export default {
         name: "WebRtc",
@@ -24,6 +24,7 @@
         },
         mounted() {
             console.log('in webrtc', this.init, this.friendId);
+            joinVideoChat();
             this.ws = getWebsocket();
             const constraints = {
                 'video': true,
@@ -70,6 +71,8 @@
                         };
                         this.ws.send(JSON.stringify(wrappedData));
                     });
+
+                    savePeer(this.peer);
 
                     this.peer.on('stream', stream => {
                         this.remoteStream = stream;
