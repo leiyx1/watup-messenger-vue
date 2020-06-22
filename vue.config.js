@@ -6,7 +6,7 @@ module.exports = {
                 "productName": "watup-messenger",
                 "copyright": "Copyright watup@buaa © 2020",
                 "win": {
-                    "icon": "src/assets/icon.ico",
+                    "icon": "src/assets/icon.png",
                     "target": [
                         {
                             "target": "nsis",

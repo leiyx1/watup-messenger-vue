@@ -506,7 +506,6 @@ export default {
     let self = this;
     getNedb().systemInfo.find({},function (err, docs) {
       //理应只有一条
-      console.log(systemInfo)
       let systemInfo = docs[0];
       if(systemInfo){
         if(systemInfo.autoLogin === true){
