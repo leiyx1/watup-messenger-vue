@@ -8,6 +8,8 @@ import {
   loadGroups,
 } from "./load";
 import { desktopNotify } from "./Notification";
+import router from "../router";
+
 
 let websock;
 let inVideoChat=false;
@@ -218,14 +220,14 @@ function createWebsocket() {
       }
     } else if (data.type === 'SIGNAL') {
       if (!inVideoChat) {
-        this.$confirm(data.receiverId + ' 邀请你进行视频聊天', '提示', {
+        this.$confirm(data.senderId + ' 邀请你进行视频聊天', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'info'
         }).then(() => {
           inVideoChat = true;
-          currentVideoChat = data.receiverId;
-          this.$router.push({path: '/webrtc', query: {init: false, id: data.receiverId}});
+          currentVideoChat = data.senderId;
+          router.push({path: '/webrtc', query: {init: false, id: data.senderId}});
           this.$refs.WebRtc.signal(data.signal);
         }).catch(() => {
           this.$message({
@@ -235,7 +237,7 @@ function createWebsocket() {
         });
       }
     } else {
-      if (currentVideoChat === data.receiverId)
+      if (currentVideoChat === data.senderId)
         this.$refs.WebRtc.signal(data.signal);
     }
   };
