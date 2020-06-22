@@ -8,7 +8,7 @@
 
 <script>
     import getWebsocket from "@/JavaScript/Websocket";
-    import { joinVideoChat, leaveVideoChat, getPeer, savePeer} from "@/JavaScript/Websocket";
+    import { joinVideoChat, leaveVideoChat, getPeer, savePeer, getStream} from "@/JavaScript/Websocket";
 
     export default {
         name: "WebRtc",
@@ -41,9 +41,9 @@
         },
         methods: {
             quitVideoChat() {
-                this.$router.push("/index/chatpanel");
                 this.peer.destroy();
                 leaveVideoChat();
+                this.$router.push("/index/chatpanel");
             },
             gotMedia(stream) {
                 if (this.init) {
@@ -52,12 +52,8 @@
 
                     let iceConfig = {
                         iceServers: [
-                            {urls: 'stun:106.13.79.136:3478'},
-                            {
-                                urls: 'turn:106.13.79.136:3478?transport=udp',
-                                'credential': 'watup@2020',
-                                'username': 'watup'
-                            }
+                            {urls: 'stun:stun.l.google.com:19302'},
+                            {urls: 'turn:106.13.79.136:3478?transport=udp', 'username': 'watup', 'credential': 'watup@2020'}
                         ]
                     };
                     this.peer = new Peer({initiator: this.init, stream: stream, config: iceConfig});
@@ -72,17 +68,17 @@
                         this.ws.send(JSON.stringify(wrappedData));
                     });
 
-                    savePeer(this.peer);
-
                     this.peer.on('stream', stream => {
+                        console.log('stream', stream);
                         this.remoteStream = stream;
                     });
+
+                    savePeer(this.peer);
                 } else {
+                    this.localStream = stream;
                     this.peer = getPeer();
                     this.peer.addStream(stream);
-                    this.peer.on('stream', stream => {
-                        this.remoteStream = stream;
-                    });
+                    this.remoteStream = getStream();
                 }
             }
         }

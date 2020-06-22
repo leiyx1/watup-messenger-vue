@@ -16,6 +16,7 @@ let inVideoChat=false;
 let currentVideoChat;
 let Peer = require('simple-peer');
 let peer;
+let stream;
 
 export default function getWebsocket() {
   if (websock && websock.readyState === 1) {
@@ -225,8 +226,8 @@ function createWebsocket() {
 
         let iceConfig = {
           iceServers: [
-            {urls: 'stun:106.13.79.136:3478'},
-            {urls: 'turn:106.13.79.136:3478?transport=udp', 'credential': 'watup@2020', 'username': 'watup'}
+            {urls: 'stun:stun.l.google.com:19302'},
+            {urls: 'turn:106.13.79.136:3478?transport=udp', 'username': 'watup', 'credential': 'watup@2020'}
           ]
         };
         peer = new Peer({initiator: false, config: iceConfig});
@@ -238,6 +239,10 @@ function createWebsocket() {
             signal: data
           };
           websock.send(JSON.stringify(wrappedData));
+        });
+        peer.on('stream', remoteStream => {
+          console.log('stream', remoteStream);
+          stream = remoteStream;
         });
         console.log('incoming signal: ', JSON.stringify(data));
         peer.signal(data.signal);
@@ -286,6 +291,10 @@ export function leaveVideoChat() {
 
 export function getPeer() {
   return peer;
+}
+
+export function getStream() {
+  return stream;
 }
 
 export function savePeer(newPeer) {
