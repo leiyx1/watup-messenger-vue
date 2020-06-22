@@ -1,5 +1,8 @@
 <template>
   <div class="settingBox">
+    <div class="avatarView" v-viewer="{movable: false}" style="display: none">
+      <img v-for="src in avatars" :src="src" :key="src">
+    </div>
     <div class="left">
       <div class="item">
         <el-switch v-model="permissions.notify" inactive-text="通知">
@@ -54,6 +57,7 @@
           </div>
           <!-- <el-button class="btn" type="text">修改备注</el-button> -->
         </div>
+        <img :src="user.avatarUrl" @click="viewLargerAvatar($event)"/>
         <el-upload
           class="avatar-uploader"
           :action="upUrl"
@@ -61,7 +65,7 @@
           :on-success="handleAvatarSuccess"
           :before-upload="beforeAvatarUpload"
         >
-          <img :src="user.avatarUrl" />
+          <el-button>更改头像</el-button>
         </el-upload>
       </div>
       <el-divider class="divider1" />
@@ -137,6 +141,7 @@ export default {
   },
   data() {
     return {
+      avatars: [],
       token: {
         access_token: this.$store.state.user.access_token,
       },
@@ -169,6 +174,22 @@ export default {
     },
   },
   methods: {
+    viewLargerAvatar: function(event){
+      console.log(event.target.currentSrc)
+      let imgUrl = event.target.currentSrc;
+      if(typeof imgUrl !== "undefined"){
+        this.avatars = [];
+        this.avatars.push(imgUrl);
+        this.$nextTick(
+          this.show()
+        )
+
+      }
+    },
+    show () {
+      let viewer = this.$el.querySelector('.avatarView').$viewer
+      viewer.show()
+    },
     handleAvatarSuccess(res) {
       if (res.code === 200) {
         this.$store.commit("setUserAvatar", res.data);

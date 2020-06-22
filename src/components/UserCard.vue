@@ -1,5 +1,8 @@
 <template>
   <div class="card">
+    <div class="avatarView" v-viewer="{movable: false}" style="display: none">
+      <img v-for="src in avatars" :src="src" :key="src">
+    </div>
     <div class="level-1">
       <div class="level-1-word">
         <div style="height: 60px">
@@ -34,7 +37,7 @@
         </div>
         <!-- <el-button class="btn" type="text">修改备注</el-button> -->
       </div>
-      <img :src="chatInfo(user.id).avatarUrl" />
+      <img :src="chatInfo(user.id).avatarUrl" @click="viewLargerAvatar($event)"/>
     </div>
     <el-divider class="divider1" />
     <div class="level-2">
@@ -88,6 +91,7 @@ export default {
   },
   data() {
     return {
+      avatars: [],
       editName: false,
       newNick: "",
       newFriendDialogVisible: false,
@@ -119,6 +123,22 @@ export default {
     },
   },
   methods: {
+    viewLargerAvatar: function(event){
+      console.log(event.target.currentSrc)
+      let imgUrl = event.target.currentSrc;
+      if(typeof imgUrl !== "undefined"){
+        this.avatars = [];
+        this.avatars.push(imgUrl);
+        this.$nextTick(
+          this.show()
+        )
+
+      }
+    },
+    show () {
+      let viewer = this.$el.querySelector('.avatarView').$viewer
+      viewer.show()
+    },
     chatInfo(val) {
       return this.$store.state.userCache.find((obj) => obj.id === val);
     },

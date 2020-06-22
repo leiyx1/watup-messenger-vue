@@ -1,5 +1,8 @@
 <template>
   <div class="windows">
+    <div class="images" v-viewer="{movable: false}" style="display: none">
+      <img v-for="src in images" :src="src" :key="src">
+    </div>
     <div class="top">
       <span>{{ chatInfo(currentChat).name }}</span>
       <el-dropdown trigger="click" class="btn" @command="handleCommand">
@@ -46,7 +49,7 @@
             </div>
             <el-card shadow="hover"
               ><div class="wordbox">
-                <span v-html="realMessage(item.content)"></span>
+                <span v-html="realMessage(item.content)" @click="viewLargerImage($event)" ></span>
               </div></el-card>
           </div>
         </li>
@@ -97,6 +100,7 @@ import getNedb from "../JavaScript/NedbConfig";
     data() {
       return {
         text: "",
+        images: []
       };
     },
     watch: {
@@ -136,6 +140,21 @@ import getNedb from "../JavaScript/NedbConfig";
 
     },
     methods: {
+      viewLargerImage: function(event){
+        let imgUrl = event.target.currentSrc;
+        if(typeof imgUrl !== "undefined"){
+          this.images = [];
+          this.images.push(imgUrl);
+          this.$nextTick(
+            this.show()
+          )
+
+        }
+      },
+      show () {
+        let viewer = this.$el.querySelector('.images').$viewer
+        viewer.show()
+      },
         realMessage(val) {
             return val.search("img:")===0?`<img src="${val.slice(4)}" alt="聊天图片">`:val;
         },
