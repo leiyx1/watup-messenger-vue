@@ -41,9 +41,9 @@
         },
         methods: {
             quitVideoChat() {
-                this.$router.push("/index/chatpanel");
                 this.peer.destroy();
                 leaveVideoChat();
+                this.$router.push("/index/chatpanel");
             },
             gotMedia(stream) {
                 if (this.init) {
@@ -52,12 +52,8 @@
 
                     let iceConfig = {
                         iceServers: [
-                            {urls: 'stun:106.13.79.136:3478'},
-                            {
-                                urls: 'turn:106.13.79.136:3478?transport=udp',
-                                'credential': 'watup@2020',
-                                'username': 'watup'
-                            }
+                            {urls: 'stun:stun.l.google.com:19302'},
+                            {urls: 'turn:106.13.79.136:3478?transport=udp', 'username': 'watup', 'credential': 'watup@2020'}
                         ]
                     };
                     this.peer = new Peer({initiator: this.init, stream: stream, config: iceConfig});
@@ -78,6 +74,7 @@
                         this.remoteStream = stream;
                     });
                 } else {
+                    this.localStream = stream;
                     this.peer = getPeer();
                     this.peer.addStream(stream);
                     this.peer.on('stream', stream => {

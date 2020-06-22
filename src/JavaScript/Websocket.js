@@ -225,8 +225,8 @@ function createWebsocket() {
 
         let iceConfig = {
           iceServers: [
-            {urls: 'stun:106.13.79.136:3478'},
-            {urls: 'turn:106.13.79.136:3478?transport=udp', 'credential': 'watup@2020', 'username': 'watup'}
+            {urls: 'stun:stun.l.google.com:19302'},
+            {urls: 'turn:106.13.79.136:3478?transport=udp', 'username': 'watup', 'credential': 'watup@2020'}
           ]
         };
         peer = new Peer({initiator: false, config: iceConfig});
