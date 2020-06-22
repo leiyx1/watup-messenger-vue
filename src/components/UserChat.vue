@@ -120,7 +120,6 @@ export default {
       },
       set: function(val) {
         console.log("messageList setter");
-        console.log(val);
         this.$store.commit("setMessageList", val);
       },
     },
@@ -138,7 +137,6 @@ export default {
     userInfo(id){
       let ret
       ret = this.$store.state.userCache.find((obj) => obj.id === id)
-      console.log(ret)
       return ret
     },
     chatInfo(chat) {
@@ -153,7 +151,6 @@ export default {
       return ret
     },
     handleCommand(command) {
-      console.log(command);
       if (command === "delete") {
         //删除聊天记录
         getNedb().localMessage.remove(
@@ -176,9 +173,8 @@ export default {
           message: "不可发送给空消息"
         })
       }
-      else {console.log(
-        `send uni message:` + this.text + " to " + this.currentChat.chatId
-      );
+      else {
+        console.log(`send uni message:` + this.text + " to " + this.currentChat.chatId);
         let message = {
           type: this.currentChat.type,
           receiverId: this.currentChat.chatId,
@@ -205,11 +201,9 @@ export default {
   mounted() {
     let msg = document.getElementById("message"); // 获取对象
     msg.scrollTop = msg.scrollHeight; // 滚动高度
-    console.log(this.messageList);
   },
   beforeMount() {
     // setMessageListByChatID
-    console.log("111");
     // this.refreshMessages();
   },
 };

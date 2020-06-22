@@ -60,7 +60,7 @@
               @click="showGroup(item, index)"
             >
               <div class="item-avatar">
-                <img :src="GInfo(item).avatarUrl" alt="头像" />
+                <img :src="GInfo(item).avatarUrl" alt="头像"/>
               </div>
               <div class="item-body">
                 <div class="item-word">
@@ -80,7 +80,7 @@
               @click="showFriend(item, index)"
             >
               <div class="item-avatar">
-                <img :src="FInfo(item).avatarUrl" alt="头像" />
+                <img :src="FInfo(item).avatarUrl" alt="头像"  style="width: 50px;height: 50px"/>
               </div>
               <div class="item-body">
                 <div class="item-word">
@@ -148,7 +148,6 @@ export default {
     };
   },
   mounted() {
-    console.log("hao" + this.$store.state.user.access_token);
   },
   computed: {
     showBadge: {
@@ -185,13 +184,11 @@ export default {
     },
 
     showBlank() {
-      console.log("444");
       this.hasShowGroup = false;
       this.hasShowFriend = false;
       this.hasShowRequest = false;
     },
     showRequest() {
-      console.log(this.showBadge);
       this.$store.commit("resetUnreadFriendRequest");
       this.hasShowGroup = false;
       this.hasShowFriend = false;
@@ -204,7 +201,6 @@ export default {
       loadFriends();
     },
     showFriend(item) {
-      console.log("111");
       this.hasShowGroup = false;
       this.hasShowRequest = false;
       this.hasShowFriend = true;
@@ -224,11 +220,9 @@ export default {
           }
         });
       // this.chatList[index] = this.$store.state.currentChat;
-      // console.log(this.currentItem);
       // setMessageListByChatID
     },
     showGroup(item) {
-      console.log("222");
       this.hasShowFriend = false;
       this.hasShowRequest = false;
       this.hasShowGroup = true;

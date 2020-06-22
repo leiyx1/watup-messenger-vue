@@ -138,7 +138,6 @@ export default {
           Array.prototype.forEach.call(
             this.selectedFriends,
             (selectedFriend) => {
-              console.log(selectedFriend);
               this.$axios
                 .post(
                   "/api/request",

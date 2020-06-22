@@ -315,7 +315,6 @@ export default {
             .then((successResponse) => {
               if (successResponse.data.code === 200) {
                 var data = successResponse.data.data;
-                console.log(data);
                 var userdata = {
                   id: data.id,
                   username: data.username,
@@ -331,9 +330,8 @@ export default {
                 getNedb().userInfo.find(query, function(err, docs) {
                   if (docs.length === 0) {
                     //没有登陆过
-                    getNedb().userInfo.insert(userdata, function(err, newDocs) {
+                    getNedb().userInfo.insert(userdata, function() {
                       console.log("new user info inserted");
-                      console.log(newDocs);
                     });
                   } else {
                     getNedb().userInfo.update(
@@ -404,10 +402,8 @@ export default {
       });
     },
     submit2(formName) {
-      console.log("submit2");
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          console.log(this.registerInfo);
           this.$axios
             .post(
               "/oauth/register?id=" +

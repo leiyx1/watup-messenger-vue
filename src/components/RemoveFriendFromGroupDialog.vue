@@ -120,7 +120,6 @@ export default {
     handleRemoveFromGroup() {
       let failedFriends = [];
       [].forEach.call(this.selectedFriends, (selectedFriend) => {
-        console.log(selectedFriend);
         this.$axios
           .delete(
             "/api/group/" +
