@@ -30,8 +30,8 @@ function createWebsocket() {
   token = store.state.user.access_token;
   userId = store.state.user.id;
 
-  //let WSUrl = `ws://106.13.110.96:8088/ws?access_token=${token}`;
-  let WSUrl = `ws://localhost:8088/ws?access_token=${token}`;
+  let WSUrl = `ws://106.13.110.96:8088/ws?access_token=${token}`;
+  //let WSUrl = `ws://localhost:8088/ws?access_token=${token}`;
   websock = new WebSocket(WSUrl);
   websock.onmessage = function(event) {
     let data = JSON.parse(event.data);
