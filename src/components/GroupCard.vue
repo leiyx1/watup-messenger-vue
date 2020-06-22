@@ -41,36 +41,38 @@
         <!-- <el-button class="btn" type="text">修改备注</el-button> -->
       </div>
       <div class="avatar">
-        <img
-          :src=group.avatarUrl
-          alt="头像"
-          width="100px"
-          height="100px"
-        />
+        <img :src="group.avatarUrl" alt="头像" width="100px" height="100px" />
       </div>
     </div>
     <el-divider class="divider1" />
     <div class="level-2">
       <div id="members">
-        <div class="member" v-for="member in groupMembers" :key="member.id"  @click="goUser(member)">
-            <el-avatar
-              style="height: 35px; width: 35px"
-              shape="square"
-              size="medium"
-              :src="chatInfo(member.id).avatarUrl"
-            ></el-avatar>
-            <span class="name">{{ chatInfo(member.id).name }}</span>
+        <div
+          class="member"
+          v-for="member in groupMembers"
+          :key="member.id"
+          @click="goUser(member)"
+        >
+          <el-avatar
+            style="height: 35px; width: 35px"
+            shape="square"
+            size="medium"
+            :src="chatInfo(member.id).avatarUrl"
+          ></el-avatar>
+          <span class="name">{{ chatInfo(member.id).name }}</span>
         </div>
         <div class="member">
           <el-button
-            style="height: 35px; width: 35px"
+            size="mini"
             icon="el-icon-plus"
+            style="height: 45px"
             @click="inviteFriendDialogVisible = true"
           ></el-button>
         </div>
         <div class="member" v-if="isManager">
           <el-button
-            style="height: 35px; width: 35px"
+            size="mini"
+            style="height: 45px"
             icon="el-icon-minus"
             @click="removeFriendDialogVisible = true"
           ></el-button>
@@ -136,20 +138,18 @@ export default {
         return this.$store.state.chatList;
       },
     },
-    userCache:{
-      get(){
+    userCache: {
+      get() {
         return this.$store.state.userCache;
-      }
-    }
+      },
+    },
   },
   methods: {
     chatInfo(memberId) {
-      console.log(this.$store.state.userCache.find(
-        (obj) => obj.id === memberId
-      ));
-      return this.$store.state.userCache.find(
-        (obj) => obj.id === memberId
+      console.log(
+        this.$store.state.userCache.find((obj) => obj.id === memberId)
       );
+      return this.$store.state.userCache.find((obj) => obj.id === memberId);
     },
     goUser(member) {
       if (member.id === this.$store.state.user.id) {

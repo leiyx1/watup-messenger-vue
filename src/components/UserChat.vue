@@ -11,7 +11,7 @@
         </el-dropdown-menu>
       </el-dropdown>
     </div>
-    <el-divider class="divider"/>
+    <el-divider class="divider" />
     <div class="message" id="message">
       <!-- <div
         class="others"
@@ -24,19 +24,19 @@
       </div> -->
       <ul>
         <li
-            v-for="(item, index) in messageList"
-            :key="index"
-            :class="{ 'chat-mine': item.mine }"
+          v-for="(item, index) in messageList"
+          :key="index"
+          :class="{ 'chat-mine': item.mine }"
         >
           <img
-              :src="
+            :src="
               item.mine == true ? mineUrl : userInfo(item.senderId).avatarUrl
             "
-              alt="头像"
-              style="height: 50px; width: 50px"
+            alt="头像"
+            style="height: 50px; width: 50px"
           />
           <div
-              :class="{
+            :class="{
               'message-body': true,
               'multi-message-body': item.type === 'MULTICAST',
             }"
@@ -45,39 +45,37 @@
               <span>{{ item.mine == true ? mineName : userInfo(item.senderId).name }}</span>
             </div>
             <el-card shadow="hover"
-            >
-              <div class="wordbox">
+              ><div class="wordbox">
                 <span>{{ item.content }}</span>
-              </div>
-            </el-card
+              </div></el-card
             >
           </div>
         </li>
       </ul>
     </div>
-    <el-divider class="divider"/>
+    <el-divider class="divider" />
     <div class="tools">
       <div class="left">
         <el-button circle type="text"
-        ><i class="el-icon-picture-outline-round"></i
+          ><i class="el-icon-picture-outline-round"></i
         ></el-button>
       </div>
       <div class="right">
         <el-button circle type="text" @click="videoChat"
-        ><i class="el-icon-phone-outline"></i
+          ><i class="el-icon-phone-outline"></i
         ></el-button>
       </div>
     </div>
 
     <div class="send">
-
-      <textarea
-          class="sendArea"
-          v-model="text"
-          @keyup.enter="sendUniMessage()"
-          @paste="handlePaste"
-
-      ></textarea>
+      <el-input
+        class="textarea"
+        type="textarea"
+        v-model="text"
+        :rows="4"
+        @keyup.enter.native="sendUniMessage()"
+      >
+      </el-input>
       <div class="footer">
         <el-button class="btn" @click="sendUniMessage()">发送</el-button>
       </div>
@@ -86,8 +84,8 @@
 </template>
 
 <script>
-  import getWebsocket from "../JavaScript/Websocket";
-  import getNedb from "../JavaScript/NedbConfig";
+import getWebsocket from "../JavaScript/Websocket";
+import getNedb from "../JavaScript/NedbConfig";
 
   export default {
     name: "userChat",
