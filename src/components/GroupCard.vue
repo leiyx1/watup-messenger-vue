@@ -28,7 +28,7 @@
             <el-tooltip content="按回车保存" placement="bottom">
               <el-input
                 id="NickInput"
-                maxlength="6"
+                maxlength="12"
                 show-word-limit
                 v-model="newNick"
                 placeholder="按回车保存"

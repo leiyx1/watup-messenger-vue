@@ -1,7 +1,7 @@
 <template>
   <div class="windows">
     <div class="top">
-      <span>{{ chatInfo(currentChat.chatId).name }}</span>
+      <span>{{ chatInfo(currentChat).name }}</span>
       <el-dropdown trigger="click" class="btn" @command="handleCommand">
         <el-button plain size="small" icon="el-icon-more" circle></el-button>
         <el-dropdown-menu slot="dropdown">
@@ -30,7 +30,7 @@
         >
           <img
             :src="
-              item.mine == true ? mineUrl : chatInfo(item.senderId).avatarUrl
+              item.mine == true ? mineUrl : userAvatar(item.senderId).avatarUrl
             "
             alt="头像"
             style="height: 50px; width: 50px"
@@ -42,7 +42,7 @@
             }"
           >
             <div class="namebox">
-              <span>{{ chatInfo(item.senderId).username }}</span>
+              <span>{{ item.mine == true ? mineName : chatInfo(currentChat).name }}</span>
             </div>
             <el-card shadow="hover"
               ><div class="wordbox">
@@ -109,6 +109,11 @@ export default {
         return this.$store.state.user.avatarUrl;
       },
     },
+    mineName:{
+      get: function(){
+        return this.$store.state.user.username;
+      }
+    },
     messageList: {
       get: function() {
         return this.$store.state.currentChat.messageList;
@@ -127,10 +132,25 @@ export default {
         this.$store.commit("setCurrentChat", val);
       },
     },
+
   },
   methods: {
-    chatInfo(val) {
-      return this.$store.state.userCache.find((obj) => obj.id === val);
+    userAvatar(id){
+      let ret
+      ret = this.$store.state.userCache.find((obj) => obj.id === id)
+      console.log(ret)
+      return ret
+    },
+    chatInfo(chat) {
+      let ret
+      if (chat.type === "UNICAST") {
+        ret = this.$store.state.userCache.find(
+          (obj) => obj.id === chat.chatId
+        );
+      } else {
+        ret = this.$store.state.groups.find((obj) => obj.id === chat.chatId);
+      }
+      return ret
     },
     handleCommand(command) {
       console.log(command);

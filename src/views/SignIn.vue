@@ -19,7 +19,7 @@
           :rules="rule1"
           label-position="left"
         >
-          <el-form-item label="watup号(id)" prop="username">
+          <el-form-item label="watup号" prop="username">
             <el-input v-model="loginInfo.username"></el-input>
           </el-form-item>
           <el-form-item label="密码" prop="password">
@@ -276,7 +276,7 @@ export default {
       let self = this;
       getNedb()
         .localMessage.find({})
-        .sort({ timestamp: 1 })
+        .sort({ timestamp: -1 })
         .exec(function(err, docs) {
             self.$store.commit("setChatList", docs);
         });
