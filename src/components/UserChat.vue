@@ -30,7 +30,7 @@
         >
           <img
             :src="
-              item.mine == true ? mineUrl : userAvatar(item.senderId).avatarUrl
+              item.mine == true ? mineUrl : userInfo(item.senderId).avatarUrl
             "
             alt="头像"
             style="height: 50px; width: 50px"
@@ -42,7 +42,7 @@
             }"
           >
             <div class="namebox">
-              <span>{{ item.mine == true ? mineName : chatInfo(currentChat).name }}</span>
+              <span>{{ item.mine == true ? mineName : userInfo(item.senderId).name }}</span>
             </div>
             <el-card shadow="hover"
               ><div class="wordbox">
@@ -135,7 +135,7 @@ export default {
 
   },
   methods: {
-    userAvatar(id){
+    userInfo(id){
       let ret
       ret = this.$store.state.userCache.find((obj) => obj.id === id)
       console.log(ret)
@@ -170,22 +170,29 @@ export default {
       }
     },
     sendUniMessage() {
-      console.log(this.currentChat);
-      console.log(
+      if(this.text === "" || this.text === "\n" || this.text === "\r"){
+        this.$notify.error({
+          title: "错误",
+          message: "不可发送给空消息"
+        })
+      }
+      else {console.log(
         `send uni message:` + this.text + " to " + this.currentChat.chatId
       );
-      let message = {
-        type: this.currentChat.type,
-        receiverId: this.currentChat.chatId,
-        content: `${this.text}`,
-      };
-      if (this.currentChat.type === "UNICAST")
-        message.receiverId = this.currentChat.chatId;
-      else if (this.currentChat.type === "MULTICAST")
-        message.groupId = this.currentChat.chatId;
-      getWebsocket().send(JSON.stringify(message));
-      this.text = "";
-      this.scrollToBottom();
+        let message = {
+          type: this.currentChat.type,
+          receiverId: this.currentChat.chatId,
+          content: `${this.text}`,
+        };
+        if (this.currentChat.type === "UNICAST")
+          message.receiverId = this.currentChat.chatId;
+        else if (this.currentChat.type === "MULTICAST")
+          message.groupId = this.currentChat.chatId;
+        getWebsocket().send(JSON.stringify(message));
+        this.text = "";
+        this.scrollToBottom();
+      }
+
     },
     scrollToBottom() {
       this.$nextTick(() => {

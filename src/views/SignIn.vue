@@ -513,6 +513,7 @@ export default {
           self.loginInfo.password = systemInfo.lastUserPassword;
         }
         self.loginInfo.username = systemInfo.lastUserId;
+        self.autoLogin = systemInfo.autoLogin;
       }
 
     })
