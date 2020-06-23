@@ -124,15 +124,6 @@
       </div>
       <el-divider class="divider1" />
       <div class="level-3">
-        <el-upload
-          class="avatar-uploader"
-          :action="upUrl"
-          :show-file-list="false"
-          :on-success="handleAvatarSuccess"
-          :before-upload="beforeAvatarUpload"
-        >
-          <el-button>更改头像</el-button>
-        </el-upload>
 
         <el-button @click="clearNeDB">清空本地数据</el-button>
         <el-button @click="blockListVisible = true">管理黑名单</el-button>
