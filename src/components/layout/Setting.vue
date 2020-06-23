@@ -1,7 +1,7 @@
 <template>
   <div class="settingBox">
-    <div class="avatarView" v-viewer="{movable: false}" style="display: none">
-      <img v-for="src in avatars" :src="src" :key="src">
+    <div class="avatarView" v-viewer="{ movable: false }" style="display: none">
+      <img v-for="src in avatars" :src="src" :key="src" />
     </div>
     <div class="left">
       <div class="item">
@@ -57,16 +57,18 @@
           </div>
           <!-- <el-button class="btn" type="text">修改备注</el-button> -->
         </div>
-        <img :src="user.avatarUrl" @click="viewLargerAvatar($event)"/>
-        <el-upload
-          class="avatar-uploader"
-          :action="upUrl"
-          :show-file-list="false"
-          :on-success="handleAvatarSuccess"
-          :before-upload="beforeAvatarUpload"
-        >
-          <el-button>更改头像</el-button>
-        </el-upload>
+        <div class="level-1-img">
+          <img :src="user.avatarUrl" @click="viewLargerAvatar($event)" />
+          <el-upload
+            class="avatar-uploader"
+            :action="upUrl"
+            :show-file-list="false"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+          >
+            <el-button>更改头像</el-button>
+          </el-upload>
+        </div>
       </div>
       <el-divider class="divider1" />
       <div class="level-2">
@@ -163,8 +165,7 @@ export default {
       },
     };
   },
-  mounted() {
-  },
+  mounted() {},
   computed: {
     // 实际应该登录后从vuex中取user
     user: {
@@ -174,21 +175,18 @@ export default {
     },
   },
   methods: {
-    viewLargerAvatar: function(event){
-      console.log(event.target.currentSrc)
+    viewLargerAvatar: function(event) {
+      console.log(event.target.currentSrc);
       let imgUrl = event.target.currentSrc;
-      if(typeof imgUrl !== "undefined"){
+      if (typeof imgUrl !== "undefined") {
         this.avatars = [];
         this.avatars.push(imgUrl);
-        this.$nextTick(
-          this.show()
-        )
-
+        this.$nextTick(this.show());
       }
     },
-    show () {
-      let viewer = this.$el.querySelector('.avatarView').$viewer
-      viewer.show()
+    show() {
+      let viewer = this.$el.querySelector(".avatarView").$viewer;
+      viewer.show();
     },
     handleAvatarSuccess(res) {
       if (res.code === 200) {
@@ -250,24 +248,29 @@ export default {
         return;
       }
       // 发送改名请求并更新
-        this.$axios
-            .post("/api/user/updateUsername?access_token=" + this.$store.state.user.access_token+"&username="+this.newName)
-            .then((res) => {
-                if (res.data.code === 200) {
-                    this.$notify({
-                        title: "成功",
-                        message: "已改名为:" + this.newName,
-                        type: "success",
-                    });
-                    this.user.username = this.newName;
-                    this.hasEditName = false;
-                } else {
-                    this.$notify.error({
-                        title: "Error",
-                        message: res.data.message,
-                    });
-                }
+      this.$axios
+        .post(
+          "/api/user/updateUsername?access_token=" +
+            this.$store.state.user.access_token +
+            "&username=" +
+            this.newName
+        )
+        .then((res) => {
+          if (res.data.code === 200) {
+            this.$notify({
+              title: "成功",
+              message: "已改名为:" + this.newName,
+              type: "success",
             });
+            this.user.username = this.newName;
+            this.hasEditName = false;
+          } else {
+            this.$notify.error({
+              title: "Error",
+              message: res.data.message,
+            });
+          }
+        });
     },
     saveArea() {
       if (this.user.area == this.newArea || this.newArea == "") {
@@ -275,25 +278,29 @@ export default {
         return;
       }
       // 发送改地区请求并更新
-        this.$axios
-            .post("/api/user/updateArea?access_token=" + this.$store.state.user.access_token+"&area="+this.newArea)
-            .then((res) => {
-                if (res.data.code === 200) {
-                    this.user.area = this.newArea;
-                    this.hasEditArea = false;
-                    this.$notify({
-                        title: "成功",
-                        message: "地区已改为:" + this.newArea,
-                        type: "success",
-                    });
-                } else {
-                    this.$notify.error({
-                        title: "Error",
-                        message: res.data.message,
-                    });
-                }
+      this.$axios
+        .post(
+          "/api/user/updateArea?access_token=" +
+            this.$store.state.user.access_token +
+            "&area=" +
+            this.newArea
+        )
+        .then((res) => {
+          if (res.data.code === 200) {
+            this.user.area = this.newArea;
+            this.hasEditArea = false;
+            this.$notify({
+              title: "成功",
+              message: "地区已改为:" + this.newArea,
+              type: "success",
             });
-
+          } else {
+            this.$notify.error({
+              title: "Error",
+              message: res.data.message,
+            });
+          }
+        });
     },
     saveSign() {
       if (this.user.sign == this.newSign || this.newSign == "") {
@@ -302,25 +309,29 @@ export default {
       }
 
       // 发送改签名请求并更新
-        this.$axios
-            .post("/api/user/updateSign?access_token=" + this.$store.state.user.access_token+"&sign="+this.newSign)
-            .then((res) => {
-                if (res.data.code === 200) {
-                    this.user.sign = this.newSign;
-                    this.hasEditSign = false;
-                    this.$notify({
-                        title: "成功",
-                        message: "签名已改为:" + this.newSign,
-                        type: "success",
-                    });
-                } else {
-                    this.$notify.error({
-                        title: "Error",
-                        message: res.data.message,
-                    });
-                }
+      this.$axios
+        .post(
+          "/api/user/updateSign?access_token=" +
+            this.$store.state.user.access_token +
+            "&sign=" +
+            this.newSign
+        )
+        .then((res) => {
+          if (res.data.code === 200) {
+            this.user.sign = this.newSign;
+            this.hasEditSign = false;
+            this.$notify({
+              title: "成功",
+              message: "签名已改为:" + this.newSign,
+              type: "success",
             });
-
+          } else {
+            this.$notify.error({
+              title: "Error",
+              message: res.data.message,
+            });
+          }
+        });
     },
     logout() {
       this.$axios
@@ -424,20 +435,31 @@ export default {
         padding-right: 5%;
         .span1 {
           float: left;
-          font-size: 35px;
+          font-size: 30px;
         }
         p {
           float: left;
           margin: 2px 0px;
         }
       }
-      img {
-        // padding-right: 10%;
-        position: absolute;
-        right: 5%;
-        float: right;
-        width: 100px;
-        height: 100px;
+      .level-1-img {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        img {
+          // padding-right: 10%;
+          position: absolute;
+          right: 5%;
+          float: right;
+          width: 100px;
+          height: 100px;
+        }
+        .el-button {
+          position: absolute;
+          right: 5%;
+          top: 24%;
+          float: right;
+        }
       }
     }
     .level-2 {
