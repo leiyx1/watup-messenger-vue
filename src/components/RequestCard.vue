@@ -13,9 +13,9 @@
               <img :src="scope.row.senderAvatarUrl" alt="头像" width="40px" />
             </template>
           </el-table-column>
-          <el-table-column prop="senderId" label="watup-id" width="100">
+          <el-table-column prop="senderId" label="watup-id" width="120">
           </el-table-column>
-          <el-table-column prop="remark" label="备注" style="float: right;">
+          <el-table-column prop="remark" label="备注" width="380" style="">
           </el-table-column>
           <el-table-column width="70">
             <template slot-scope="scope">
@@ -45,14 +45,14 @@
           :data="this.$store.state.groupRequest"
           stripe
           highlight-current-row
-          style="width: 100%;text-align: center;cursor:pointer"
+          style="text-align: center;cursor:pointer"
         >
-          <el-table-column prop="groupName" label="groupName" width="150">
+          <el-table-column prop="groupName" label="groupName" width="300">
           </el-table-column>
           <el-table-column
             prop="invitedBy"
             label="邀请人"
-            width="150"
+            width="300"
             style="float: right;"
           >
           </el-table-column>

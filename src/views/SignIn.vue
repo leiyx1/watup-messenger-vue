@@ -1,11 +1,11 @@
 <template>
   <div class="home">
-    <img id="bg" src="../assets/pic1.jpg" />
+    <img id="bg" src="../assets/backgroud.png" />
     <!-- <div id="bg" /> -->
     <div id="op">
       <el-card
         v-if="index === true"
-        style="margin-top:10%; margin-left:10%; width: 400px"
+        style="margin-top:20%; margin-left:20%; width: 420px"
       >
         <div slot="header" class="clearfix">
           <span class="text">登录 Watup</span>
