@@ -38,9 +38,7 @@ import getWebsocket from "@/JavaScript/Websocket";
 import {
   joinVideoChat,
   leaveVideoChat,
-  getPeer,
   savePeer,
-  getStream,
 } from "@/JavaScript/Websocket";
 
 export default {
@@ -80,48 +78,47 @@ export default {
       this.$router.push("/index/chatpanel");
     },
     gotMedia(stream) {
-      if (this.init) {
-        const Peer = require("simple-peer");
-        this.localStream = stream;
+      const Peer = require("simple-peer");
+      this.localStream = stream;
 
-        let iceConfig = {
-          iceServers: [
-            { urls: "stun:stun.l.google.com:19302" },
-            {
-              urls: "turn:106.13.79.136:3478?transport=udp",
-              username: "watup",
-              credential: "watup@2020",
-            },
-          ],
+      let iceConfig = {
+      iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          {
+            urls: "turn:106.13.79.136:3478?transport=udp",
+            username: "watup",
+            credential: "watup@2020",
+          },
+        ],
+      };
+      this.peer = new Peer({
+        initiator: this.init,
+        stream: stream,
+        config: iceConfig,
+      });
+
+      this.peer.on("signal", (data) => {
+        console.log('outcoming signal', JSON.stringify(data));
+        let wrappedData = {
+          type: "SIGNAL",
+          receiverId: this.friendId,
+          signal: data,
         };
-        this.peer = new Peer({
-          initiator: this.init,
-          stream: stream,
-          config: iceConfig,
-        });
+        this.ws.send(JSON.stringify(wrappedData));
+      });
 
-        this.peer.on("signal", (data) => {
-          console.log(JSON.stringify(data));
-          let wrappedData = {
-            type: "SIGNAL",
-            receiverId: this.friendId,
-            signal: data,
-          };
-          this.ws.send(JSON.stringify(wrappedData));
-        });
+      savePeer(this.peer);
 
-        this.peer.on("stream", (stream) => {
-          console.log("stream", stream);
-          this.remoteStream = stream;
-        });
+      this.peer.on("stream", (stream) => {
+        console.log("incoming remote stream", stream);
+        this.remoteStream = stream;
+      });
 
-        savePeer(this.peer);
-      } else {
-        this.localStream = stream;
-        this.peer = getPeer();
-        this.peer.addStream(stream);
-        this.remoteStream = getStream();
-      }
+      if (!this.init)
+        this.ws.send(JSON.stringify({
+        type: "CONNECT",
+        receiverId: this.friendId,
+      }));
     },
   },
 };

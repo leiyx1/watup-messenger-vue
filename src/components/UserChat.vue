@@ -285,7 +285,7 @@ import getNedb from "../JavaScript/NedbConfig";
         });
       },
       videoChat() {
-        this.$router.push({path: "/webrtc", query: {init: true, id: this.currentChat.chatId}})
+        this.$router.push({path: "/webrtc", query: {init: false, id: this.currentChat.chatId}})
       }
     },
     mounted() {

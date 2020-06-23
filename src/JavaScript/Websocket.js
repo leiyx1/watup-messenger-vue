@@ -14,9 +14,7 @@ import { MessageBox, Message } from "element-ui";
 let websock;
 let inVideoChat=false;
 let currentVideoChat;
-let Peer = require('simple-peer');
 let peer;
-let stream;
 
 export default function getWebsocket() {
   if (websock && websock.readyState === 1) {
@@ -156,14 +154,14 @@ function createWebsocket() {
           //同时删除chatList中的群聊(如果有)
           updateChatList = store.state.chatList;
           obj = updateChatList.find(
-            (obj) => obj.chatId === data.content && obj.type === "MULTICAST"
+              (obj) => obj.chatId === data.content && obj.type === "MULTICAST"
           );
           if (obj) {
             index = updateChatList.indexOf(obj);
             updateChatList.splice(index, 1);
             store.commit("setChatList", updateChatList);
             //删除Nedb中的这一条数据
-            getNedb().localMessage.remove({chatId:obj.chatId, type: "MULTICAST"})
+            getNedb().localMessage.remove({chatId: obj.chatId, type: "MULTICAST"})
           }
           //最后刷新群组列表
           loadGroups();
@@ -175,14 +173,14 @@ function createWebsocket() {
           //同时删除chatList中的群聊(如果有)
           updateChatList = store.state.chatList;
           obj = updateChatList.find(
-            (obj) => obj.chatId === data.content && obj.type === "MULTICAST"
+              (obj) => obj.chatId === data.content && obj.type === "MULTICAST"
           );
           if (obj) {
             index = updateChatList.indexOf(obj);
             updateChatList.splice(index, 1);
             store.commit("setChatList", updateChatList);
             //删除Nedb中的这一条数据
-            getNedb().localMessage.remove({chatId:obj.chatId, type: "MULTICAST"})
+            getNedb().localMessage.remove({chatId: obj.chatId, type: "MULTICAST"})
           }
           //最后刷新群组列表
           loadGroups();
@@ -215,53 +213,28 @@ function createWebsocket() {
         case "friendRemoved":
           loadFriends();
           //删除nedb
-          getNedb().localMessage.remove({chatId:data.content, type: "UNICAST"})
+          getNedb().localMessage.remove({chatId: data.content, type: "UNICAST"})
           break;
       }
+    } else if (data.type === 'CONNECT') {
+      MessageBox(data.senderId + ' 邀请你进行视频聊天', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info'
+      }).then(() => {
+        router.push({path: '/webrtc', query: {init: true, id: data.senderId}});
+      }).catch(() => {
+        Message({
+          type: 'info',
+          message: '已拒绝'
+        });
+      });
     } else if (data.type === 'SIGNAL') {
-      console.log('incoming signal: ', JSON.stringify(data));
-      if (!inVideoChat) {
-        joinVideoChat(data.senderId);
-
-        let iceConfig = {
-          iceServers: [
-            {urls: 'stun:stun.l.google.com:19302'},
-            {urls: 'turn:106.13.79.136:3478?transport=udp', 'username': 'watup', 'credential': 'watup@2020'}
-          ]
-        };
-        peer = new Peer({initiator: false, config: iceConfig});
-        peer.on('signal', data => {
-          console.log('outcoming signal: ', JSON.stringify(data));
-          let wrappedData = {
-            type: 'SIGNAL',
-            receiverId: currentVideoChat,
-            signal: data
-          };
-          websock.send(JSON.stringify(wrappedData));
-        });
-        peer.on('stream', remoteStream => {
-          console.log('stream', remoteStream);
-          stream = remoteStream;
-        });
-        console.log('incoming signal: ', JSON.stringify(data));
+      if (inVideoChat && data.senderId === currentVideoChat) {
+        console.log('incoming signal', data);
         peer.signal(data.signal);
-
-        MessageBox(data.senderId + ' 邀请你进行视频聊天', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'info'
-        }).then(() => {
-          router.push({path: '/webrtc', query: {init: false, id: data.senderId}});
-        }).catch(() => {
-          peer.destroy();
-          inVideoChat = false;
-          Message({
-            type: 'info',
-            message: '已拒绝'
-          });
-        });
-      } else if (currentVideoChat === data.senderId) {
-        peer.signal(data.signal)
+      } else {
+        console.log('dropped incoming signal', data);
       }
     }
   };
@@ -287,14 +260,6 @@ export function joinVideoChat(id) {
 
 export function leaveVideoChat() {
   inVideoChat = false;
-}
-
-export function getPeer() {
-  return peer;
-}
-
-export function getStream() {
-  return stream;
 }
 
 export function savePeer(newPeer) {
