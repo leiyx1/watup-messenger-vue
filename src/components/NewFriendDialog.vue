@@ -77,7 +77,6 @@ export default {
     },
   },
     created() {
-        this.searchUser();
     },
     methods: {
     searchUser() {
