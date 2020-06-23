@@ -110,22 +110,12 @@ export default {
               message: "成功加入" + row.groupName,
               type: "success",
             });
-          } else {
-            this.$notify.error({
-              title: "错误",
-              message: "失效的邀请",
-            });
           }
           loadGroupRequests();
           loadGroups();
-          this.$emit("joinGroup");
         })
         .catch((error) => {
           console.log(error);
-          this.$notify.error({
-            title: "错误",
-            message: "失效的邀请",
-          });
             loadGroupRequests();
             loadGroups();
         });
