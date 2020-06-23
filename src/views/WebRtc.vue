@@ -57,7 +57,7 @@ export default {
   },
   mounted() {
     console.log("in webrtc", this.init, this.friendId);
-    joinVideoChat();
+    joinVideoChat(this.friendId);
     this.ws = getWebsocket();
     const constraints = {
       video: true,
