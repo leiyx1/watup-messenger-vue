@@ -221,8 +221,7 @@ function createWebsocket() {
     } else if (data.type === 'SIGNAL') {
       console.log('incoming signal: ', JSON.stringify(data));
       if (!inVideoChat) {
-        inVideoChat = true;
-        currentVideoChat = data.senderId;
+        joinVideoChat(data.senderId);
 
         let iceConfig = {
           iceServers: [
@@ -281,8 +280,9 @@ function createWebsocket() {
   return websock;
 }
 
-export function joinVideoChat() {
+export function joinVideoChat(id) {
   inVideoChat = true;
+  currentVideoChat = id
 }
 
 export function leaveVideoChat() {
