@@ -2,30 +2,33 @@
   <div class="user-panel">
     <div class="side-list">
       <div class="side-top">
-        <el-autocomplete
+        <el-input
           class="inline-input"
           v-model="state"
-          :fetch-suggestions="querySearch"
           placeholder="搜索"
-          @select="handleSelect"
-        ></el-autocomplete>
-        <el-button @click="dialogVisible = true" size="small"
-          ><i class="el-icon-plus"> </i
-        ></el-button>
-        <el-dialog
-          title="提示"
-          :visible.sync="dialogVisible"
-          :modal="false"
-          width="30%"
-        >
-          <span>这是一段信息</span>
-          <span slot="footer" class="dialog-footer">
-            <el-button @click="dialogVisible = false">取 消</el-button>
-            <el-button type="primary" @click="dialogVisible = false"
-              >确 定</el-button
+          prefix-icon="el-icon-search"
+        ></el-input>
+        <el-dropdown @command="handleCommand" trigger="click">
+          <el-button size="large">
+            <i class="el-icon-plus"> </i>
+          </el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="newFriendDialogVisible"
+              >添加好友</el-dropdown-item
             >
-          </span>
-        </el-dialog>
+            <el-dropdown-item command="newGroupDialogVisible"
+              >新建群组</el-dropdown-item
+            >
+          </el-dropdown-menu>
+        </el-dropdown>
+        <new-friend-dialog
+          :visible.sync="newFriendDialogVisible"
+        ></new-friend-dialog>
+        <new-group-dialog
+          :visible.sync="newGroupDialogVisible"
+          friend-list="friends"
+          @new-group="loadG"
+        ></new-group-dialog>
       </div>
       <el-divider id="divider" />
       <el-menu
@@ -34,71 +37,135 @@
         active-text-color="#ffd04b"
         style="border-right-width: 0;"
       >
-        <el-menu-item
-          class="item"
-          v-for="(item, index) in friends"
-          :key="index"
-          @click="showCard(item, index)"
-        >
-          <div class="item-avatar">
-            <img :src="item.avatar" alt="头像" />
-          </div>
+        <el-menu-item @click="showRequest">
           <div class="item-body">
             <div class="item-word">
-              <b>{{ item.username }}({{ item.nickname }})</b>
+              <el-badge
+                :value="showBadge"
+                :hidden="showBadge === 0"
+                style=""
+              ></el-badge>
+              <b>申请与邀请</b>
             </div>
           </div>
         </el-menu-item>
+        <el-collapse v-model="activeNames">
+          <el-collapse-item title="群聊" name="1">
+            <el-menu-item
+              class="item"
+              v-for="(item, index) in groups.filter((data) =>
+                data.name.toLowerCase().includes(this.state.toLowerCase())
+              )"
+              :key="item.id"
+              @click="showGroup(item, index)"
+            >
+              <div class="item-avatar">
+                <img :src="GInfo(item).avatarUrl" alt="头像"/>
+              </div>
+              <div class="item-body">
+                <div class="item-word">
+                  <b>{{ GInfo(item).name }}</b>
+                </div>
+              </div>
+            </el-menu-item>
+          </el-collapse-item>
+
+          <el-collapse-item title="好友" name="2">
+            <el-menu-item
+              class="item"
+              v-for="(item, index) in friends.filter((data) =>
+                data.username.toLowerCase().includes(this.state.toLowerCase())
+              )"
+              :key="index"
+              @click="showFriend(item, index)"
+            >
+              <div class="item-avatar">
+                <img :src="FInfo(item).avatarUrl" alt="头像"  style="width: 50px;height: 50px"/>
+              </div>
+              <div class="item-body">
+                <div class="item-word">
+                  <b>{{
+                    FInfo(item).nickname === ""
+                      ? FInfo(item).username
+                      : FInfo(item).nickname
+                  }}</b>
+                </div>
+              </div>
+            </el-menu-item>
+          </el-collapse-item>
+        </el-collapse>
       </el-menu>
     </div>
     <div class="right-card">
-      <UserCard v-if="show" :user="currentItem" />
+      <div v-if="!hasShowFriend && !hasShowGroup && !hasShowRequest"></div>
+      <UserCard
+        :user="currentItem"
+        v-else-if="hasShowFriend && !hasShowGroup && !hasShowRequest"
+        @removeFriend="showBlank"
+      />
+      <RequestCard
+        v-else-if="hasShowRequest"
+        @joinGroup="loadG"
+        @addFriend="loadF"
+      />
+      <GroupCard
+        :group="currentItem"
+        @exit-group="showBlank"
+        @showGroupFriend="showFriend"
+        v-else
+      />
     </div>
   </div>
 </template>
 
 <script>
+import { loadGroups, loadFriends } from "../../JavaScript/load.js";
 import UserCard from "../UserCard.vue";
+import NewFriendDialog from "../../components/NewFriendDialog";
+import NewGroupDialog from "../../components/NewGroupDialog";
+import GroupCard from "../GroupCard.vue";
+import RequestCard from "../RequestCard";
 export default {
   name: "FriendsPanel",
   components: {
+    NewGroupDialog,
+    NewFriendDialog,
     UserCard,
+    GroupCard,
+    RequestCard,
   },
   data() {
     return {
-      show: false,
+      hasShowFriend: false,
+      hasShowGroup: false,
+      hasShowRequest: false,
       state: "",
-      dialogVisible: false,
+      newFriendDialogVisible: false,
+      newGroupDialogVisible: false,
       currentItem: {},
+      newFriendId: "",
+      activeNames: ["2"],
     };
   },
   mounted() {
-    // this.loadFriends();
-    this.friends = [
-      {
-        ID: "1",
-        username: "老板",
-        nickname: "",
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      },
-      {
-        ID: "2",
-        username: "钢铁侠",
-        nickname: "老大",
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      },
-      {
-        ID: "3",
-        username: "Happy",
-        nickname: "绿巨人",
-        avatar:
-          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-      },
-    ];
   },
   computed: {
+    showBadge: {
+      get: function() {
+        return (
+          this.$store.state.unReadFriendRequest +
+          this.$store.state.unReadGroupRequest
+        );
+      },
+    },
+    groups: {
+      get: function() {
+        return this.$store.state.groups;
+      },
+      set: function(val) {
+        this.$store.commit("setGroups", JSON.parse(JSON.stringify(val)));
+      },
+    },
     friends: {
       get: function() {
         return this.$store.state.friends;
@@ -109,19 +176,72 @@ export default {
     },
   },
   methods: {
-    showCard(item) {
-      this.show = true;
+    FInfo: function(item) {
+      return this.$store.state.userCache.find((obj) => obj.id === item.id);
+    },
+    GInfo: function(item) {
+      return this.$store.state.groups.find((obj) => obj.id === item.id);
+    },
+
+    showBlank() {
+      this.hasShowGroup = false;
+      this.hasShowFriend = false;
+      this.hasShowRequest = false;
+    },
+    showRequest() {
+      this.$store.commit("resetUnreadFriendRequest");
+      this.hasShowGroup = false;
+      this.hasShowFriend = false;
+      this.hasShowRequest = true;
+    },
+    loadG() {
+      loadGroups();
+    },
+    loadF() {
+      loadFriends();
+    },
+    showFriend(item) {
+      this.hasShowGroup = false;
+      this.hasShowRequest = false;
+      this.hasShowFriend = true;
       this.currentItem = item;
+      this.$axios
+        .get("/api/friend/search/id", {
+          params: {
+            access_token: this.$store.state.user.access_token,
+            friendId: item.id,
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            this.$store.commit("updateUserCache", res.data);
+          } else {
+            console.log("errrorrrr");
+          }
+        });
       // this.chatList[index] = this.$store.state.currentChat;
-      console.log(this.currentItem);
+      // setMessageListByChatID
+    },
+    showGroup(item) {
+      this.hasShowFriend = false;
+      this.hasShowRequest = false;
+      this.hasShowGroup = true;
+      this.currentItem = item;
+      // 更新group by item.id
+
+      // this.chatList[index] = this.$store.state.currentChat;
+      // console.log(this.currentItem);
       // setMessageListByChatID
     },
     querySearch(queryString, cb) {
-      var userList = this.userList;
+      var friends = this.friends;
       var results = queryString
-        ? userList.filter(this.createFilter(queryString))
-        : userList;
+        ? friends.filter(this.createFilter(queryString))
+        : friends;
       cb(results);
+    },
+    handleCommand(command) {
+      this[command] = true;
     },
     createFilter(queryString) {
       return (val) => {
@@ -131,28 +251,6 @@ export default {
     handleSelect(item) {
       console.log(item);
     },
-    loadFriends() {
-      this.$axios
-        .get("usercenter/friends", {
-          params: {
-            friendsID: this.$store.state.user.friendsID,
-          },
-        })
-        .then((successResponse) => {
-          // var responseResult = JSON.stringify(successResponse.data);
-          if (successResponse.data.code === 200) {
-            this.$store.commit("setFriends", successResponse.data.data);
-          } else {
-            this.$notify.error({
-              title: "错误",
-              message: "拉取好友列表出错",
-            });
-          }
-        })
-        .catch((failResponse) => {
-          console.log(failResponse);
-        });
-    },
   },
 };
 </script>
@@ -161,11 +259,21 @@ export default {
 #divider {
   margin: 0px;
 }
+// .collapseStyle {
+//   padding-left: 10px;
+//   padding-right: 10px;
+//   padding-bottom: 0;
+//   color: rgb(211, 211, 211);
+//   background-color: rgb(211, 211, 211);
+// }
+
 .user-panel {
+  min-width: 240px;
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: row;
+
   .side-list {
     width: 25%;
     height: 100%;
@@ -174,16 +282,42 @@ export default {
     display: flex;
     flex-direction: column;
     overflow-y: scroll;
+    .el-collapse {
+      border: none;
+      .el-collapse-item {
+        color: #d3d3d3;
+        // border-bottom: solid 1px;
+      }
+      .el-collapse-item__wrap {
+        border: none;
+      }
+      .el-collapse-item__header {
+        // border: none;
+        padding-left: 30px;
+        background-color: #bebaba;
+        border-bottom: 1px solid #d3d3d3;
+      }
+      .el-collapse-item__content {
+        border: none;
+        background-color: #d3d3d3;
+        padding-bottom: 5px;
+      }
+    }
     .side-top {
+      top: 0px;
+      z-index: 2;
+      background-color: #d3d3d3;
+      position: sticky;
       display: flex;
       flex-direction: row;
-      width: 100%;
+      width: 95%;
       padding-top: 2%;
-      padding-left: 3%;
+      padding-left: 5%;
       .el-autocomplete {
         width: 70%;
       }
     }
+
     .item {
       display: flex;
       align-items: center;
@@ -191,18 +325,22 @@ export default {
       height: 70px;
       padding-left: 0px;
       padding-right: 0px;
+
       .item-avatar {
         align-items: center;
         float: left;
         width: 45px;
+
         img {
           width: 45px;
         }
       }
+
       .item-body {
         width: 100%;
         height: 100%;
         padding-left: 3%;
+        color: #808080;
         .item-word {
           b {
             float: left;
@@ -215,6 +353,7 @@ export default {
       }
     }
   }
+
   .right-card {
     width: 75%;
   }

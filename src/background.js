@@ -10,7 +10,7 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
-let tray = null;
+// let tray = null;
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
   { scheme: "app", privileges: { secure: true, standard: true } },
@@ -25,8 +25,10 @@ Menu.setApplicationMenu(null);
 function createWindow() {
   // Create the browser window.
   win = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 1080,
+    height: 720,
+    minWidth: 1080,
+    minHeight: 720,
     icon: "./src/assets/icon.png",
     // resizable: false,
     // fullscreen: false,
@@ -86,29 +88,29 @@ app.on("ready", async () => {
     //   console.error('Vue Devtools failed to install:', e.toString())
     // }
   }
-  tray = new Tray("./src/assets/icon.png");
-  const trayContextMenu = Menu.buildFromTemplate([
-    {
-      label: "打开",
-      click: () => {
-        win.show();
-      },
-    },
-    {
-      label: "退出",
-      click: () => {
-        app.quit();
-      },
-    },
-  ]);
+  // tray = new Tray("./src/assets/icon.png");
+  // const trayContextMenu = Menu.buildFromTemplate([
+  //   {
+  //     label: "打开",
+  //     click: () => {
+  //       win.show();
+  //     },
+  //   },
+  //   {
+  //     label: "退出",
+  //     click: () => {
+  //       app.quit();
+  //     },
+  //   },
+  // ]);
 
-  tray.setToolTip("myApp");
-  tray.on("click", () => {
-    win.show();
-  });
-  tray.on("right-click", () => {
-    tray.popUpContextMenu(trayContextMenu);
-  });
+  // tray.setToolTip("myApp");
+  // tray.on("click", () => {
+  //   win.show();
+  // });
+  // tray.on("right-click", () => {
+  //   tray.popUpContextMenu(trayContextMenu);
+  // });
 
   createWindow();
 });

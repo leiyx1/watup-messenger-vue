@@ -1,11 +1,11 @@
 <template>
   <div class="home">
-    <img id="bg" src="../assets/pic1.jpg" />
+    <img id="bg" src="../assets/backgroud.png" />
     <!-- <div id="bg" /> -->
     <div id="op">
       <el-card
         v-if="index === true"
-        style="margin-top:10%; margin-left:10%; width: 400px"
+        style="margin-top:20%; margin-left:20%; width: 420px"
       >
         <div slot="header" class="clearfix">
           <span class="text">登录 Watup</span>
@@ -19,15 +19,25 @@
           :rules="rule1"
           label-position="left"
         >
-          <el-form-item label="用户名" prop="username">
+          <el-form-item label="watup号" prop="username">
             <el-input v-model="loginInfo.username"></el-input>
           </el-form-item>
           <el-form-item label="密码" prop="password">
-            <el-input v-model="loginInfo.password" type="password"></el-input>
+            <el-input
+              v-model="loginInfo.password"
+              @keyup.enter.native="submit1('loginInfo')"
+              type="password"
+            ></el-input>
           </el-form-item>
         </el-form>
+        <div></div>
         <div class="btn">
-          <el-button class="enter" type="primary" @click="submit1('loginInfo' ) ">登录</el-button>
+          <el-checkbox v-model="autoLogin" style="padding-right: 10px"
+            >记住密码</el-checkbox
+          >
+          <el-button class="enter" type="primary" @click="submit1('loginInfo')"
+            >登录</el-button
+          >
           <el-button @click="index = !index">注册</el-button>
         </div>
       </el-card>
@@ -95,8 +105,15 @@
 </template>
 
 <script>
-  import db from "../JavaScript/NedbConfig"
-  import getWebsocket from "../JavaScript/Websocket";
+import getNedb from "../JavaScript/NedbConfig";
+import getWebsocket from "../JavaScript/Websocket";
+import {
+  loadGroups,
+  loadFriends,
+  loadFriendRequests,
+  loadGroupRequests,
+  loadBlockList,
+} from "../JavaScript/load";
 
 export default {
   name: "Home",
@@ -111,6 +128,7 @@ export default {
       }
     };
     return {
+      autoLogin: false,
       index: true,
       inputed: false,
       auth_time: "",
@@ -136,6 +154,7 @@ export default {
         id: [
           { required: true, message: "请设置你的watup号" },
           { min: 3, max: 12, message: "长度在3-12之间" },
+          { pattern: /^[A-Za-z0-9]+$/, message: "由字母和数字组成" },
         ],
         username: [
           { required: true, message: "请设置你的用户名" },
@@ -157,112 +176,142 @@ export default {
     };
   },
   methods: {
-    submit:function() {//登陆时 与客户端建立websocket连接
-      //todo 理应存userID
-      this.initUserInfo();
-      this.initLocalMessages();
-      console.log(this)
-      this.$store.commit("setUsername", this.loginInfo.username)
-      getWebsocket();//建立websocket连接
-
-      this.$router.push("/index/chatpanel");
-    },
-    initLocalMessages(){
-      //todo 离线聊天记录
-
-    },
-    initUserInfo(){
-      //todo 使用ajax从后台获取token，friendList，userId,blackList等
-      //在Vuex中存入信息
-      this.initUserInfoInVuex()
-      //在Nedb中存入信息
-      this.initUserInfoInNedb()
-    },
-    initUserInfoInVuex(){
-      this.$store.commit("setToken", 123)//todo 保存真正的token
-      this.$store.commit("setUsername", this.loginInfo.username)
-      this.$store.commit("setId", 1)//todo 保存真正的UserId
-    },
-    initUserInfoInNedb(){
-      let name = this.loginInfo.username
-      db.userInfo.find({username: name},function (err, docs) {
-        //todo 这里理应用userId在本地数据库中进行查询
-        if(err !== null) {
-          console.log(`err occurred:`)
-          console.log(err)
-        }else {
-          if(docs.length === 0){//之前从未在本机登陆过
-            let newUserInfo = {
-              username: name,
-              token: undefined, //todo 需存入token 用于持久免密登录
-              userId: undefined, //todo 需存入userId
-              friendList: [
-                {
-                  ID: "1",
-                  name: "老板",
-                  nickname: "",
-                  avatar:
-                          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-                },
-                {
-                  ID: "2",
-                  name: "钢铁侠",
-                  nickname: "老大",
-                  avatar:
-                          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-                },
-                {
-                  ID: "3",
-                  name: "Happy",
-                  nickname: "绿巨人",
-                  avatar:
-                          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-                },
-              ], //todo 需存入真正的friendList
-              //todo 这里可能还要放一些其他的东西
-            }
-            db.userInfo.insert(newUserInfo, function (err, newDocs) {
-              // newDoc is the newly inserted document, including its _id
-              //_id是由Nedb定义的一个量
-              if(err !== null){
-                console.log(`err occured:`)
-                console.log(err)
-              }else {
-                console.log("初始化完成")
-                console.log(newDocs)
+    initLocalMessages() {
+      //获取离线聊天 记录
+      //获取离线私聊记录
+      this.$axios
+        .get(
+          "/api/message?access_token=" +
+            this.$store.state.user.access_token +
+            "&sort=asc&drop=true"
+        )
+        .then((res) => {
+          console.log(res);
+          if (res.status === 200) {
+            //逐个解析每个字段
+            for (let p in res.data) {
+              //找到离线的messages
+              let messages = res.data[p];
+              //预处理 给messages里面每个字段加一个mine字段
+              for (let i = 0; i < messages.length; ++i) {
+                messages[i].mine = false;
               }
-            })
-          }else {//之前登陆过,则在本地数据库中存有数据，则仅刷新一些变动属性
-            db.userInfo.update({username: name},{
-                      //todo 这里理应使用userId进行查询 同line151
-                      $set:{
-                        username: name, //刷新本地数据库中的username，
-                        // 考虑到用户可能会在其他客户端更改username
-                        token: undefined, //todo 需存入token
-                        //friendList: undefined, //todo 需存入friendList
-                        //todo 这里可能还需要放一些其他的东西
-                      }
-                    }, {}, function(err, numReplaced){
-                      if(err !== null){
-                        console.log(`err occured:`)
-                        console.log(err)
-                      }else if(numReplaced === 1){//仅有一个文档被更改
-                        console.log("初始化完成")
-                      }else console.log('unexpected error')//should not fall in here
-                    },
-            )
+              //解析这个键值
+              let p1 = p;
+              p1 = p1.substring(1, p1.length - 1); //掐头去尾
+              let keys = p1.split(", "); //分成两个
+              //此时keys[0]为chatId，keys[1]为type
+              let chatId = keys[0],
+                type = keys[1];
+              let query = {
+                chatId: chatId,
+                type: type,
+              };
+
+
+              //根据type，分别去friendList和groupList里面找到name和avatarUrl
+              let name, avatarUrl;
+              if (type === "UNICAST") {
+                let obj = this.$store.state.friends.find(
+                  (obj) => obj.id === chatId
+                );
+                name = obj.nickname.length === 0 ? obj.username : obj.nickname;
+                avatarUrl = obj.avatarUrl;
+              } else if (type === "MULTICAST") {
+                let obj = this.$store.state.groups.find(
+                  (obj) => (obj.id = chatId)
+                );
+                name = obj.name;
+                avatarUrl = obj.avatarUrl;
+              }
+
+              //先把Nedb更新一遍
+              getNedb().localMessage.find(query, function(err, docs) {
+                console.log("find " + chatId + " + " + type + " in nedb");
+                console.log(docs);
+                console.log(111111111);
+                //现在找的是当前要更新的chat
+                if (docs.length === 0) {
+                  //若是本来没有
+                  let newChat = {
+                    chatId: chatId,
+                    type: type,
+                    name: name,
+                    avatarUrl: avatarUrl,
+                    sign: messages[messages.length - 1].content,
+                    timestamp: messages[messages.length - 1].timestamp,
+                    unReadCount: messages.length,
+                    messageList: messages,
+                  };
+                  getNedb().localMessage.insert(newChat, function(err, docs) {
+                    console.log(docs);
+                    console.log(2222222);
+                  });
+                } else {
+                  //若是本来就有
+                  let updateChat = docs[0]; //虽然是复数形式 但是理应只有一个
+                  updateChat.unReadCount += messages.length;
+                  for (let i = 0; i < messages.length; ++i) {
+                    updateChat.messageList.push(messages[i]);
+                  }
+                  updateChat.avatarUrl = avatarUrl;
+                  updateChat.name = name;
+                  updateChat.sign = messages[messages.length - 1].content;
+                  getNedb().localMessage.update(
+                    { query },
+                    { $set: updateChat },
+                    function(err, numupdated) {
+                      console.log(numupdated + "条数据被更新");
+                      console.log(2222222);
+                    }
+                  );
+                }
+              });
+            }
+            this.updateVuexWithNedb();
+          } else console.log("error occurred");
+        });
+    },
+    updateVuexWithNedb() {
+      let self = this;
+      getNedb()
+        .localMessage.find({})
+        .sort({ timestamp: -1 })
+        .exec(function(err, docs) {
+            self.$store.commit("setChatList", docs);
+        });
+      //update chatList
+      let updateChatList = [];
+      let chatList = this.$store.state.chatList;
+      for(let i = 0; i < chatList.length; ++i){
+        if(chatList[i].type === "UNICAST"){
+          let obj = this.$store.state.friends.find(
+            (obj) => obj.id === chatList[i].chatId
+          )
+          if(obj){
+            updateChatList.push(chatList[i])
+          }
+        }else if(chatList[i].type === "MULTICAST"){
+          let obj = this.$store.state.groups.find(
+            (obj) => obj.id === chatList[i].chatId
+          )
+          if(obj){
+            updateChatList.push(chatList[i])
           }
         }
-      })
+      }
+      this.$store.commit("setChatList", updateChatList);
     },
     submit1(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.$axios
-            .post("/oauth/login", {
-              id: this.loginInfo.username,
-              password: this.loginInfo.password,
-            })
+            .post(
+              "/oauth/login?id=" +
+                this.loginInfo.username +
+                "&password=" +
+                this.loginInfo.password
+            )
             .then((successResponse) => {
               if (successResponse.data.code === 200) {
                 var data = successResponse.data.data;
@@ -270,69 +319,59 @@ export default {
                   id: data.id,
                   username: data.username,
                   email: data.email,
+                  area: data.area,
+                  sign: data.sign,
+                  avatarUrl: data.avatarUrl,
+                  access_token: data.access_token,
                 };
+                //用户信息存入Vuex
                 this.$store.commit("setUser", userdata);
-                // var tokendata = {
-                //   access_token: data.access_token,
-                //   token_type: data.token_type,
-                //   bearer: data.bearer,
-                //   refresh_token: data.refresh_token,
-                //   expires_in: data.expires_in,
-                //   scope: data.scope,
-                // }
-                // ***
-                // NeDB setToken
-                this.$router.push("index");
-                this.$notify({
-                  title: "成功",
-                  message: "登录成功！",
-                  type: "success",
+                let query = { id: data.id };
+                getNedb().userInfo.find(query, function(err, docs) {
+                  if (docs.length === 0) {
+                    //没有登陆过
+                    getNedb().userInfo.insert(userdata, function() {
+                      console.log("new user info inserted");
+                    });
+                  } else {
+                    getNedb().userInfo.update(
+                      query,
+                      { $set: userdata },
+                      {},
+                      function(err, numReplaced) {
+                        console.log(
+                          numReplaced + "document of userInfo updated"
+                        );
+                      }
+                    );
+                  }
                 });
-              } else if (successResponse.data.code === 300) {
-                this.$notify.error({
-                  title: "错误",
-                  message: "该用户不存在",
-                });
-              } else if (successResponse.data.code === 402) {
-                this.$notify.error({
-                  title: "错误",
-                  message: "密码输入错误",
-                });
-              }
-            })
-            .catch((failResponse) => {
-              console.log(failResponse);
-            });
-        } else {
-          console.log("error submit!!");
-          this.$notify({
-            title: "Error",
-            message: "非法登录",
-            type: "error",
-          });
-          return false;
-        }
-      });
-    },
-    submit2(formName) {
-      console.log("submit2");
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          this.$axios
-            .post("/oauth/register", {
-              params: {
-                id: this.registerInfo.id,
-                username: this.registerInfo.username,
-                password: this.registerInfo.password,
-                email: this.registerInfo.email,
-                code: this.registerInfo.code,
-              },
-            })
-            .then((successResponse) => {
-              // var responseResult = JSON.stringify(successResponse.data);
-              if (successResponse.data.code === 200) {
-                this.$store.commit("setToken", successResponse.data.data);
-                this.$router.push("index");
+                //加载好友和群聊
+                this.loadG();
+                this.loadF();
+                loadFriendRequests();
+                loadGroupRequests();
+                loadBlockList();
+                //更新系统信息
+                getNedb().systemInfo.remove({}, { multi: true });
+                let updateSystemInfo = {
+                  lastUserId: data.id,
+                  lastUserPassword: this.loginInfo.password,
+                  token: data.access_token,
+                  autoLogin: this.autoLogin,
+                };
+                  getNedb().systemInfo.insert(updateSystemInfo);
+                //初始化本地聊天记录
+                let self = this;
+                setTimeout(function() {
+                  self.initLocalMessages();
+                }, 500);
+
+                //建立websocket连接
+                getWebsocket();
+                setTimeout(() => {
+                  self.$router.push("/index/chatpanel");
+                }, 1000);
                 this.$notify({
                   title: "成功",
                   message: "登录成功！",
@@ -341,7 +380,12 @@ export default {
               } else if (successResponse.data.code === 400) {
                 this.$notify.error({
                   title: "错误",
-                  message: successResponse.data.message,
+                  message: "密码输入错误",
+                });
+              } else {
+                this.$notify.error({
+                  title: "Error",
+                  message: "unknown error found in login",
                 });
               }
             })
@@ -349,10 +393,58 @@ export default {
               console.log(failResponse);
             });
         } else {
-          this.$notify({
+          this.$notify.error({
             title: "Error",
             message: "非法登录",
-            type: "error",
+          });
+          return false;
+        }
+      });
+    },
+    submit2(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.$axios
+            .post(
+              "/oauth/register?id=" +
+                this.registerInfo.id +
+                "&username=" +
+                this.registerInfo.username +
+                "&password=" +
+                this.registerInfo.password +
+                "&email=" +
+                this.registerInfo.email +
+                "&code=" +
+                this.registerInfo.code
+            )
+            .then((successResponse) => {
+              // var responseResult = JSON.stringify(successResponse.data);
+              if (successResponse.data.code === 200) {
+                this.index = true;
+                this.$notify({
+                  title: "成功",
+                  message: "注册成功！",
+                  type: "success",
+                });
+              } else if (successResponse.data.code === 400) {
+                this.$notify.error({
+                  title: "错误",
+                  message: successResponse.data.message,
+                });
+              } else {
+                this.$notify.error({
+                  title: "错误",
+                  message: "unknown error found in register.",
+                });
+              }
+            })
+            .catch((failResponse) => {
+              console.log(failResponse);
+            });
+        } else {
+          this.$notify.error({
+            title: "Error",
+            message: "非法注册",
           });
           return false;
         }
@@ -399,8 +491,28 @@ export default {
           console.log(error);
         });
     },
+    loadF() {
+      loadFriends();
+    },
+    loadG() {
+      loadGroups();
+    },
   },
-  mounted() {},
+  mounted() {
+    let self = this;
+    getNedb().systemInfo.find({},function (err, docs) {
+      //理应只有一条
+      let systemInfo = docs[0];
+      if(systemInfo){
+        if(systemInfo.autoLogin === true){
+          self.loginInfo.password = systemInfo.lastUserPassword;
+        }
+        self.loginInfo.username = systemInfo.lastUserId;
+        self.autoLogin = systemInfo.autoLogin;
+      }
+
+    })
+  },
 };
 </script>
 

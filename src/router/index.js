@@ -5,11 +5,13 @@ Vue.use(VueRouter);
 function loadView(view) {
   return () => import(`@/views/${view}.vue`);
 }
+
 // function loadComponent(component) {
-//   return () => import(`@/components/${component}.vue`);
+//     return () => import(`@/components/${component}.vue`);
 // }
 function loadLayout(component) {
   return () => import(`@/components/layout/${component}.vue`);
+
 }
 const routes = [
   {
@@ -25,12 +27,7 @@ const routes = [
     path: "/index",
     name: "Index",
     component: loadView("Index"),
-    children: [
-      // {
-      //   path: "/index",
-      //   name: "Page1",
-      //   component: loadComponent("Page1"),
-      // },
+    children:[
       {
         path: "/index/chatpanel",
         name: "ChatPanel",
@@ -48,12 +45,18 @@ const routes = [
       },
     ],
   },
+  {
+    path: "/webrtc",
+    name: "WebRtc",
+    component:loadView("WebRtc")
+  }
 ];
 
 const router = new VueRouter({
-  mode: "history",
-  base: process.env.BASE_URL,
-  routes,
+    mode: process.env.IS_ELECTRON ? 'hash' : 'history',
+    base: process.env.BASE_URL,
+    routes,
 });
 
 export default router;
+

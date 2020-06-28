@@ -1,122 +1,267 @@
-import db from "./NedbConfig";
+import getNedb from "./NedbConfig";
 import store from "../store/index";
+import getNeDB from "./NedbConfig";
+import {
+  loadFriendRequests,
+  loadFriends,
+  loadGroupRequests,
+  loadGroups,
+} from "./load";
+import { desktopNotify } from "./Notification";
+import router from "../router";
+import { MessageBox, Message } from "element-ui";
 
 let websock;
-export default function getWebsocket(name){
-    if(websock){
-        return websock
-    }else{
-        return createWebsocket(name)
-    }
+let inVideoChat=false;
+let currentVideoChat;
+let peer;
+
+export default function getWebsocket() {
+  if (websock && websock.readyState === 1) {
+    return websock;
+  } else {
+    return createWebsocket();
+  }
 }
-let token   //后端完成后改为使用token进行websocket连接
 
 function createWebsocket() {
-    //token = store.state.user.token;
-    token = '81ea4a40-57d1-411d-a9f6-da339116b4c8';
-    let WSUrl = `ws://106.13.110.96:8088/ws?token=${token}`;
-    websock = new WebSocket(WSUrl);
-    websock.onmessage = function (event) {
-        let data = JSON.parse(event.data);
-        console.log("message received")
-        console.log(data)
+  let token, userId;
+  token = store.state.user.access_token;
+  userId = store.state.user.id;
 
-        let updateChatList = store.state.chatList;
-        let mine = false;
-        if(store.state.user.userId === data.senderId) mine = true
-        //todo 将收到的event进行解析，存入数据库
-        let updateMessgeList = updateChatList.messageList
-        let NewMessage = {
-          type: data
+  let WSUrl = `ws://106.13.110.96:8088/ws?access_token=${token}`;
+  //let WSUrl = `ws://localhost:8088/ws?access_token=${token}`;
+  websock = new WebSocket(WSUrl);
+  websock.onmessage = function(event) {
+    let data = JSON.parse(event.data);
+    console.log("message received");
+
+    if (data.type === "UNICAST" || data.type === "MULTICAST") {
+      //收到群聊/私聊信
+
+      //设置chatId
+      let chatId;
+      if (data.type === "MULTICAST") chatId = data.groupId;
+      else if (data.type === "UNICAST")
+        chatId = userId === data.senderId ? data.receiverId : data.senderId;
+
+      //设置新的message
+      let newMessage = {
+        type: data.type,
+        mine: store.state.user.id === data.senderId,
+        timestamp: data.timestamp,
+        content: data.content,
+        senderId: data.senderId,
+      };
+
+      //更新现有chatList
+      let updateChatList = store.state.chatList;
+      let modified = false;
+      for (let i = 0; i < updateChatList.length; ++i) {
+        let thisChat = updateChatList[i];
+        if (data.type === thisChat.type && thisChat.chatId === chatId) {
+          //将newMessage放入chat的messageList中
+          thisChat.messageList.push(newMessage);
+          //更新sign timestamp
+          thisChat.sign = newMessage.content;
+          thisChat.timestamp = newMessage.timestamp;
+          //更新unreadCount,同时发送通知
+          if(data.senderId !== store.state.user.id)
+            desktopNotify("收到来自" + thisChat.name + "的信息！");
+          if (
+            thisChat.type === store.state.currentChat.type &&
+            thisChat.chatId === store.state.currentChat.chatId
+          )
+            thisChat.unReadCount = 0;
+          else {
+            thisChat.unReadCount++;
+          }
+
+          //将chatList中的老chat删除，新chat插到数组头
+          updateChatList.splice(i, 1);
+          updateChatList.unshift(thisChat);
+
+          //存入Nedb
+          let query = { chatId: thisChat.chatId, type: thisChat.type };
+          getNedb().localMessage.update(
+            query,
+            { $set: thisChat },
+            { multi: true },
+            function(err, numUpdated) {
+              console.log(numUpdated + "条数据存入nedb");
+            }
+          );
+
+          modified = true; //标记cahtList被修改
+          break;
+        }
+      }
+      //若新收到的消息不属于chatList中任何chat, 即chatList没有在上一步中被修改
+      //则插入一个新的chat到chatList中
+      if (!modified) {
+        let friendList = store.state.friends;
+        let groupList = store.state.groups;
+
+        let obj, name, avatarUrl;
+        if (data.type === "UNICAST") {
+          obj = friendList.find((obj) => obj.id === chatId);
+          name = obj.nickname.length === 0 ? obj.username : obj.nickname;
+          avatarUrl = obj.avatarUrl;
+        } else {
+          obj = groupList.find((obj) => obj.id === chatId);
+          name = obj.name;
+          avatarUrl = obj.avatarUrl;
+
         }
 
-
-
-
-
-        let newMessageSaveToNedb = {
-            type: data.type,
-            mine: mine,
-            timestamp: time,
-            content: data.content,
-            chatId: data.senderId, //todo 存入senderId
-            avatar: //todo 理应实时刷新
-                "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+        let newChat = {
+          chatId: chatId,
+          name: name,
+          type: data.type,
+          avatar: avatarUrl,
+          sign: data.content,
+          unReadCount: 1,
+          messageList: [newMessage],
         };
-        if (data.type === 'UNICAST') {
-            let curChat;
-            let modified = false;
-            for (let i = 0; i < newChatList.length; i++) {//先遍历 找找有没有在chatList里面
-                curChat = newChatList[i];//遍历到的chat
-                if (curChat.type === 'UNICAST') {
-                    if (curChat.chatId === data.senderId) {//找到了
-                        let unread;
-                        if(store.state.currentChat.chatId === curChat.chatId) unread = 0;
-                        else unread = curChat.unReadCount + 1;
-                        let updateChat = { //后期使用ChatId和type找到对应的messages in Nedb
-                            chatId: curChat.chatId,
-                            name: curChat.name,
-                            type: 'UNICAST',
-                            avatar: //todo 理应实时获取
-                                "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-                            sign: data.content,
-                            unReadCount: unread,
-                        };
-                        newChatList.splice(i, 1); //将此条删除
-                        newChatList.unshift(updateChat); //再将其添加到第一位
-                        store.commit("setChatList", newChatList); //更新表格
+        //通知
+        desktopNotify("收到来自" + name + "的信息！");
 
-                        modified = true;
-                        break;
-                    }
-                }
-            }
-            if (!modified) {//没有原有聊天
-                let newChat = {
-                    chatId: data.senderId,
-                    name: 'wwwwwwwwww', //todo 使用friendId在Nedb中获取
-                    type: 'UNICAST',
-                    avatar: //todo 理应实时获取
-                        "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-                    sign: data.content,
-                    unReadCount: 1,
-                }
-                newChatList.unshift(newChat); //将新的聊天添加到chatList第一位
-                store.commit("setChatList", newChatList); //更新表格
-            }
-        } else if (data.type === 'MULTICAST') {
-            newMessageSaveToNedb.groupId = data.groupId //todo 存入groupId
-            //todo
-        } else {//todo type = notification
-
-        }
-        db.localMessage.insert(newMessageSaveToNedb, function (err, newDoc) {
-            if (err !== null) {
-                console.log('error occured: ');
-                console.log(err)
-            } else {
-                console.log('new ' + newDoc.type + ' insert successfully: ' + newDoc.content)
-            }
+        //插入updateChatList
+        updateChatList.unshift(newChat);
+        //存入nedb
+        getNeDB().localMessage.insert(newChat, function(err, docs) {
+          console.log("add new item:" + docs);
         });
-
-
-        let currentChat = store.state.currentChat
-        let query = {chatId: currentChat.chatId, type: currentChat.type}
-        db.localMessage.find(query).sort({timestamp: 1}).exec(function (err, docs) {
-            console.log("setMessageList")
-            console.log(docs)
-            store.commit("setMessageList", docs)
-        })
-    };
-    websock.onopen = function () {
-        var string = `WebSocket is open now.`;
-        console.log(string);
-    };
-    websock.onerror = function (event) {
-        console.error("WebSocket error observed:", event);
+      }
+      store.commit("setChatList", updateChatList);
+    } else if (data.type === 'NOTIFICATION') {
+      let obj, index, name, newChat, updateChatList;
+      switch (data.notificationType) {
+        case "GROUP_REQUEST":
+          loadGroupRequests();
+          store.commit("addUnreadGroupRequest");
+          desktopNotify(data.content + "给你发送了一条群聊邀请")
+          break;
+        case "GROUP_REQUEST_ACCEPTED":
+          loadGroupRequests();
+          loadGroups();
+          desktopNotify(data.content + "加入了群聊!");
+          break;
+        case "GROUP_REMOVED":
+          obj = store.state.groups.find((obj) => obj.id === data.content);
+          name = obj.name;
+          desktopNotify("你已被移出群聊：" + name);
+          //同时删除chatList中的群聊(如果有)
+          updateChatList = store.state.chatList;
+          obj = updateChatList.find(
+              (obj) => obj.chatId === data.content && obj.type === "MULTICAST"
+          );
+          if (obj) {
+            index = updateChatList.indexOf(obj);
+            updateChatList.splice(index, 1);
+            store.commit("setChatList", updateChatList);
+            //删除Nedb中的这一条数据
+            getNedb().localMessage.remove({chatId: obj.chatId, type: "MULTICAST"})
+          }
+          //最后刷新群组列表
+          loadGroups();
+          break;
+        case "GROUP_DISBANDED":
+          obj = store.state.groups.find((obj) => obj.id === data.content);
+          name = obj.name;
+          desktopNotify("群聊：" + name + "已被解散");
+          //同时删除chatList中的群聊(如果有)
+          updateChatList = store.state.chatList;
+          obj = updateChatList.find(
+              (obj) => obj.chatId === data.content && obj.type === "MULTICAST"
+          );
+          if (obj) {
+            index = updateChatList.indexOf(obj);
+            updateChatList.splice(index, 1);
+            store.commit("setChatList", updateChatList);
+            //删除Nedb中的这一条数据
+            getNedb().localMessage.remove({chatId: obj.chatId, type: "MULTICAST"})
+          }
+          //最后刷新群组列表
+          loadGroups();
+          break;
+        case "friendRequestAdd":
+          desktopNotify("收到新的好友申请");
+          loadFriendRequests();
+          store.commit("addUnreadFriendRequest");
+          break;
+        case "friendRequestPass":
+          loadFriends();
+          //直接插入ChatList中
+          obj = store.state.friends.find((obj) => obj.id === data.content);
+          name = obj.username;
+          newChat = {
+            chatId: data.content,
+            name: name,
+            type: "UNICAST",
+            sign: "",
+            unReadCount: 0,
+            messageList: [],
+          };
+          updateChatList = store.state.chatList;
+          updateChatList.unshift(newChat);
+          store.commit("setChatList", updateChatList);
+          break;
+        case "friendRequestReject":
+          //fjc说什么都不用做
+          break;
+        case "friendRemoved":
+          loadFriends();
+          //删除nedb
+          getNedb().localMessage.remove({chatId: data.content, type: "UNICAST"})
+          break;
+      }
+    } else if (data.type === 'CONNECT') {
+      MessageBox(data.senderId + ' 邀请你进行视频聊天', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info'
+      }).then(() => {
+        router.push({path: '/webrtc', query: {init: true, id: data.senderId}});
+      }).catch(() => {
+        Message({
+          type: 'info',
+          message: '已拒绝'
+        });
+      });
+    } else if (data.type === 'SIGNAL') {
+      if (inVideoChat && data.senderId === currentVideoChat) {
+        console.log('incoming signal', data);
+        peer.signal(data.signal);
+      } else {
+        console.log('dropped incoming signal', data);
+      }
     }
-    websock.onclose = function () {
-        console.log("WebSocket is close now")
-    }
+  };
+  websock.onopen = function() {
+    desktopNotify("服务器已连接！");
+    var string = `WebSocket is open now.`;
+    console.log(string);
+  };
+  websock.onerror = function(event) {
+    console.error("WebSocket error observed:", event);
+  };
+  websock.onclose = function() {
+    console.log("WebSocket is close now");
+  };
+
+  return websock;
 }
 
+export function joinVideoChat(id) {
+  inVideoChat = true;
+  currentVideoChat = id
+}
+
+export function leaveVideoChat() {
+  inVideoChat = false;
+}
+
+export function savePeer(newPeer) {
+  peer = newPeer;
+}
