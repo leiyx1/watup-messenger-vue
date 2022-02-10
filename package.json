@@ -18,7 +18,7 @@
     "core-js": "^3.6.4",
     "element-ui": "^2.13.2",
     "nedb": "^1.8.0",
-    "node-sass": "^4.14.1",
+    "node-sass": "^7.0.0",
     "sass-loader": "^8.0.2",
     "scss-loader": "^0.0.1",
     "simple-peer": "^9.7.2",
